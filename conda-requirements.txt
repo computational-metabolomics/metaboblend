@@ -1,0 +1,11 @@
+# Use this file to create a conda environment using:
+# conda create -n metaboverse --file conda-requirements.txt -c conda-forge -c bioconda
+
+numpy
+scipy
+rdkit
+# chemfp
+openbabel
+biopython
+networkx
+matplotlib
