@@ -15,6 +15,7 @@ from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph
 
 sqlite3.register_converter("PICKLE", pickle.loads)
 
+
 def parse_xml(source, encoding="utf8"):
 
     with io.open(source, "r", encoding=encoding) as inp:
@@ -41,7 +42,7 @@ def parse_xml(source, encoding="utf8"):
 
                     if event == 'start':
                         path.append(elem.tag)
-                        if elem.text != None:
+                        if elem.text is not None:
                             if elem.text.replace(" ", "") != "\n":
 
                                 path_elem = ".".join(map(str, path[1:]))
@@ -76,7 +77,7 @@ class SubstructureDb:
         if self.db2 is not None:
             self.cursor.execute("""ATTACH DATABASE '%s' as 'graphs';""" % self.db2)
 
-    def select_compounds(self, cpds = []):
+    def select_compounds(self, cpds=[]):
         if len(cpds) > 0:
             sql = " WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
         else:
@@ -258,7 +259,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     mol_edit = Chem.EditableMol(mol)
     degree_atoms = {}
 
-    #Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
+    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
 
     for atom in reversed(mol.GetAtoms()):
 
@@ -313,7 +314,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return None
 
-    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True), #REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True), # REORDERED ATOM INDEXES
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -343,7 +344,7 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     return exact_mass
 
 
-def filter_records(records, hmdb_cpd = None):
+def filter_records(records, hmdb_cpd=None):
 
     for record in records:
 
