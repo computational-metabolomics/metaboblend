@@ -16,7 +16,24 @@ from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph
 sqlite3.register_converter("PICKLE", pickle.loads)
 
 
+def reformat_xml(source, encoding="utf8"):
+    with io.open(source, "r", encoding=encoding) as xml:
+        xml_contents = xml.readlines()
+        if "hmdb" in xml_contents[1]:
+            return source
+
+        xml_contents.insert(1, "<hmdb xmlns=\"http://www.hmdb.ca\"> \n")
+
+    with io.open(source, "w", encoding=encoding) as xml:
+        xml_contents = "".join(xml_contents)
+        xml.write(xml_contents)
+        xml.write("</hmdb>")
+
+    return source
+
+
 def parse_xml(source, encoding="utf8"):
+    reformat_xml(source, encoding)
 
     with io.open(source, "r", encoding=encoding) as inp:
         record_out = OrderedDict()
@@ -42,7 +59,7 @@ def parse_xml(source, encoding="utf8"):
 
                     if event == 'start':
                         path.append(elem.tag)
-                        if elem.text is not None:
+                        if elem.text != None:
                             if elem.text.replace(" ", "") != "\n":
 
                                 path_elem = ".".join(map(str, path[1:]))
@@ -125,7 +142,7 @@ class SubstructureDb:
             yield cur
         else:
             for n, s in tree.items():
-                for path in self.paths(s, cur+(n,)):
+                for path in self.paths(s, cur + (n,)):
                     yield path
 
     def isomorphism_graphs(self, id_pkl):
@@ -156,7 +173,8 @@ class SubstructureDb:
                                    AND O = {}
                                    AND P = {}
                                    AND S = {}
-                                """.format(l_atoms[i][0], l_atoms[i][1], l_atoms[i][2], l_atoms[i][3], l_atoms[i][4], l_atoms[i][5]))
+                                """.format(l_atoms[i][0], l_atoms[i][1], l_atoms[i][2], l_atoms[i][3], l_atoms[i][4],
+                                           l_atoms[i][5]))
             records = self.cursor.fetchall()
             if len(records) == 0:
                 return []
@@ -238,7 +256,6 @@ class SubstructureDb:
 
 
 def get_substructure(mol, idxs_edges_subgraph, debug=False):
-
     atom_idxs_subgraph = []
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
@@ -264,7 +281,6 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     for atom in reversed(mol.GetAtoms()):
 
         if atom.GetIdx() in atoms_to_dummy:
-
             mol_edit.ReplaceAtom(atom.GetIdx(), Chem.Atom("*"))
 
     mol = mol_edit.GetMol()
@@ -296,7 +312,8 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
             print(b.GetBondTypeAsDouble())
             print(b.GetBondType())
 
-        print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(), mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
+        print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
+              mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
@@ -314,7 +331,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return None
 
-    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True), # REORDERED ATOM INDEXES
+    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True),  # REORDERED ATOM INDEXES,
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -334,7 +351,8 @@ def get_elements(mol, elements=None):
 
 def calculate_exact_mass(mol, exact_mass_elements=None):
     if not exact_mass_elements:
-        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072, "*": -1.007825}
+        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072,
+                               "*": -1.007825}
     exact_mass = 0.0
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
@@ -345,7 +363,6 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
 
 
 def filter_records(records, hmdb_cpd=None):
-
     for record in records:
 
         if "smiles" in record:
@@ -393,7 +410,6 @@ def filter_records(records, hmdb_cpd=None):
 
 
 def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
-
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
 
@@ -502,7 +518,6 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
 
 
 def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None):
-
     conn = sqlite3.connect(db_out)
     cursor = conn.cursor()
 
@@ -526,7 +541,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
     for G, p in calculate_complete_multipartite_graphs(sizes, boxes):
 
         print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])
-        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
         geng_out, err = proc.communicate()
 
         proc.stdout.close()
@@ -546,7 +562,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
             s_gfu.write(graph_to_ri(sG, "subgraph"))
             s_gfu.seek(0)
 
-            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             RI_out, err = proc.communicate()
 
             k_gfu.close()
@@ -560,7 +577,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     mappings.append(eval(line))
 
                 if len(mappings) == 20000:
-                    gi = graph_info(p, sG, mappings,)
+                    gi = graph_info(p, sG, mappings, )
 
                     for vn in gi[0]:
 
@@ -581,21 +598,21 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
 
             if len(mappings) > 0:
                 gi = graph_info(p, sG, mappings, )
-                #job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
-                #jobs.append(job)
+                # job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
+                # jobs.append(job)
 
                 for vn in gi[0]:
 
                     if vn not in subgraphs:
                         subgraphs[vn] = gi[0][vn]
-                        #print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
+                        # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
                     else:
 
                         before = len(subgraphs[vn])
                         for es in gi[0][vn]:
                             if es not in subgraphs[vn]:
                                 subgraphs[vn].append(es)
-                                #print vn, es, result[1][0], result[1][1], len(result[1][1])
+                                # print vn, es, result[1][0], result[1][1], len(result[1][1])
                         after = len(subgraphs[vn])
                         print(before, after)
 
@@ -610,7 +627,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn, sG.number_of_nodes(), sG.number_of_edges())
+                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
+                          sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
                     cursor.execute('''INSERT INTO subgraphs (id_pkl, 
@@ -622,15 +640,16 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                                       nodes_valences,
                                       n_nodes, n_edges) 
                                       values (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
-                                      id_pkl,
-                                      len(subgraphs[vn]),
-                                      line_geng,
-                                      len(p),
-                                      str(p),
-                                      str(vt),
-                                      str(vn),
-                                      sG.number_of_nodes(),
-                                      sG.number_of_edges()))
+                        id_pkl,
+                        len(subgraphs[vn]),
+                        line_geng,
+                        len(p),
+                        str(p),
+                        str(vt),
+                        str(vn),
+                        sG.number_of_nodes(),
+                        sG.number_of_edges()))
                     pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
             conn.commit()
     conn.close()
+    
