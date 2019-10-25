@@ -362,7 +362,12 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     return exact_mass
 
 
-def filter_records(records, hmdb_cpd=None):
+def filter_records(records, db_type="hmdb"):
+    if db_type == "hmdb":
+        return _filter_hmdb_records(records)
+
+
+def _filter_hmdb_records(records):
     for record in records:
 
         if "smiles" in record:
@@ -409,13 +414,14 @@ def filter_records(records, hmdb_cpd=None):
             yield record_dict
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
+# take one smile at a time?
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
 
     records = parse_xml(fn_hmdb)
 
-    for record_dict in filter_records(records, hmdb_cpd):
+    for record_dict in filter_records(records):
 
         cursor.execute("""INSERT OR IGNORE INTO compounds (
                               hmdbid, 
