@@ -364,7 +364,7 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
 
 def filter_records(records, db_type="hmdb"):
     if db_type == "hmdb":
-        return _filter_hmdb_records(records)
+        yield from _filter_hmdb_records(records)
 
 
 def _filter_hmdb_records(records):
@@ -414,7 +414,23 @@ def _filter_hmdb_records(records):
             yield record_dict
 
 
-# take one smile at a time?
+def get_substructure_bond_idx(prb_mol, ref_mol):
+    if ref_mol.HasSubstructMatch(prb_mol):
+        atom_idx = ref_mol.GetSubstructMatch(prb_mol)
+    else:
+        return None
+
+    bond_idx = []
+    for atom in ref_mol.GetAtoms():
+        if atom.GetIdx() in atom_idx:
+            for bond in atom.GetBonds():
+                if bond.GetBeginAtomIdx() in atom_idx and bond.GetEndAtomIdx() in atom_idx:
+                    if bond.GetIdx() not in bond_idx:
+                        bond_idx.append(bond.GetIdx())
+
+    return bond_idx
+
+
 def update_substructure_database(fn_hmdb, fn_db, n_min, n_max):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
