@@ -431,6 +431,11 @@ def get_substructure_bond_idx(prb_mol, ref_mol):
     return bond_idx
 
 
+def get_sgs(record_dict, n_min, n_max, method="rdkit"):
+    if method == "rdkit":
+        return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
+
+
 def update_substructure_database(fn_hmdb, fn_db, n_min, n_max):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
@@ -458,7 +463,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max):
 
         # Returns a tuple of 2-tuples with bond IDs
 
-        for sgs in Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max):
+        for sgs in get_sgs(record_dict, n_min, n_max):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)
                 if lib is None:
