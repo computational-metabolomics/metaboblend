@@ -32,8 +32,9 @@ def reformat_xml(source, encoding="utf8"):
     return source
 
 
-def parse_xml(source, encoding="utf8"):
-    reformat_xml(source, encoding)
+def parse_xml(source, encoding="utf8", reformat=True):
+    if reformat:
+        reformat_xml(source, encoding)
 
     with io.open(source, "r", encoding=encoding) as inp:
         record_out = OrderedDict()
@@ -436,11 +437,12 @@ def get_sgs(record_dict, n_min, n_max, method="rdkit"):
         return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max):
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
 
-    records = parse_xml(fn_hmdb)
+    if records is None:
+        records = parse_xml(fn_hmdb, reformat=False)
 
     for record_dict in filter_records(records):
 
