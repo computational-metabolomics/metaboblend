@@ -11,6 +11,8 @@ from collections import OrderedDict
 import xml.etree.ElementTree as etree
 import networkx as nx
 from rdkit import Chem
+from rdkit.Chem import Recap
+from rdkit.Chem import BRICS
 from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
 
 sqlite3.register_converter("PICKLE", pickle.loads)
@@ -421,23 +423,60 @@ def get_substructure_bond_idx(prb_mol, ref_mol):
     else:
         return None
 
-    bond_idx = []
+    bond_idx = ()
     for atom in ref_mol.GetAtoms():
         if atom.GetIdx() in atom_idx:
             for bond in atom.GetBonds():
+                # GetBondBetweenAtoms()
                 if bond.GetBeginAtomIdx() in atom_idx and bond.GetEndAtomIdx() in atom_idx:
                     if bond.GetIdx() not in bond_idx:
-                        bond_idx.append(bond.GetIdx())
+                        bond_idx = (*bond_idx, bond.GetIdx())
 
     return bond_idx
 
 
-def get_sgs(record_dict, n_min, n_max, method="rdkit"):
-    if method == "rdkit":
+def subset_sgs_sizes(sgs, n_min, n_max):
+    sgs_new = []
+
+    for i, edge_idxs in enumerate(sgs):
+        edge_idxs_new = []
+
+        for j, bonds in enumerate(edge_idxs):
+            if n_min <= len(bonds) <= n_max:
+                edge_idxs_new.append(bonds)
+
+        if len(edge_idxs_new) > 0:
+            sgs_new.append(edge_idxs_new)
+
+    return sgs_new
+
+
+def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
+    if method == "exhaustive":
         return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
 
+    elif method == "RECAP":
+        hierarchy = Recap.RecapDecompose(record_dict["mol"])
+        sgs = []
+        for substructure in hierarchy.GetAllChildren():
+            substructure = Chem.DeleteSubstructs(substructure.mol, Chem.MolFromSmarts('[#0]'))
+            edge_idxs = get_substructure_bond_idx(substructure, record_dict["mol"])
+            if edge_idxs is not None:
+                sgs.append(edge_idxs)
+        return subset_sgs_sizes([sgs], n_min, n_max)
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None):
+    elif method == "BRICS":
+        substructures = BRICS.BRICSDecompose(record_dict["mol"])
+        sgs = []
+        for substructure in substructures:
+            substructure = Chem.DeleteSubstructs(Chem.MolFromSmiles(substructure), Chem.MolFromSmarts('[#0]'))
+            edge_idxs = get_substructure_bond_idx(substructure, record_dict["mol"])
+            if edge_idxs is not None:
+                sgs.append(edge_idxs)
+        return subset_sgs_sizes([sgs], n_min, n_max)
+
+
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive"):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
 
@@ -465,7 +504,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None):
 
         # Returns a tuple of 2-tuples with bond IDs
 
-        for sgs in get_sgs(record_dict, n_min, n_max):
+        for sgs in get_sgs(record_dict, n_min, n_max, method=method):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)
                 if lib is None:
