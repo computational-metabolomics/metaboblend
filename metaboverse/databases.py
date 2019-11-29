@@ -314,9 +314,9 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if debug:
             print(b.GetBondTypeAsDouble())
             print(b.GetBondType())
+            print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
+                  mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
-        print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
-              mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
