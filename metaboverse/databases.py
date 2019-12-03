@@ -395,7 +395,10 @@ def _filter_hmdb_records(records):
                 # print record['HMDB_ID'], record['smiles'], "+/-"
                 continue
 
-            print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
+            try:
+                print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
+            except KeyError:
+                print(record['accession'])
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
