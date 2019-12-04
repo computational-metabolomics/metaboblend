@@ -461,7 +461,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
     elif method == "RECAP":
         hierarchy = Recap.RecapDecompose(record_dict["mol"])
         sgs = []
-        for substructure in hierarchy.GetAllChildren():
+        for substructure in hierarchy.GetAllChildren().values():
             substructure = Chem.DeleteSubstructs(substructure.mol, Chem.MolFromSmarts('[#0]'))
             edge_idxs = get_substructure_bond_idx(substructure, record_dict["mol"])
             if edge_idxs is not None:
