@@ -107,11 +107,11 @@ class SubstructureDb:
                             SMILES_RDKIT, SMILES_RDKIT_KEK from compounds%s""" % sql)
         return self.cursor.fetchall()
 
-    def generate_substructure_network(self, min_node_weight=8, min_edge_weight=8, remove_isolated=False):
+    def generate_substructure_network(self, min_node_weight=2, min_edge_weight=2, remove_isolated=False):
         substructure_graph = nx.Graph()
 
         self.cursor.execute("""select smiles_rdkit_kek, count(*) from hmdbid_substructures 
-                                    group by smiles_rdkit_kek having count(*) >=%s""" % (min_node_weight-1))
+                                    group by smiles_rdkit_kek having count(*) >=%s""" % min_node_weight)
 
         # add node for each unique substructure, weighted by count
         for unique_substructure in self.cursor.fetchall():
@@ -123,7 +123,9 @@ class SubstructureDb:
             substructure_graph.add_node(unique_hmdb_id[0])
 
         # add edge for each linked parent structure and substructure
-        self.cursor.execute("""select * from hmdbid_substructures""")
+        self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
+                            (select smiles_rdkit_kek from hmdbid_substructures 
+                            group by smiles_rdkit_kek having count(*) >=%s)""" % min_node_weight)
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
