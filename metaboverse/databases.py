@@ -107,31 +107,55 @@ class SubstructureDb:
                             SMILES_RDKIT, SMILES_RDKIT_KEK from compounds%s""" % sql)
         return self.cursor.fetchall()
 
-    def generate_substructure_network(self, min_node_weight=2, min_edge_weight=2, remove_isolated=False):
+    def filter_hmdbid_substructures(self, min_node_weight):
+        self.cursor.execute('DROP TABLE IF EXISTS filtered_hmdbid_substructures')
+
+        self.cursor.execute("""create table filtered_hmdbid_substructures as 
+                                            select smiles_rdkit_kek, COUNT(*) from hmdbid_substructures 
+                                            group by smiles_rdkit_kek having COUNT(*) >=%s""" % min_node_weight)
+
+        return self.cursor.fetchall()
+
+    def generate_substructure_network(self, method="default", min_node_weight=2,
+                                      min_edge_weight=None, remove_isolated=False):
         substructure_graph = nx.Graph()
+        self.filter_hmdbid_substructures(min_node_weight)
 
-        self.cursor.execute("""select smiles_rdkit_kek, count(*) from hmdbid_substructures 
-                                    group by smiles_rdkit_kek having count(*) >=%s""" % min_node_weight)
+        self.cursor.execute("""select distinct HMDBID from compounds""")
+        unique_hmdb_ids = self.cursor.fetchall()
 
+        # generate different flavours of network
+        if method == "default":
+            substructure_graph = exhaustive_network(substructure_graph, unique_hmdb_ids)
+        elif method == "extended":
+            substructure_graph = extended_substructure_network(substructure_graph, unique_hmdb_ids, min_edge_weight, include_parents=False)
+        elif method == "parent_structure_linkage":
+            substructure_graph = extended_substructure_network(substructure_graph, unique_hmdb_ids, min_edge_weight, include_parents=True)
+
+        # remove isolated nodes
+        if remove_isolated:
+            substructure_graph.remove_nodes_from(list(nx.isolates(substructure_graph)))
+
+        return substructure_graph
+
+    def extended_substructure_network(self, substructure_graph, unique_hmdb_ids, min_edge_weight, include_parents=False):
+        self.cursor.execute("""select * from filtered_hmdbid_substructures""")
         # add node for each unique substructure, weighted by count
         for unique_substructure in self.cursor.fetchall():
             substructure_graph.add_node(unique_substructure[0], weight=unique_substructure[1])
 
         # add node for each parent structure
-        self.cursor.execute("""select distinct hmdbid from hmdbid_substructures""")
-        for unique_hmdb_id in self.cursor.fetchall():
+        for unique_hmdb_id in unique_hmdb_ids:
             substructure_graph.add_node(unique_hmdb_id[0])
 
         # add edge for each linked parent structure and substructure
         self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                            (select smiles_rdkit_kek from hmdbid_substructures 
-                            group by smiles_rdkit_kek having count(*) >=%s)""" % min_node_weight)
+                                    (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
         # remove parent structures and replace with linked, weighted substructures
-        self.cursor.execute("""select distinct hmdbid from hmdbid_substructures""")
-        for unique_hmdb_id in self.cursor.fetchall():
+        for unique_hmdb_id in unique_hmdb_ids:
             for adj1 in substructure_graph.adj[unique_hmdb_id[0]]:
                 for adj2 in substructure_graph.adj[unique_hmdb_id[0]]:
                     if substructure_graph.has_edge(adj1, adj2):
@@ -140,14 +164,38 @@ class SubstructureDb:
                         substructure_graph.add_edge(adj1, adj2, weight=1)
             substructure_graph.remove_node(unique_hmdb_id[0])
 
+        # remove self-loops and edges below weight threshold
         for u, v in substructure_graph.edges:
             if u == v:
                 substructure_graph.remove_edge(u, v)
             elif substructure_graph[u][v]['weight'] < (min_edge_weight - 1):
                 substructure_graph.remove_edge(u, v)
 
-        if remove_isolated:
-            substructure_graph.remove_nodes_from(list(nx.isolates(substructure_graph)))
+        return substructure_graph
+
+    def default_network(self, substructure_graph, unique_hmdb_ids, min_edge_weight):
+        for unique_hmdb_id in unique_hmdb_ids:
+            self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
+                                (select * from filtered_hmdbid_substructures) having hmdbid = %s""" % unique_hmdb_id)
+            nodes = []
+            for substructure in self.cursor.fetchall():
+                if substructure[1] in substructure_graph.nodes:
+                    substructure_graph.nodes[substructure[1]]["weight"] += 1
+                else:
+                    substructure_graph.add_node(substructure[1], weight=1)
+
+                for node in nodes:
+                    if substructure_graph.has_edge(substructure[1], node):
+                        substructure_graph[substructure[1]][node]['weight'] += 1
+                    else:
+                        substructure_graph.add_edge(substructure[1], node, weight=1)
+
+                nodes.append(substructure[1])
+
+        if min_edge_weight is not None:
+            for u, v in substructure_graph.edges:
+                if substructure_graph[u][v]['weight'] < (min_edge_weight - 1):
+                    substructure_graph.remove_edge(u, v)
 
         return substructure_graph
 
@@ -767,4 +815,3 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
             conn.commit()
     conn.close()
-    
