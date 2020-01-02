@@ -116,7 +116,12 @@ def add_bonds(mols, edges, atoms_available, bond_types):
             bt_end.remove(bondMatches[0])
 
         # print(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
-        mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
+        try:
+            mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
+        except KeyError:
+            if debug:
+                print("Unknown bond type")
+            return None
 
     return mol_edit
 
