@@ -348,6 +348,7 @@ class SubstructureDb:
 
 def get_substructure(mol, idxs_edges_subgraph, debug=False):
     atom_idxs_subgraph = []
+    
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
         a1 = b.GetBeginAtomIdx()

@@ -119,8 +119,7 @@ def add_bonds(mols, edges, atoms_available, bond_types):
         try:
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
         except KeyError:
-            if debug:
-                print("Unknown bond type")
+            print("Unknown bond type")
             return None
 
     return mol_edit
