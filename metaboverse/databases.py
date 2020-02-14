@@ -391,8 +391,10 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if atom.GetIdx() in dummies:
 
             for atom_n in atom.GetNeighbors():
-
-                if atom_n.GetIdx() not in degree_atoms:
+                
+                if atom_n.GetSymbol() == "*":
+                    continue
+                elif atom_n.GetIdx() not in degree_atoms:
                     degree_atoms[atom_n.GetIdx()] = 1
                 else:
                     degree_atoms[atom_n.GetIdx()] += 1
