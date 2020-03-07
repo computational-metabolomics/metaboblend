@@ -26,13 +26,15 @@ def subset_sum(l, mass, toll=0.001):
         yield [l[0]] + subset
 
 
-def combine_ecs(ss2_grp, heavyAtoms, accuracy, db):
+def combine_ecs(ss2_grp, heavy_atoms, db, accuracy=None, ppm=None):
 
     ecs = []
 
     for i in range(len(ss2_grp)):
-
-        atoms = db.select_ecs(ss2_grp[i], heavyAtoms, accuracy)
+        if ppm is None:
+            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy)
+        else:
+            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, ppm=ppm)
 
         if len(atoms) == 0:
             return []
@@ -70,7 +72,7 @@ def reindex_atoms(records):
     return mol_comb, atoms_available, atoms_to_remove, bond_types
 
 
-def add_bonds(mols, edges, atoms_available, bond_types):
+def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 
     rdkit_bond_types = {1: Chem.rdchem.BondType.SINGLE,
                         1.5: Chem.rdchem.BondType.AROMATIC,
@@ -79,8 +81,9 @@ def add_bonds(mols, edges, atoms_available, bond_types):
     G = nx.Graph()
     G.add_edges_from(edges)
 
-    print("## Edges from isomorphism:", edges)
-    print("## Matching:", sorted(G.nodes()), atoms_available)
+    if debug:
+        print("## Edges from isomorphism:", edges)
+        print("## Matching:", sorted(G.nodes()), atoms_available)
 
     G = nx.relabel_nodes(G, dict(zip(sorted(G.nodes()), atoms_available)))
 
@@ -93,22 +96,25 @@ def add_bonds(mols, edges, atoms_available, bond_types):
         if edge[0] in bond_types:
             bt_start = copy.copy(bond_types[edge[0]])
         else:
-            print("## Nested dummy with index: {} ".format(edge[0]))
-            print("")
+            if debug:
+                print("## Nested dummy with index: {} ".format(edge[0]))
+                print("")
             return None
 
         if edge[1] in bond_types:
             bt_end = copy.copy(bond_types[edge[1]])
         else:
-            print("## Nested dummy with index: {} ".format(edge[1]))
-            print("")
+            if debug:
+                print("## Nested dummy with index: {} ".format(edge[1]))
+                print("")
             return None
 
         bondMatches = list(set(bt_start).intersection(bt_end))
 
         if len(bondMatches) == 0:
-            print("## bondMatches empty")
-            print("")
+            if debug:
+                print("## bondMatches empty")
+                print("")
             return None
             # yield None
         else:
@@ -119,13 +125,14 @@ def add_bonds(mols, edges, atoms_available, bond_types):
         try:
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
         except KeyError:
-            print("Unknown bond type")
+            if debug:
+                print("Unknown bond type")
             return None
 
     return mol_edit
 
 
-def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy):
+def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, debug=False):
 
     exact_mass__1 = round(exact_mass)
     exact_mass__0_1 = round(exact_mass, 1)
@@ -143,26 +150,29 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy):
     configs_total = 0
     configs_unav = 0
 
-    print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values), len(subsets)))
-    print("------------------------------------------------------")
+    if debug:
+        print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values), len(subsets)))
+        print("------------------------------------------------------")
     for ss_grp in subsets:
 
         mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp, db)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001))
 
-        print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
-        print("------------------------------------------------------")
+        if debug:
+            print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
+            print("------------------------------------------------------")
 
         c = 0
 
         for ss2_grp in subsets_r2:
             c += 1
 
-            print(c, "Correct sum:", ss2_grp)
 
-            list_ecs = combine_ecs(ss2_grp, heavy_atoms, "0_0001", db)
 
-            print(c, "ECs:", ss2_grp, list_ecs)
+            list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001")
+            if debug:
+                print(c, "Correct sum:", ss2_grp)
+                print(c, "ECs:", ss2_grp, list_ecs)
 
             if len(list_ecs) == 0:
                 continue
@@ -173,32 +183,38 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy):
                 sum_ec = list(numpy.array(l).sum(axis=0))
                 iii += 1
 
-                if mc != sum_ec:
+                if mc != sum_ec and debug:
                     print("No match for elemental composition: {}".format(str(sum_ec)))
 
                 elif mc == sum_ec:
 
-                    print("Match elemental composition: {}".format(str(sum_ec)))
+                    if debug:
+                        print("Match elemental composition: {}".format(str(sum_ec)))
 
                     ll = db.select_sub_structures(l)
 
                     if len(ll) == 0:
-                        print("## No substructures found")
+                        if debug:
+                            print("## No substructures found")
                         continue
                     elif len(ll) == 1:
-                        print("## Single substructure")
+                        if debug:
+                            print("## Single substructure")
                     else:
-                        print("## {} {} substructures found".format(sum([len(subs) for subs in ll]),
+                        if debug:
+                            print("## {} {} substructures found".format(sum([len(subs) for subs in ll]),
                                                                     str([len(subs) for subs in ll])))
                         # print([[sub[""smiles] for sub in subs] for subs in ll])
 
-                    print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
+                    if debug:
+                        print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
                     for lll in itertools.product(*ll):
 
-                        for record in lll:
-                            print(record)
-                        print("---------------")
+                        if debug:
+                            for record in lll:
+                                print(record)
+                            print("---------------")
 
                         lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
                         nA, v, vA = (), (), ()
@@ -209,38 +225,45 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy):
 
                         configs_total += 1
 
-                        print(str(vA))
-                        print("============")
+                        if debug:
+                            print(str(vA))
+                            print("============")
                         #print(configsIso)
                         #print("============")
 
                         if str(vA) not in configsIso:
                             configs_unav += 1
-                            print("NO:", (str(nA), str(v), str(vA)))
+                            if debug:
+                                print("NO:", (str(nA), str(v), str(vA)))
                             continue
                         else:
-                            print("YES:", (str(nA), str(v), str(vA)))
+                            if debug:
+                                print("YES:", (str(nA), str(v), str(vA)))
 
                         #print("## ConnectivityGraphs found (%s)" % (len(list(db.isomorphismGraphs(str(tuple(nA)), str(tuple(v)))))))
                         #print("## Atoms available (n) %s / Valence %s" % (str(tuple(nA)), str(tuple(v))))
 
                         mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
-                        print("## Mols (in memory):", mol_comb)
-                        print("## Atoms Available (indexes):", atoms_available)
-                        print("## Atoms to remove (dummies):", atoms_to_remove)
-                        print("## Type of bonds to form:", bond_types)
+                        if debug:
+                            print("## Mols (in memory):", mol_comb)
+                            print("## Atoms Available (indexes):", atoms_available)
+                            print("## Atoms to remove (dummies):", atoms_to_remove)
+                            print("## Type of bonds to form:", bond_types)
                         iso_n = 0
                         for edges in db.isomorphism_graphs(configsIso[str(vA)]): # EDGES
 
                             iso_n += 1
-                            print("## ISO {}".format(iso_n))
+                            if debug:
+                                print("## ISO {}".format(iso_n))
 
-                            print(edges)
-                            print("1: Add bonds")
+                            if debug:
+                                print(edges)
+                                print("1: Add bonds")
                             mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
                             if mol_e is None:
                                 continue
-                            print("2: Add bonds")
+                            if debug:
+                                print("2: Add bonds")
 
                             atoms_to_remove.sort(reverse=True)
                             [mol_e.RemoveAtom(a) for a in atoms_to_remove]
@@ -249,12 +272,19 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy):
                             try:
                                 Chem.Kekulize(molOut)
                             except:
-                                print("Can't kekulize mol ISO: {}".format(iso_n))
+                                if debug:
+                                    print("Can't kekulize mol ISO: {}".format(iso_n))
                                 continue
 
                             # Draw.MolToFile(molOut, "main_after_" + "-".join(map(str, atoms_available)) + '.png')
-                            out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut, kekuleSmiles=True), str([item["smiles"] for item in lll])))
-                            print("## smi (result): {}".format(Chem.MolToSmiles(molOut, kekuleSmiles=True))) #, bond_types
-                        print(configs_total, configs_total)
-                        print("## Percentage of isomorphism/isomorphism data available ({} - {}): ".format(round((configs_total - configs_unav) / float(configs_total), 2) , configs_total - configs_unav))
+                            try:
+                                out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut, kekuleSmiles=True), str([item["smiles"] for item in lll])))
+                            except RuntimeError:
+                                if debug:
+                                    print("Bad bond type violation")
+                            if debug:
+                                print("## smi (result): {}".format(Chem.MolToSmiles(molOut, kekuleSmiles=True))) #, bond_types
+                        if debug:
+                            print(configs_total, configs_total)
+                            print("## Percentage of isomorphism/isomorphism data available ({} - {}): ".format(round((configs_total - configs_unav) / float(configs_total), 2) , configs_total - configs_unav))
     out.close()

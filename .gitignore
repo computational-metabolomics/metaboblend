@@ -101,7 +101,9 @@ ENV/
 
 *~
 
+# DB Files
 *.pkl
 *.sqlite
 
-
+# ignore changes to scripts for testing
+scripts/results/
