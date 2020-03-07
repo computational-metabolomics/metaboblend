@@ -148,7 +148,7 @@ class SubstructureDb:
         return substructure_graph
 
     def extended_substructure_network(self, substructure_graph, unique_hmdb_ids, include_parents=False):
-        # more extensive connectivity, allows inclusion of original metabolites
+        # slower(?) method that allows inclusion of original metabolites
 
         # add node for each parent structure
         for unique_hmdb_id in unique_hmdb_ids:
@@ -156,7 +156,7 @@ class SubstructureDb:
 
         # add edge for each linked parent structure and substructure
         self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                                    (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
+                            (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
@@ -177,7 +177,6 @@ class SubstructureDb:
         return substructure_graph
 
     def default_substructure_network(self, substructure_graph, unique_hmdb_ids):
-        # more efficient method with less extensive edge connectivity
         # add edges by walking through hmdbid_substructures
         for unique_hmdb_id in unique_hmdb_ids:
             self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
@@ -214,18 +213,37 @@ class SubstructureDb:
         mass_values.sort()
         return mass_values
 
-    def select_ecs(self, exact_mass, heavy_atoms, accuracy):
-        self.cursor.execute("""SELECT DISTINCT 
-                                   C, 
-                                   H, 
-                                   N, 
-                                   O, 
-                                   P, 
-                                   S 
-                               FROM substructures 
-                               WHERE heavy_atoms in ({})
-                               AND exact_mass__{} = {}
-                            """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
+    def select_ecs(self, exact_mass, heavy_atoms, accuracy=None, ppm=None):
+        if ppm is None:
+            self.cursor.execute("""SELECT DISTINCT 
+                                               C, 
+                                               H, 
+                                               N, 
+                                               O, 
+                                               P, 
+                                               S 
+                                           FROM substructures 
+                                           WHERE heavy_atoms in ({})
+                                           AND exact_mass__{} = {}
+                                        """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
+
+        else:
+            error = (exact_mass / 1000000) * ppm
+
+            self.cursor.execute("""SELECT DISTINCT 
+                                                       C, 
+                                                       H, 
+                                                       N, 
+                                                       O, 
+                                                       P, 
+                                                       S 
+                                                   FROM substructures 
+                                                   WHERE heavy_atoms in ({})
+                                                   AND exact_mass < {}
+                                                   AND exact_mass > {}
+                                                """.format(",".join(map(str, heavy_atoms)), exact_mass + error,
+                                                           exact_mass - error))
+
         return self.cursor.fetchall()
 
     def paths(self, tree, cur=()):
@@ -348,7 +366,6 @@ class SubstructureDb:
 
 def get_substructure(mol, idxs_edges_subgraph, debug=False):
     atom_idxs_subgraph = []
-    
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
         a1 = b.GetBeginAtomIdx()
@@ -391,9 +408,9 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if atom.GetIdx() in dummies:
 
             for atom_n in atom.GetNeighbors():
-                
+
                 if atom_n.GetSymbol() == "*":
-                    continue
+                    continue  # do not count dummies for valence calculations
                 elif atom_n.GetIdx() not in degree_atoms:
                     degree_atoms[atom_n.GetIdx()] = 1
                 else:
@@ -486,10 +503,10 @@ def _filter_hmdb_records(records):
                 # print record['HMDB_ID'], record['smiles'], "+/-"
                 continue
 
-            try:
-                print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
-            except KeyError:
-                print(record['accession'])
+            # try:
+            #     print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
+            # except KeyError:
+            #     print(record['accession'])
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
