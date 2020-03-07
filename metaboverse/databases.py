@@ -194,7 +194,7 @@ class SubstructureDb:
 
         return substructure_graph
 
-    def select_mass_values(self, accuracy, heavy_atoms, max_valence, masses, db):
+    def select_mass_values(self, accuracy, heavy_atoms, max_valence, masses):
         mass_values = []
         filter_mass = ""
         if type(masses) == list:
@@ -213,24 +213,8 @@ class SubstructureDb:
         mass_values.sort()
         return mass_values
 
-    def select_ecs(self, exact_mass, heavy_atoms, accuracy=None, ppm=None):
-        if ppm is None:
-            self.cursor.execute("""SELECT DISTINCT 
-                                               C, 
-                                               H, 
-                                               N, 
-                                               O, 
-                                               P, 
-                                               S 
-                                           FROM substructures 
-                                           WHERE heavy_atoms in ({})
-                                           AND exact_mass__{} = {}
-                                        """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
-
-        else:
-            error = (exact_mass / 1000000) * ppm
-
-            self.cursor.execute("""SELECT DISTINCT 
+    def select_ecs(self, exact_mass, heavy_atoms, accuracy):
+        self.cursor.execute("""SELECT DISTINCT 
                                                        C, 
                                                        H, 
                                                        N, 
@@ -239,10 +223,8 @@ class SubstructureDb:
                                                        S 
                                                    FROM substructures 
                                                    WHERE heavy_atoms in ({})
-                                                   AND exact_mass < {}
-                                                   AND exact_mass > {}
-                                                """.format(",".join(map(str, heavy_atoms)), exact_mass + error,
-                                                           exact_mass - error))
+                                                   AND exact_mass__{} = {}
+                                                """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
 
         return self.cursor.fetchall()
 

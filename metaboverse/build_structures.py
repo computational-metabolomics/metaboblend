@@ -10,7 +10,7 @@ def subset_sum(l, mass, toll=0.001):
     if mass < -toll:
         return
     elif len(l) == 0:
-        if mass >= -toll and mass <= toll:
+        if -toll <= mass <= toll:
             yield []
         return
 
@@ -136,7 +136,7 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
     mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [], db)
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
-    configsIso = db.k_configs()
+    configs_iso = db.k_configs()
     out = open(fn_out, "w")
 
     if debug:
@@ -151,7 +151,7 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
             print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
             print("------------------------------------------------------")
 
-        build_from_subsets(configsIso, subsets_r2, mc, db, out, heavy_atoms, debug)
+        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug)
 
     out.close()
     
@@ -160,31 +160,32 @@ def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accur
     loss = exact_mass - fragment_mass
     exact_mass__1 = round(loss)
     exact_mass__0_0001 = round(loss, 4)
-    tolerance = (loss / 1000000) * ppm
 
+    tolerance = (loss / 1000000) * ppm
     if tolerance < 0.001:
         tolerance = 0.001
     else:
         tolerance = round(tolerance, 4)
 
-    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [], db)
+    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [])
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
-    configsIso = db.k_configs()
+    configs_iso = db.k_configs()
+    out = open(fn_out, "w")
 
     for ss_grp in subsets:
 
-        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp, db)
+        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
         # append fragment to subsets
         for i, subset in enumerate(subsets_r2):
-            subsets_r2[i] = [round(fragment_mass, 4)] + subset
+            subsets_r2[i] = [round(sum(exact_mass - subset), 4)] + subset
 
-        build_from_subsets(configsIso, subsets_r2, mc, db, out, heavy_atoms, debug)
+        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug)
 
 
-def build_from_subsets(configsIso, subsets_r2, mc, db, out, heavy_atoms, debug=False):
+def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug=False):
     for ss2_grp in subsets_r2:
         list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001")
 
@@ -240,10 +241,10 @@ def build_from_subsets(configsIso, subsets_r2, mc, db, out, heavy_atoms, debug=F
                     if debug:
                         print(str(vA))
                         print("============")
-                    # print(configsIso)
+                    # print(configs_iso)
                     # print("============")
 
-                    if str(vA) not in configsIso:
+                    if str(vA) not in configs_iso:
                         if debug:
                             print("NO:", (str(nA), str(v), str(vA)))
                         continue
@@ -261,7 +262,7 @@ def build_from_subsets(configsIso, subsets_r2, mc, db, out, heavy_atoms, debug=F
                         print("## Atoms to remove (dummies):", atoms_to_remove)
                         print("## Type of bonds to form:", bond_types)
                     iso_n = 0
-                    for edges in db.isomorphism_graphs(configsIso[str(vA)]):  # EDGES
+                    for edges in db.isomorphism_graphs(configs_iso[str(vA)]):  # EDGES
 
                         iso_n += 1
                         if debug:
