@@ -106,4 +106,4 @@ ENV/
 *.sqlite
 
 # ignore changes to scripts for testing
-scripts/results/
+scripts/

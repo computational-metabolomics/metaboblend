@@ -133,7 +133,7 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
     exact_mass__1 = round(exact_mass)
     exact_mass__0_0001 = round(exact_mass, 4)
 
-    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [], db)
+    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [])
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
     configs_iso = db.k_configs()
@@ -144,7 +144,7 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
         print("------------------------------------------------------")
     for ss_grp in subsets:
 
-        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp, db)
+        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001))
 
         if debug:
