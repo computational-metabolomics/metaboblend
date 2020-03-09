@@ -156,7 +156,7 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
     out.close()
     
     
-def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass=None, ppm=None, debug=False):
+def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass, ppm, debug=False):
     loss = exact_mass - fragment_mass
     exact_mass__1 = round(loss)
     exact_mass__0_0001 = round(loss, 4)
@@ -180,7 +180,7 @@ def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accur
 
         # append fragment to subsets
         for i, subset in enumerate(subsets_r2):
-            subsets_r2[i] = [round(sum(exact_mass - subset), 4)] + subset
+            subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
 
         build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug)
 
