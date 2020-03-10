@@ -29,10 +29,7 @@ def combine_ecs(ss2_grp, heavy_atoms, db, accuracy=None, ppm=None):
     ecs = []
 
     for i in range(len(ss2_grp)):
-        if ppm is None:
-            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy)
-        else:
-            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy, ppm=ppm)
+        atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy, ppm=ppm)
 
         if len(atoms) == 0:
             return []
@@ -130,12 +127,12 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 
 def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass=None, ppm=None, debug=False):
 
-    if fragment_mass is None: # standard build method
+    if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
         exact_mass__0_0001 = round(exact_mass, 4)
 
         tolerance = 0.001
-    else: # prescribed substructure build method
+    else:  # prescribed substructure build method
         loss = exact_mass - fragment_mass
         exact_mass__1 = round(loss)
         exact_mass__0_0001 = round(loss, 4)
@@ -178,10 +175,7 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragme
 
 def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=None, debug=False):
     for ss2_grp in subsets_r2:
-        if ppm is None:
-            list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001")
-        else:
-            list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001", ppm)
+        list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001", ppm)
 
         if len(list_ecs) == 0:
             continue
