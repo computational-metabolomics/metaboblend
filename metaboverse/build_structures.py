@@ -128,10 +128,23 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
     return mol_edit
 
 
-def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, debug=False):
+def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass=None, ppm=None, debug=False):
 
-    exact_mass__1 = round(exact_mass)
-    exact_mass__0_0001 = round(exact_mass, 4)
+    if fragment_mass is None: # standard build method
+        exact_mass__1 = round(exact_mass)
+        exact_mass__0_0001 = round(exact_mass, 4)
+
+        tolerance = 0.001
+    else: # prescribed substructure build method
+        loss = exact_mass - fragment_mass
+        exact_mass__1 = round(loss)
+        exact_mass__0_0001 = round(loss, 4)
+
+        tolerance = (loss / 1000000) * ppm
+        if tolerance < 0.001:
+            tolerance = 0.001
+        else:
+            tolerance = round(tolerance, 4)
 
     mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [])
     subsets = list(subset_sum(mass_values, exact_mass__1))
@@ -140,49 +153,27 @@ def standard_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accurac
     out = open(fn_out, "w")
 
     if debug:
-        print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values), len(subsets)))
+        print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values),
+                                                                              len(subsets)))
         print("------------------------------------------------------")
-    for ss_grp in subsets:
-
-        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp)
-        subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001))
-
-        if debug:
-            print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
-            print("------------------------------------------------------")
-
-        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug)
-
-    out.close()
-    
-    
-def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass, ppm, debug=False):
-    loss = exact_mass - fragment_mass
-    exact_mass__1 = round(loss)
-    exact_mass__0_0001 = round(loss, 4)
-
-    tolerance = (loss / 1000000) * ppm
-    if tolerance < 0.001:
-        tolerance = 0.001
-    else:
-        tolerance = round(tolerance, 4)
-
-    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [])
-    subsets = list(subset_sum(mass_values, exact_mass__1))
-
-    configs_iso = db.k_configs()
-    out = open(fn_out, "w")
-
     for ss_grp in subsets:
 
         mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
-        # append fragment to subsets
-        for i, subset in enumerate(subsets_r2):
-            subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
+        if fragment_mass is not None:
+            for i, subset in enumerate(subsets_r2):
+                subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
+
+        if debug:
+            print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001,
+                                                                                   len(mass_values_r2),
+                                                                                   len(subsets_r2)))
+            print("------------------------------------------------------")
 
         build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm, debug)
+
+    out.close()
 
 
 def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=None, debug=False):
