@@ -32,7 +32,7 @@ def combine_ecs(ss2_grp, heavy_atoms, db, accuracy=None, ppm=None):
         if ppm is None:
             atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy)
         else:
-            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, ppm=ppm)
+            atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy, ppm=ppm)
 
         if len(atoms) == 0:
             return []
@@ -182,12 +182,15 @@ def prescribed_build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accur
         for i, subset in enumerate(subsets_r2):
             subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
 
-        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug)
+        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm, debug)
 
 
-def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, debug=False):
+def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=None, debug=False):
     for ss2_grp in subsets_r2:
-        list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001")
+        if ppm is None:
+            list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001")
+        else:
+            list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001", ppm)
 
         if len(list_ecs) == 0:
             continue

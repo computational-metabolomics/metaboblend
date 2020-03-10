@@ -213,7 +213,15 @@ class SubstructureDb:
         mass_values.sort()
         return mass_values
 
-    def select_ecs(self, exact_mass, heavy_atoms, accuracy):
+    def select_ecs(self, exact_mass, heavy_atoms, accuracy, ppm=None):
+        if ppm is None:
+            mass_statement = "= " + str(exact_mass)
+        else:
+            tolerance = (exact_mass / 1000000) * ppm
+            mass_statement = "< {} AND exact_mass__{} > {}".format(exact_mass + tolerance,
+                                                                   accuracy,
+                                                                   exact_mass - tolerance)
+            
         self.cursor.execute("""SELECT DISTINCT 
                                                        C, 
                                                        H, 
@@ -223,8 +231,8 @@ class SubstructureDb:
                                                        S 
                                                    FROM substructures 
                                                    WHERE heavy_atoms in ({})
-                                                   AND exact_mass__{} = {}
-                                                """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
+                                                   AND exact_mass__{} {}
+                                                """.format(",".join(map(str, heavy_atoms)), accuracy, mass_statement))
 
         return self.cursor.fetchall()
 
