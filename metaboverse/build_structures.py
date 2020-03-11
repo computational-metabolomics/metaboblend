@@ -162,6 +162,7 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragme
             for i, subset in enumerate(subsets_r2):
                 subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
 
+
         if debug:
             print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001,
                                                                                    len(mass_values_r2),
@@ -271,6 +272,7 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=No
                         molOut = mol_e.GetMol()
                         try:
                             Chem.Kekulize(molOut)
+                            Chem.SanitizeMol(molOut)
                         except:
                             if debug:
                                 print("Can't kekulize mol ISO: {}".format(iso_n))
