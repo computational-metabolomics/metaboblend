@@ -18,8 +18,8 @@ install:
   - python setup.py install
 
 script:
-  - dimspy --help
-  - coverage run --source dimspy setup.py test
+  - metaboverse --help
+  - coverage run --source metaboverse setup.py test
 
 after_script:
   - python -m codecov
