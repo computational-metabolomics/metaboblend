@@ -41,7 +41,7 @@ MetaboVerse is licensed under the GNU General Public License v3.0 (see `LICENSE 
 
 
 .. |Build Status (Travis)| image:: https://img.shields.io/travis/computational-metabolomics/metaboverse.svg?style=flat&maxAge=3600&label=Travis-CI
-   :target: https://travis-ci.org/computational-metabolomics/metaboverse
+   :target: https://travis-ci.com/computational-metabolomics/metaboverse
 
 .. |Build Status (AppVeyor)| image:: https://img.shields.io/appveyor/ci/RJMW/metaboverse.svg?style=flat&maxAge=3600&label=AppVeyor
    :target: https://ci.appveyor.com/project/RJMW/metaboverse/branch/master
