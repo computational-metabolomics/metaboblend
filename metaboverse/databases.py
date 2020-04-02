@@ -1,9 +1,29 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright © 2019-2020 Ralf Weber
+#
+# This file is part of MetaboVerse.
+#
+# MetaboVerse is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# MetaboVerse is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
+#
+
 import io
 import os
 from io import BytesIO
 import subprocess
 import pickle
-import pprint
 import sqlite3
 import sys
 import tempfile
@@ -13,7 +33,7 @@ import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
-from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
+from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
 
 sqlite3.register_converter("PICKLE", pickle.loads)
 

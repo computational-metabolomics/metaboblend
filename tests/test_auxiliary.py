@@ -19,7 +19,19 @@
 # along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-__author__ = 'Ralf Weber (r.j.weber@bham.ac.uk)'
-__credits__ = 'Ralf Weber (r.j.weber@bham.ac.uk)'
-__version__ = '0.1.0'
-__license__ = 'GPLv3'
+
+import os
+import unittest
+
+import numpy as np
+from metaboverse import *
+
+
+class AuxiliaryTestCase(unittest.TestCase):
+
+    def test_function(self):
+        pass
+
+
+if __name__ == '__main__':
+    unittest.main()

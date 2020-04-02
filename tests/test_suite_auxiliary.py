@@ -19,7 +19,20 @@
 # along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-__author__ = 'Ralf Weber (r.j.weber@bham.ac.uk)'
-__credits__ = 'Ralf Weber (r.j.weber@bham.ac.uk)'
-__version__ = '0.1.0'
-__license__ = 'GPLv3'
+
+import sys
+import unittest
+from pathlib import Path
+
+from . import test_auxiliary
+
+sys.path.insert(0, str(Path(__file__).parent.parent.resolve()))
+
+
+if __name__ == '__main__':
+    suite = unittest.TestSuite()
+
+    suite.addTest(unittest.findTestCases(test_auxiliary))
+
+    report = os.path.join(os.path.abspath(os.path.join(__file__, os.pardir)), 'results', 'results_test_suite_auxiliary')
+    runTestSuite(suite, report, title = 'Process Test Suite Report', verbosity = 2)
