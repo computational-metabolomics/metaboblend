@@ -11,11 +11,32 @@ from collections import OrderedDict
 import xml.etree.ElementTree as etree
 import networkx as nx
 from rdkit import Chem
+from rdkit.Chem import Recap
+from rdkit.Chem import BRICS
 from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
 
 sqlite3.register_converter("PICKLE", pickle.loads)
 
-def parse_xml(source, encoding="utf8"):
+
+def reformat_xml(source, encoding="utf8"):
+    with io.open(source, "r", encoding=encoding) as xml:
+        xml_contents = xml.readlines()
+        if "hmdb" in xml_contents[1]:
+            return source
+
+        xml_contents.insert(1, "<hmdb xmlns=\"http://www.hmdb.ca\"> \n")
+
+    with io.open(source, "w", encoding=encoding) as xml:
+        xml_contents = "".join(xml_contents)
+        xml.write(xml_contents)
+        xml.write("</hmdb>")
+
+    return source
+
+
+def parse_xml(source, encoding="utf8", reformat=True):
+    if reformat:
+        reformat_xml(source, encoding)
 
     with io.open(source, "r", encoding=encoding) as inp:
         record_out = OrderedDict()
@@ -76,7 +97,7 @@ class SubstructureDb:
         if self.db2 is not None:
             self.cursor.execute("""ATTACH DATABASE '%s' as 'graphs';""" % self.db2)
 
-    def select_compounds(self, cpds = []):
+    def select_compounds(self, cpds=[]):
         if len(cpds) > 0:
             sql = " WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
         else:
@@ -86,7 +107,94 @@ class SubstructureDb:
                             SMILES_RDKIT, SMILES_RDKIT_KEK from compounds%s""" % sql)
         return self.cursor.fetchall()
 
-    def select_mass_values(self, accuracy, heavy_atoms, max_valence, masses, db):
+    def filter_hmdbid_substructures(self, min_node_weight):
+        self.cursor.execute('DROP TABLE IF EXISTS unique_hmdbid')
+        self.cursor.execute('DROP TABLE IF EXISTS filtered_hmdbid_substructures')
+
+        self.cursor.execute("""create table unique_hmdbid as select distinct HMDBID from compounds""")
+
+        self.cursor.execute("""create table filtered_hmdbid_substructures as
+                            select smiles_rdkit_kek, COUNT(*) from hmdbid_substructures
+                            group by smiles_rdkit_kek having COUNT(*) >=%s""" % min_node_weight)
+
+        return self.cursor.fetchall()
+
+    def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
+        substructure_graph = nx.Graph()
+        self.filter_hmdbid_substructures(min_node_weight)
+
+        self.cursor.execute("""select * from unique_hmdbid""")
+        unique_hmdb_ids = self.cursor.fetchall()
+
+        self.cursor.execute("""select * from filtered_hmdbid_substructures""")
+        # add node for each unique substructure, weighted by count
+        for unique_substructure in self.cursor.fetchall():
+            substructure_graph.add_node(unique_substructure[0], weight=unique_substructure[1])
+
+        # generate different flavours of network
+        if method == "default":
+            substructure_graph = self.default_substructure_network(substructure_graph, unique_hmdb_ids)
+        elif method == "extended":
+            substructure_graph = self.extended_substructure_network(substructure_graph, unique_hmdb_ids,
+                                                                    include_parents=False)
+        elif method == "parent_structure_linkage":
+            substructure_graph = self.extended_substructure_network(substructure_graph, unique_hmdb_ids,
+                                                                    include_parents=True)
+
+        # remove isolated nodes
+        if remove_isolated:
+            substructure_graph.remove_nodes_from(list(nx.isolates(substructure_graph)))
+
+        return substructure_graph
+
+    def extended_substructure_network(self, substructure_graph, unique_hmdb_ids, include_parents=False):
+        # slower(?) method that allows inclusion of original metabolites
+
+        # add node for each parent structure
+        for unique_hmdb_id in unique_hmdb_ids:
+            substructure_graph.add_node(unique_hmdb_id[0])
+
+        # add edge for each linked parent structure and substructure
+        self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
+                            (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
+        for hmdbid_substructures in self.cursor.fetchall():
+            substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
+
+        if not include_parents:
+            # remove parent structures and replace with linked, weighted substructures
+            for unique_hmdb_id in unique_hmdb_ids:
+                for adj1 in substructure_graph.adj[unique_hmdb_id[0]]:
+                    for adj2 in substructure_graph.adj[unique_hmdb_id[0]]:
+                        if substructure_graph.has_edge(adj1, adj2):
+                            substructure_graph[adj1][adj2]['weight'] += 1
+                        else:
+                            substructure_graph.add_edge(adj1, adj2, weight=1)
+                substructure_graph.remove_node(unique_hmdb_id[0])
+
+            # remove self-loops and edges below weight threshold
+            substructure_graph.remove_edges_from(nx.selfloop_edges(substructure_graph))
+
+        return substructure_graph
+
+    def default_substructure_network(self, substructure_graph, unique_hmdb_ids):
+        # add edges by walking through hmdbid_substructures
+        for unique_hmdb_id in unique_hmdb_ids:
+            self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
+                                (select smiles_rdkit_kek from filtered_hmdbid_substructures) and hmdbid = '%s'"""
+                                % unique_hmdb_id)
+            nodes = []
+            for substructure in self.cursor.fetchall():
+                for node in nodes:
+                    if substructure_graph.has_edge(substructure[1], node):
+                        substructure_graph[substructure[1]][node]['weight'] += 1
+                    else:
+                        substructure_graph.add_edge(substructure[1], node, weight=1)
+
+                nodes.append(substructure[1])
+
+        return substructure_graph
+
+    def select_mass_values(self, accuracy, heavy_atoms, max_valence, masses):
         mass_values = []
         filter_mass = ""
         if type(masses) == list:
@@ -105,18 +213,27 @@ class SubstructureDb:
         mass_values.sort()
         return mass_values
 
-    def select_ecs(self, exact_mass, heavy_atoms, accuracy):
+    def select_ecs(self, exact_mass, heavy_atoms, accuracy, ppm=None):
+        if ppm is None:
+            mass_statement = "= " + str(exact_mass)
+        else:
+            tolerance = (exact_mass / 1000000) * ppm
+            mass_statement = "< {} AND exact_mass__{} > {}".format(exact_mass + tolerance,
+                                                                   accuracy,
+                                                                   exact_mass - tolerance)
+            
         self.cursor.execute("""SELECT DISTINCT 
-                                   C, 
-                                   H, 
-                                   N, 
-                                   O, 
-                                   P, 
-                                   S 
-                               FROM substructures 
-                               WHERE heavy_atoms in ({})
-                               AND exact_mass__{} = {}
-                            """.format(",".join(map(str, heavy_atoms)), accuracy, exact_mass))
+                                                       C, 
+                                                       H, 
+                                                       N, 
+                                                       O, 
+                                                       P, 
+                                                       S 
+                                                   FROM substructures 
+                                                   WHERE heavy_atoms in ({})
+                                                   AND exact_mass__{} {}
+                                                """.format(",".join(map(str, heavy_atoms)), accuracy, mass_statement))
+
         return self.cursor.fetchall()
 
     def paths(self, tree, cur=()):
@@ -124,7 +241,7 @@ class SubstructureDb:
             yield cur
         else:
             for n, s in tree.items():
-                for path in self.paths(s, cur+(n,)):
+                for path in self.paths(s, cur + (n,)):
                     yield path
 
     def isomorphism_graphs(self, id_pkl):
@@ -155,7 +272,8 @@ class SubstructureDb:
                                    AND O = {}
                                    AND P = {}
                                    AND S = {}
-                                """.format(l_atoms[i][0], l_atoms[i][1], l_atoms[i][2], l_atoms[i][3], l_atoms[i][4], l_atoms[i][5]))
+                                """.format(l_atoms[i][0], l_atoms[i][1], l_atoms[i][2], l_atoms[i][3], l_atoms[i][4],
+                                           l_atoms[i][5]))
             records = self.cursor.fetchall()
             if len(records) == 0:
                 return []
@@ -237,7 +355,6 @@ class SubstructureDb:
 
 
 def get_substructure(mol, idxs_edges_subgraph, debug=False):
-
     atom_idxs_subgraph = []
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
@@ -258,12 +375,11 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     mol_edit = Chem.EditableMol(mol)
     degree_atoms = {}
 
-    #Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
+    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
 
     for atom in reversed(mol.GetAtoms()):
 
         if atom.GetIdx() in atoms_to_dummy:
-
             mol_edit.ReplaceAtom(atom.GetIdx(), Chem.Atom("*"))
 
     mol = mol_edit.GetMol()
@@ -283,7 +399,9 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
             for atom_n in atom.GetNeighbors():
 
-                if atom_n.GetIdx() not in degree_atoms:
+                if atom_n.GetSymbol() == "*":
+                    continue  # do not count dummies for valence calculations
+                elif atom_n.GetIdx() not in degree_atoms:
                     degree_atoms[atom_n.GetIdx()] = 1
                 else:
                     degree_atoms[atom_n.GetIdx()] += 1
@@ -294,8 +412,9 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if debug:
             print(b.GetBondTypeAsDouble())
             print(b.GetBondType())
+            print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
+                  mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
-        print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(), mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
@@ -313,7 +432,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return None
 
-    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True), #REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True),  # REORDERED ATOM INDEXES,
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -333,7 +452,8 @@ def get_elements(mol, elements=None):
 
 def calculate_exact_mass(mol, exact_mass_elements=None):
     if not exact_mass_elements:
-        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072, "*": -1.007825}
+        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072,
+                               "*": -1.007825}
     exact_mass = 0.0
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
@@ -343,8 +463,12 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     return exact_mass
 
 
-def filter_records(records, hmdb_cpd = None):
+def filter_records(records, db_type="hmdb"):
+    if db_type == "hmdb":
+        yield from _filter_hmdb_records(records)
 
+
+def _filter_hmdb_records(records):
     for record in records:
 
         if "smiles" in record:
@@ -369,7 +493,10 @@ def filter_records(records, hmdb_cpd = None):
                 # print record['HMDB_ID'], record['smiles'], "+/-"
                 continue
 
-            print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
+            # try:
+            #     print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
+            # except KeyError:
+            #     print(record['accession'])
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
@@ -391,14 +518,73 @@ def filter_records(records, hmdb_cpd = None):
             yield record_dict
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
+def get_substructure_bond_idx(prb_mol, ref_mol):
+    if ref_mol.HasSubstructMatch(prb_mol):
+        atom_idx = ref_mol.GetSubstructMatch(prb_mol)
+    else:
+        return None
 
+    bond_idx = ()
+    for atom in ref_mol.GetAtoms():
+        if atom.GetIdx() in atom_idx:
+            for bond in atom.GetBonds():
+                # GetBondBetweenAtoms()
+                if bond.GetBeginAtomIdx() in atom_idx and bond.GetEndAtomIdx() in atom_idx:
+                    if bond.GetIdx() not in bond_idx:
+                        bond_idx = (*bond_idx, bond.GetIdx())
+
+    return bond_idx
+
+
+def subset_sgs_sizes(sgs, n_min, n_max):
+    sgs_new = []
+
+    for i, edge_idxs in enumerate(sgs):
+        edge_idxs_new = []
+
+        for j, bonds in enumerate(edge_idxs):
+            if n_min <= len(bonds) <= n_max:
+                edge_idxs_new.append(bonds)
+
+        if len(edge_idxs_new) > 0:
+            sgs_new.append(edge_idxs_new)
+
+    return sgs_new
+
+
+def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
+    if method == "exhaustive":
+        return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
+
+    elif method == "RECAP":
+        hierarchy = Recap.RecapDecompose(record_dict["mol"])
+        sgs = []
+        for substructure in hierarchy.GetAllChildren().values():
+            substructure = Chem.DeleteSubstructs(substructure.mol, Chem.MolFromSmarts('[#0]'))
+            edge_idxs = get_substructure_bond_idx(substructure, record_dict["mol"])
+            if edge_idxs is not None:
+                sgs.append(edge_idxs)
+        return subset_sgs_sizes([sgs], n_min, n_max)
+
+    elif method == "BRICS":
+        substructures = BRICS.BRICSDecompose(record_dict["mol"])
+        sgs = []
+        for substructure in substructures:
+            substructure = Chem.DeleteSubstructs(Chem.MolFromSmiles(substructure), Chem.MolFromSmarts('[#0]'))
+            edge_idxs = get_substructure_bond_idx(substructure, record_dict["mol"])
+            if edge_idxs is not None:
+                sgs.append(edge_idxs)
+        return subset_sgs_sizes([sgs], n_min, n_max)
+
+
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive"):
     conn = sqlite3.connect(fn_db)
     cursor = conn.cursor()
 
-    records = parse_xml(fn_hmdb)
+    if records is None:
+        records = parse_xml(fn_hmdb, reformat=False)
 
-    for record_dict in filter_records(records, hmdb_cpd):
+    for record_dict in filter_records(records):
 
         cursor.execute("""INSERT OR IGNORE INTO compounds (
                               hmdbid, 
@@ -419,7 +605,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
 
         # Returns a tuple of 2-tuples with bond IDs
 
-        for sgs in Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max):
+        for sgs in get_sgs(record_dict, n_min, n_max, method=method):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)
                 if lib is None:
@@ -501,7 +687,6 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, hmdb_cpd=None):
 
 
 def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None):
-
     conn = sqlite3.connect(db_out)
     cursor = conn.cursor()
 
@@ -525,7 +710,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
     for G, p in calculate_complete_multipartite_graphs(sizes, boxes):
 
         print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])
-        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
         geng_out, err = proc.communicate()
 
         proc.stdout.close()
@@ -545,7 +731,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
             s_gfu.write(graph_to_ri(sG, "subgraph"))
             s_gfu.seek(0)
 
-            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             RI_out, err = proc.communicate()
 
             k_gfu.close()
@@ -559,7 +746,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     mappings.append(eval(line))
 
                 if len(mappings) == 20000:
-                    gi = graph_info(p, sG, mappings,)
+                    gi = graph_info(p, sG, mappings, )
 
                     for vn in gi[0]:
 
@@ -580,21 +767,21 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
 
             if len(mappings) > 0:
                 gi = graph_info(p, sG, mappings, )
-                #job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
-                #jobs.append(job)
+                # job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
+                # jobs.append(job)
 
                 for vn in gi[0]:
 
                     if vn not in subgraphs:
                         subgraphs[vn] = gi[0][vn]
-                        #print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
+                        # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
                     else:
 
                         before = len(subgraphs[vn])
                         for es in gi[0][vn]:
                             if es not in subgraphs[vn]:
                                 subgraphs[vn].append(es)
-                                #print vn, es, result[1][0], result[1][1], len(result[1][1])
+                                # print vn, es, result[1][0], result[1][1], len(result[1][1])
                         after = len(subgraphs[vn])
                         print(before, after)
 
@@ -609,7 +796,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn, sG.number_of_nodes(), sG.number_of_edges())
+                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
+                          sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
                     cursor.execute('''INSERT INTO subgraphs (id_pkl, 
@@ -621,15 +809,15 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                                       nodes_valences,
                                       n_nodes, n_edges) 
                                       values (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
-                                      id_pkl,
-                                      len(subgraphs[vn]),
-                                      line_geng,
-                                      len(p),
-                                      str(p),
-                                      str(vt),
-                                      str(vn),
-                                      sG.number_of_nodes(),
-                                      sG.number_of_edges()))
+                        id_pkl,
+                        len(subgraphs[vn]),
+                        line_geng,
+                        len(p),
+                        str(p),
+                        str(vt),
+                        str(vn),
+                        sG.number_of_nodes(),
+                        sG.number_of_edges()))
                     pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
             conn.commit()
     conn.close()
