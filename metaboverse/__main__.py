@@ -18,3 +18,38 @@
 # You should have received a copy of the GNU General Public License
 # along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
 #
+
+import argparse
+import os
+
+from metaboverse import __version__
+
+from . import databases
+from . import build_structures
+
+
+def main():  # pragma: no cover
+
+    print(("Executing metaboverse version %s." % __version__))
+
+    parser = argparse.ArgumentParser(description='Python package for de novo structural elucidation of small molecules in mass spectrometry-based Metabolomics',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    subparsers = parser.add_subparsers(dest='step')
+
+    parser_a = subparsers.add_parser('to-add', help='to-add')
+
+    parser_a.add_argument('-i', '--input',
+                          type=str, required=True,
+                          help="to-add")
+
+    args = parser.parse_args()
+
+    print(args)
+
+    if args.step == "to-add":
+        pass
+
+
+if __name__ == "__main__":
+    main()

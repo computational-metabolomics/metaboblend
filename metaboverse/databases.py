@@ -33,7 +33,7 @@ import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
-from auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
+from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
 
 sqlite3.register_converter("PICKLE", pickle.loads)
 
