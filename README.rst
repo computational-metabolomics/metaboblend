@@ -32,12 +32,12 @@ will help you to make the PR if you are new to `git`.
 Developers & Contributors
 -------------------------
  - Ralf J. M. Weber (r.j.weber@bham.ac.uk) - `University of Birmingham (UK) <https://www.birmingham.ac.uk/staff/profiles/biosciences/weber-ralf.aspx>`_
- - Jack Gisby () - `University of Birmingham (UK) <http://www.birmingham.ac.uk/index.aspx>`_
+ - Jack Gisby (jackgisby@gmail.com) - `University of Birmingham (UK) <http://www.birmingham.ac.uk/index.aspx>`_
 
 
 Licenses
 --------
-MetaboVerse is licensed under the GNU General Public License v3.0 (see `LICENSE file <https://github.com/computational-metabolomics/metaboverse/blob/master/LICENSE>`_ for licensing information). Copyright © 2017 - 2019 Ralf Weber, Albert Zhou
+MetaboVerse is licensed under the GNU General Public License v3.0 (see `LICENSE file <https://github.com/computational-metabolomics/metaboverse/blob/master/LICENSE>`_ for licensing information). Copyright © 2019 - 2020 Ralf Weber
 
 
 .. |Build Status (Travis)| image:: https://img.shields.io/travis/computational-metabolomics/metaboverse.svg?style=flat&maxAge=3600&label=Travis-CI
