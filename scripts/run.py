@@ -6,7 +6,7 @@ import tempfile
 sys.path.append(os.path.join("..", "metaboverse"))
 from databases import update_substructure_database, create_isomorphism_database
 from databases import SubstructureDb, ConnectivityDb
-from build_structures import standard_build
+from build_structures import build
 
 
 def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
@@ -66,7 +66,7 @@ def build_substructure_database(records, path_input, path_db="../databases/subst
     db.close()
 
 
-def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=2,
+def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_atoms_available=2,
                      path_db_k_graphs="../databases/k_graphs.sqlite",
                      path_pkls="../databases/pkls",
                      path_db="../databases/substructures.sqlite",
@@ -83,7 +83,7 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=2,
         fn_out = os.path.join(path_out, "{}.smi".format(record[0]))
 
         # build & write structures
-        standard_build(list(record[3:9]), record[1], db, fn_out, heavy_atoms, max_valence, accuracy)
+        build(list(record[3:9]), record[1], db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available)
 
         # write figures to svg files
         with open(fn_out) as smiles:
