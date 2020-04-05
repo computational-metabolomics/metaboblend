@@ -149,7 +149,7 @@ def graph_info(sizes, G_subgraph, mappings):
 
     for m in mappings:
 
-        ug = networkx.relabel_nodes(G_subgraph, m, copy=True)
+        ug = nx.relabel_nodes(G_subgraph, m, copy=True)
         vn = valences(sizes, ug)
 
         e = list(ug.edges())
