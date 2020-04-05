@@ -46,11 +46,11 @@ def subset_sum(l, mass, toll=0.001):
         yield [l[0]] + subset
 
 
-def combine_ecs(ss2_grp, heavy_atoms, db, accuracy=None, ppm=None):
+def combine_ecs(ss2_grp, db, table_name, accuracy=None, ppm=None):
     ecs = []
 
     for i in range(len(ss2_grp)):
-        atoms = db.select_ecs(ss2_grp[i], heavy_atoms, accuracy, ppm=ppm)
+        atoms = db.select_ecs(ss2_grp[i], table_name, accuracy, ppm=ppm)
 
         if len(atoms) == 0:
             return []
@@ -146,7 +146,9 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
     return mol_edit
 
 
-def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragment_mass=None, ppm=None, debug=False):
+def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, fragment_mass=None,
+          ppm=None, debug=False):
+    table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
 
     if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
@@ -164,7 +166,7 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragme
         else:
             tolerance = round(tolerance, 4)
 
-    mass_values = db.select_mass_values(str(accuracy), heavy_atoms, max_valence, [])
+    mass_values = db.select_mass_values(str(accuracy), [], table_name)
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
     configs_iso = db.k_configs()
@@ -176,7 +178,7 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragme
         print("------------------------------------------------------")
     for ss_grp in subsets:
 
-        mass_values_r2 = db.select_mass_values("0_0001", heavy_atoms, max_valence, ss_grp)
+        mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
         if fragment_mass is not None:
@@ -190,14 +192,29 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, fragme
                                                                                    len(subsets_r2)))
             print("------------------------------------------------------")
 
-        build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm, debug)
+        build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm, debug)
 
     out.close()
 
 
-def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=None, debug=False):
+def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
+    table_name = "subset_substructures"
+    db.cursor.execute("drop table if exists %s" % table_name)
+    db.cursor.execute("""create table {} as
+                             select * from substructures where
+                                 heavy_atoms in ({}) and
+                                 atoms_available <= {} and
+                                 valence <= {}""".format(table_name,
+                                                         ",".join(map(str, heavy_atoms)),
+                                                         max_valence,
+                                                         max_atoms_available,))
+
+    return table_name
+
+
+def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=None, debug=False):
     for ss2_grp in subsets_r2:
-        list_ecs = combine_ecs(ss2_grp, heavy_atoms, db, "0_0001", ppm)
+        list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
         if len(list_ecs) == 0:
             continue
@@ -216,7 +233,7 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, heavy_atoms, ppm=No
                 if debug:
                     print("Match elemental composition: {}".format(str(sum_ec)))
 
-                ll = db.select_sub_structures(l)
+                ll = db.select_sub_structures(l, table_name)
 
                 if len(ll) == 0:
                     if debug:

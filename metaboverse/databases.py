@@ -214,18 +214,16 @@ class SubstructureDb:
 
         return substructure_graph
 
-    def select_mass_values(self, accuracy, heavy_atoms, max_valence, masses):
+    def select_mass_values(self, accuracy, masses, table_name):
         mass_values = []
         filter_mass = ""
         if type(masses) == list:
             if len(masses) > 0:
-                filter_mass = " AND exact_mass__1 in ({})".format(",".join(map(str, masses)))
+                filter_mass = " WHERE exact_mass__1 in ({})".format(",".join(map(str, masses)))
 
         self.cursor.execute("""SELECT DISTINCT exact_mass__{}
-                                   FROM substructures 
-                               WHERE valence <= {}
-                                   AND heavy_atoms IN ({}){}
-                            """.format(accuracy, max_valence, ",".join(map(str, heavy_atoms)), filter_mass))
+                                   FROM {}{}
+                            """.format(accuracy, table_name, filter_mass))
 
         records = self.cursor.fetchall()
         for record in records:
@@ -233,7 +231,7 @@ class SubstructureDb:
         mass_values.sort()
         return mass_values
 
-    def select_ecs(self, exact_mass, heavy_atoms, accuracy, ppm=None):
+    def select_ecs(self, exact_mass, table_name, accuracy, ppm=None):
         if ppm is None:
             mass_statement = "= " + str(exact_mass)
         else:
@@ -249,10 +247,9 @@ class SubstructureDb:
                                                        O, 
                                                        P, 
                                                        S 
-                                                   FROM substructures 
-                                                   WHERE heavy_atoms in ({})
-                                                   AND exact_mass__{} {}
-                                                """.format(",".join(map(str, heavy_atoms)), accuracy, mass_statement))
+                                                   FROM {} 
+                                                   WHERE exact_mass__{} {}
+                                                """.format(table_name, accuracy, mass_statement))
 
         return self.cursor.fetchall()
 
@@ -279,21 +276,21 @@ class SubstructureDb:
             configs[str(record[1])] = record[0]
         return configs
 
-    def select_sub_structures(self, l_atoms):
+    def select_sub_structures(self, l_atoms, table_name):
 
         subsets = []
         for i in range(len(l_atoms)):
 
             self.cursor.execute("""SELECT DISTINCT lib 
-                                   FROM substructures
+                                   FROM {}
                                    WHERE C = {} 
                                    AND H = {} 
                                    AND N = {} 
                                    AND O = {}
                                    AND P = {}
                                    AND S = {}
-                                """.format(l_atoms[i][0], l_atoms[i][1], l_atoms[i][2], l_atoms[i][3], l_atoms[i][4],
-                                           l_atoms[i][5]))
+                                """.format(table_name, l_atoms[i][0], l_atoms[i][1], l_atoms[i][2],
+                                           l_atoms[i][3], l_atoms[i][4], l_atoms[i][5]))
             records = self.cursor.fetchall()
             if len(records) == 0:
                 return []
@@ -371,6 +368,7 @@ class SubstructureDb:
                                ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
 
     def close(self):
+        self.cursor.execute("drop table if exists subset_substructures")
         self.conn.close()
 
 
