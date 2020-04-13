@@ -36,7 +36,6 @@ def subset_sum(l, mass, toll=0.001):
         return
 
     elif abs(sum(l) - mass) <= toll:
-        # print(abs(sum(l) - mass), sum(l) - mass)
         yield l
         return
 
@@ -146,8 +145,8 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
     return mol_edit
 
 
-def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, fragment_mass=None,
-          ppm=None, debug=False):
+def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
+          fragment_mass=None, ppm=None, debug=False, out_mode="w"):
     table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
 
     if fragment_mass is None:  # standard build method
@@ -166,21 +165,26 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
         else:
             tolerance = round(tolerance, 4)
 
+        max_n_substructures -= 1
+
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
+    print(mass_values)
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
     configs_iso = db.k_configs()
-    out = open(fn_out, "w")
+    out = open(fn_out, out_mode)
 
     if debug:
         print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values),
                                                                               len(subsets)))
         print("------------------------------------------------------")
     for ss_grp in subsets:
+        if len(ss_grp) > max_n_substructures:
+            continue
 
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
-
+        print(subsets_r2)
         if fragment_mass is not None:
             for i, subset in enumerate(subsets_r2):
                 subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
@@ -259,25 +263,25 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                         print("---------------")
 
                     lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
+
                     nA, v, vA = (), (), ()
                     for d in lll:
                         nA = nA + (d["atoms_available"],)
                         v = v + (d["valence"],)
                         vA = vA + (tuple(d["degree_atoms"].values()),)
 
-                    if debug:
-                        print(str(vA))
-                        print("============")
                     # print(configs_iso)
                     # print("============")
 
                     if str(vA) not in configs_iso:
                         if debug:
                             print("NO:", (str(nA), str(v), str(vA)))
+                            print("============")
                         continue
                     else:
                         if debug:
                             print("YES:", (str(nA), str(v), str(vA)))
+                            print("============")
 
                     # print("## ConnectivityGraphs found (%s)" % (len(list(db.isomorphismGraphs(str(tuple(nA)), str(tuple(v)))))))
                     # print("## Atoms available (n) %s / Valence %s" % (str(tuple(nA)), str(tuple(v))))
