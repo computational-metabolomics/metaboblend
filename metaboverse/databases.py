@@ -704,7 +704,8 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
     conn.close()
 
 
-def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None):
+def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None, debug=True):
+    
     conn = sqlite3.connect(db_out)
     cursor = conn.cursor()
 
@@ -727,7 +728,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
 
     for G, p in calculate_complete_multipartite_graphs(sizes, boxes):
 
-        print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])
+        if debug:
+            print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
         proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         geng_out, err = proc.communicate()
@@ -736,8 +738,9 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
         proc.stderr.close()
 
         for i, line_geng in enumerate(geng_out.split()):
-
-            print(line_geng)
+            
+            if debug:
+                print(line_geng)
 
             sG = nx.read_graph6(BytesIO(line_geng))
 
@@ -809,13 +812,17 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
 
                     root = {}
                     for fr in subgraphs[vn]:
+                        if debug:
+                            draw_subgraph(fr, eval(vn))
+
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
-                          sG.number_of_nodes(), sG.number_of_edges())
+                    if debug:
+                        print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
+                              sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
                     cursor.execute('''INSERT INTO subgraphs (id_pkl, 
