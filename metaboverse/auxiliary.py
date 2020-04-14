@@ -21,6 +21,7 @@
 
 import itertools
 import networkx as nx
+import pylab as plt
 
 
 # from animation import viz
@@ -118,18 +119,33 @@ def match_subgraphs(ug_comp, usg, sgi, sizes):
     return frags
 
 
-def draw_subgraph(usg_nx, edges, cD):
+def draw_subgraph(edges, vn):
+    plt.title(str(vn))
 
-    usg_test = usg_nx.copy()
-    es_temp = [(str(e[0]), str(e[1])) for e in edges]
-    usg_test.add_edges_from(es_temp)
+    sG = nx.Graph()
+    sG.add_edges_from([(e[0], e[1]) for e in edges])
 
-    pos = nx.circular_layout(usg_test)
-    nx.draw(usg_test, pos)
+    pos = nx.circular_layout(sG)
+    nx.draw(sG, pos)
+
+    cols = ["b", "r", "g", "y"]
+    cD = {}
+
+    i = 0
+    for j, substructure in enumerate(vn):
+        if len(substructure) == 1:
+            cD[(i,)] = cols[j]
+            i += 1
+        elif len(substructure) == 2:
+            cD[(i, i + 1)] = cols[j]
+            i += 2
+
     for k in cD.keys():
-        nx.draw_networkx_nodes(usg_test, pos=pos, nodelist=k, node_color=cD[k], node_size=800, alpha=1.0)
-        nx.draw_networkx_nodes(usg_test, pos=pos, nodelist=[str(n) for n in k], node_color=cD[k], node_size=800, alpha=1.0, node_shape='s')
-    nx.draw_networkx_labels(usg_test, pos=pos)
+        nx.draw_networkx_nodes(sG, pos=pos, nodelist=k, node_color=cD[k], node_size=800, alpha=1.0)
+
+    nx.draw_networkx_labels(sG, pos=pos)
+
+    plt.show()
 
 
 def graph_to_ri(graph, name):
@@ -143,13 +159,13 @@ def graph_to_ri(graph, name):
     return out
 
 
-def graph_info(sizes, G_subgraph, mappings):
+def graph_info(sizes, sG, mappings):
 
     frags = {}
 
     for m in mappings:
 
-        ug = nx.relabel_nodes(G_subgraph, m, copy=True)
+        ug = nx.relabel_nodes(sG, m, copy=True)
         vn = valences(sizes, ug)
 
         e = list(ug.edges())
