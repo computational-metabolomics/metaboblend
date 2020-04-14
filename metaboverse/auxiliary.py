@@ -152,7 +152,7 @@ def graph_to_ri(graph, name):
     out = "#{}\n".format(name)
     out += "{}\n".format(graph.number_of_nodes())
     for n in graph.nodes():
-        out += "n\n"#.format(n)
+        out += "n\n"
     out += "{}\n".format(graph.number_of_edges())
     for e in graph.edges():
         out += "{} {} e\n".format(e[0], e[1])
@@ -177,4 +177,13 @@ def graph_info(sizes, sG, mappings):
             if e not in frags[str(vn)]:
                 frags[str(vn)].append(e)
 
-    return frags, (sizes, G_subgraph, mappings)
+    return frags, (sizes, sG, mappings)
+
+
+def sort_subgraphs(subgraphs):
+    sorted_subgraphs = set()
+
+    for fr in subgraphs:
+        sorted_subgraphs.add(tuple(sorted([tuple(sorted(e)) for e in fr])))
+
+    return [list(fr) for fr in sorted_subgraphs]
