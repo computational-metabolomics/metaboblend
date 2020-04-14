@@ -780,7 +780,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
 
             if len(subgraphs) > 0:
                 for vn in subgraphs:
-
+                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])
                     root = {}
 
                     for fr in subgraphs[vn]:
