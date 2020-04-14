@@ -709,8 +709,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
     conn = sqlite3.connect(db_out)
     cursor = conn.cursor()
 
-    cursor.execute('''DROP TABLE IF EXISTS subgraphs''')
-    cursor.execute('''CREATE TABLE subgraphs (
+    cursor.execute("""DROP TABLE IF EXISTS subgraphs""")
+    cursor.execute("""CREATE TABLE subgraphs (
                           id_pkl INTEGER,
                           n_graphs INTEGER,
                           graph6 TEXT,
@@ -721,7 +721,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                           n_nodes INTEGER,
                           n_edges INTEGER,
                           PRIMARY KEY (graph6, k_partite, nodes_valences)
-                   );''')
+                   );""")
     conn.commit()
 
     id_pkl = 0
@@ -766,51 +766,23 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                 if line[0] == "{":
                     mappings.append(eval(line))
 
-                if len(mappings) == 20000:
-                    gi = graph_info(p, sG, mappings, )
-
-                    for vn in gi[0]:
-
-                        if vn not in subgraphs:
-                            subgraphs[vn] = gi[0][vn]
-                            # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
-                        else:
-
-                            before = len(subgraphs[vn])
-                            for es in gi[0][vn]:
-                                if es not in subgraphs[vn]:
-                                    subgraphs[vn].append(es)
-                                    # print vn, es, result[1][0], result[1][1], len(result[1][1])
-                            after = len(subgraphs[vn])
-                            print(before, after)
-
-                    mappings = []
-
             if len(mappings) > 0:
                 gi = graph_info(p, sG, mappings, )
-                # job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
-                # jobs.append(job)
 
                 for vn in gi[0]:
-
                     if vn not in subgraphs:
                         subgraphs[vn] = gi[0][vn]
-                        # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
-                    else:
 
-                        before = len(subgraphs[vn])
+                    else:
                         for es in gi[0][vn]:
                             if es not in subgraphs[vn]:
                                 subgraphs[vn].append(es)
-                                # print vn, es, result[1][0], result[1][1], len(result[1][1])
-                        after = len(subgraphs[vn])
-                        print(before, after)
 
             if len(subgraphs) > 0:
-
                 for vn in subgraphs:
 
                     root = {}
+
                     for fr in subgraphs[vn]:
                         if debug:
                             draw_subgraph(fr, eval(vn))
@@ -825,7 +797,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                               sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
-                    cursor.execute('''INSERT INTO subgraphs (id_pkl, 
+                    cursor.execute("""INSERT INTO subgraphs (id_pkl, 
                                       n_graphs, 
                                       graph6,
                                       k,
@@ -833,7 +805,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                                       k_valences,
                                       nodes_valences,
                                       n_nodes, n_edges) 
-                                      values (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
+                                      values (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
                         id_pkl,
                         len(subgraphs[vn]),
                         line_geng,
