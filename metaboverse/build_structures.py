@@ -322,11 +322,11 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
 
                         # Draw.MolToFile(molOut, "main_after_" + "-".join(map(str, atoms_available)) + '.png')
                         try:
-                            out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut, kekuleSmiles=True),
+                            out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut),
                                                         str([item["smiles"] for item in lll])))
                         except RuntimeError:
                             if debug:
                                 print("Bad bond type violation")
                         if debug:
                             print("## smi (result): {}".format(
-                                Chem.MolToSmiles(molOut, kekuleSmiles=True)))  # , bond_types
+                                Chem.MolToSmiles(molOut)))  # , bond_types

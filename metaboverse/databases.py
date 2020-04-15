@@ -133,9 +133,9 @@ class SubstructureDb:
 
         self.cursor.execute("CREATE TABLE unique_hmdbid AS SELECT DISTINCT hmdbid FROM compounds")
 
-        self.cursor.execute("""create table filtered_hmdbid_substructures as
-                            select smiles_rdkit_kek, COUNT(*) from hmdbid_substructures
-                            group by smiles_rdkit_kek having COUNT(*) >=%s""" % min_node_weight)
+        self.cursor.execute("""CREATE TABLE filtered_hmdbid_substructures AS
+                                   SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
+                                   GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
 
         return self.cursor.fetchall()
 
@@ -172,8 +172,8 @@ class SubstructureDb:
             substructure_graph.add_node(unique_hmdb_id[0])
 
         # add edge for each linked parent structure and substructure
-        self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                            (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
+        self.cursor.execute("""SELECT * FROM hmdbid_substructures WHERE smiles_rdkit IN 
+                                   (SELECT smiles_rdkit FROM filtered_hmdbid_substructures)""")
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
@@ -196,9 +196,9 @@ class SubstructureDb:
     def default_substructure_network(self, substructure_graph, unique_hmdb_ids):
         # add edges by walking through hmdbid_substructures
         for unique_hmdb_id in unique_hmdb_ids:
-            self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                                (select smiles_rdkit_kek from filtered_hmdbid_substructures) and hmdbid = '%s'"""
-                                % unique_hmdb_id)
+            self.cursor.execute("""SELECT * FROM hmdbid_substructures 
+                                       WHERE smiles_rdkit IN (SELECT smiles_rdkit FROM filtered_hmdbid_substructures) 
+                                       AND hmdbid = '%s'""" % unique_hmdb_id)
             nodes = []
             for substructure in self.cursor.fetchall():
                 for node in nodes:
@@ -330,9 +330,9 @@ class SubstructureDb:
                                 lib PICKLE)""")
 
         self.cursor.execute("""CREATE TABLE hmdbid_substructures (
-                              hmdbid TEXT,
-                              smiles_rdkit_kek,
-                              PRIMARY KEY (hmdbid, smiles_rdkit_kek))""")
+                                   hmdbid TEXT,
+                                   smiles_rdkit,
+                                   PRIMARY KEY (hmdbid, smiles_rdkit))""")
 
     def create_indexes(self):
 
@@ -438,7 +438,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return None
 
-    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True),  # REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES,
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -491,12 +491,10 @@ def _filter_hmdb_records(records):
             if len(atom_check) > 0:
                 continue
 
-            smiles = Chem.rdmolfiles.MolToSmiles(mol, kekuleSmiles=True)
-            Chem.rdmolops.Kekulize(mol)
-            smiles_rdkit_kek = Chem.rdmolfiles.MolToSmiles(mol, kekuleSmiles=True)
+            smiles_rdkit = Chem.MolToSmiles(mol)
+            smiles_rdkit_kek = Chem.MolToSmiles(mol, kekuleSmiles=True)
 
-            if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles or "-" in smiles:
-                # print record['HMDB_ID'], record['smiles'], "+/-"
+            if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles_rdkit or "-" in smiles_rdkit:
                 continue
 
             els = get_elements(mol)
@@ -506,7 +504,7 @@ def _filter_hmdb_records(records):
                            'formula': record["chemical_formula"],
                            'exact_mass': round(exact_mass, 6),
                            'smiles': record['smiles'],
-                           'smiles_rdkit': smiles,
+                           'smiles_rdkit': smiles_rdkit,
                            'smiles_rdkit_kek': smiles_rdkit_kek,
                            'C': els['C'],
                            'H': els['H'],
@@ -610,13 +608,13 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                 if lib is None:
                     continue
 
-                smiles_rdkit_kek = Chem.rdmolfiles.MolToSmiles(lib["mol"], kekuleSmiles=True)
+                smiles_rdkit = Chem.rdmolfiles.MolToSmiles(lib["mol"])
 
                 exact_mass = calculate_exact_mass(lib["mol"])
                 els = get_elements(lib["mol"])
 
                 pkl_lib = pickle.dumps(lib)
-                sub_smi_dict = {'smiles': smiles_rdkit_kek,
+                sub_smi_dict = {'smiles': smiles_rdkit,
                                 'exact_mass': exact_mass,
                                 'count': 0,
                                 'length': sum([els[atom] for atom in els if atom != "*"]),
@@ -677,9 +675,8 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
 
                 cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
                                       hmdbid, 
-                                      smiles_rdkit_kek) 
-                                  VALUES ("%s", "%s")
-                               """ % (record_dict['HMDB_ID'], smiles_rdkit_kek))
+                                      smiles_rdkit) 
+                                  VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
     conn.commit()
     conn.close()
 
