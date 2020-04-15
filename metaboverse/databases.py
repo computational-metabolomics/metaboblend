@@ -478,8 +478,11 @@ def _filter_hmdb_records(records):
     for record in records:
 
         if "smiles" in record:
-
-            mol = Chem.MolFromSmiles(record['smiles'])
+            mol = Chem.MolFromSmiles(record["smiles"])
+            try:
+                Chem.SanitizeMol(mol)
+            except:
+                continue
 
             if mol is None:
                 continue
