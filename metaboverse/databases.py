@@ -434,9 +434,9 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
                 bond_types[b.GetBeginAtomIdx()].append(b.GetBondTypeAsDouble())
 
     try:
-        Chem.rdmolops.Kekulize(mol_out)
+        mol_out.UpdatePropertyCache()
     except:
-        return None
+        return
 
     return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES,
             "mol": mol_out,
