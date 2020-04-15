@@ -33,7 +33,7 @@ import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
-from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info
+from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs, draw_subgraph
 
 sqlite3.register_converter("PICKLE", pickle.loads)
 
@@ -54,14 +54,14 @@ def reformat_xml(source, encoding="utf8"):
     return source
 
 
-def parse_xml(source, encoding="utf8", reformat=True):
+def parse_xml(source, encoding="utf8", reformat=False):
     if reformat:
         reformat_xml(source, encoding)
 
     with io.open(source, "r", encoding=encoding) as inp:
         record_out = OrderedDict()
 
-        xmldec = inp.readline()
+        xmldec = inp.readline()  # required despite variables not used
         xmldec2 = inp.readline()
 
         xml_record = ""
@@ -82,7 +82,7 @@ def parse_xml(source, encoding="utf8", reformat=True):
 
                     if event == 'start':
                         path.append(elem.tag)
-                        if elem.text != None:
+                        if elem.text is not None:
                             if elem.text.replace(" ", "") != "\n":
 
                                 path_elem = ".".join(map(str, path[1:]))
@@ -115,27 +115,27 @@ class SubstructureDb:
         self.cursor = self.conn.cursor()
 
         if self.db2 is not None:
-            self.cursor.execute("""ATTACH DATABASE '%s' as 'graphs';""" % self.db2)
+            self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
 
     def select_compounds(self, cpds=[]):
         if len(cpds) > 0:
-            sql = " WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
+            sql = "WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
         else:
             sql = ""
 
-        self.cursor.execute("""select distinct HMDBID, exact_mass, formula, C, H, N, O, P, S, SMILES,
-                            SMILES_RDKIT, SMILES_RDKIT_KEK from compounds%s""" % sql)
+        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles,
+                               smiles_rdkit, smiles_rdkit_kek FROM compounds%s""" % sql)
         return self.cursor.fetchall()
 
     def filter_hmdbid_substructures(self, min_node_weight):
-        self.cursor.execute('DROP TABLE IF EXISTS unique_hmdbid')
-        self.cursor.execute('DROP TABLE IF EXISTS filtered_hmdbid_substructures')
+        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
+        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
 
-        self.cursor.execute("""create table unique_hmdbid as select distinct HMDBID from compounds""")
+        self.cursor.execute("CREATE TABLE unique_hmdbid AS SELECT DISTINCT hmdbid FROM compounds")
 
-        self.cursor.execute("""create table filtered_hmdbid_substructures as
-                            select smiles_rdkit_kek, COUNT(*) from hmdbid_substructures
-                            group by smiles_rdkit_kek having COUNT(*) >=%s""" % min_node_weight)
+        self.cursor.execute("""CREATE TABLE filtered_hmdbid_substructures AS
+                                   SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
+                                   GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
 
         return self.cursor.fetchall()
 
@@ -143,10 +143,10 @@ class SubstructureDb:
         substructure_graph = nx.Graph()
         self.filter_hmdbid_substructures(min_node_weight)
 
-        self.cursor.execute("""select * from unique_hmdbid""")
+        self.cursor.execute("SELECT * FROM unique_hmdbid")
         unique_hmdb_ids = self.cursor.fetchall()
 
-        self.cursor.execute("""select * from filtered_hmdbid_substructures""")
+        self.cursor.execute("SELECT * FROM filtered_hmdbid_substructures")
         # add node for each unique substructure, weighted by count
         for unique_substructure in self.cursor.fetchall():
             substructure_graph.add_node(unique_substructure[0], weight=unique_substructure[1])
@@ -161,22 +161,19 @@ class SubstructureDb:
             substructure_graph = self.extended_substructure_network(substructure_graph, unique_hmdb_ids,
                                                                     include_parents=True)
 
-        # remove isolated nodes
         if remove_isolated:
             substructure_graph.remove_nodes_from(list(nx.isolates(substructure_graph)))
 
         return substructure_graph
 
     def extended_substructure_network(self, substructure_graph, unique_hmdb_ids, include_parents=False):
-        # slower(?) method that allows inclusion of original metabolites
-
         # add node for each parent structure
         for unique_hmdb_id in unique_hmdb_ids:
             substructure_graph.add_node(unique_hmdb_id[0])
 
         # add edge for each linked parent structure and substructure
-        self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                            (select smiles_rdkit_kek from filtered_hmdbid_substructures)""")
+        self.cursor.execute("""SELECT * FROM hmdbid_substructures WHERE smiles_rdkit IN 
+                                   (SELECT smiles_rdkit FROM filtered_hmdbid_substructures)""")
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
@@ -199,9 +196,9 @@ class SubstructureDb:
     def default_substructure_network(self, substructure_graph, unique_hmdb_ids):
         # add edges by walking through hmdbid_substructures
         for unique_hmdb_id in unique_hmdb_ids:
-            self.cursor.execute("""select * from hmdbid_substructures where smiles_rdkit_kek in 
-                                (select smiles_rdkit_kek from filtered_hmdbid_substructures) and hmdbid = '%s'"""
-                                % unique_hmdb_id)
+            self.cursor.execute("""SELECT * FROM hmdbid_substructures 
+                                       WHERE smiles_rdkit IN (SELECT smiles_rdkit FROM filtered_hmdbid_substructures) 
+                                       AND hmdbid = '%s'""" % unique_hmdb_id)
             nodes = []
             for substructure in self.cursor.fetchall():
                 for node in nodes:
@@ -219,11 +216,9 @@ class SubstructureDb:
         filter_mass = ""
         if type(masses) == list:
             if len(masses) > 0:
-                filter_mass = " WHERE exact_mass__1 in ({})".format(",".join(map(str, masses)))
+                filter_mass = " WHERE exact_mass__1 IN ({})".format(",".join(map(str, masses)))
 
-        self.cursor.execute("""SELECT DISTINCT exact_mass__{}
-                                   FROM {}{}
-                            """.format(accuracy, table_name, filter_mass))
+        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}{}".format(accuracy, table_name, filter_mass))
 
         records = self.cursor.fetchall()
         for record in records:
@@ -239,17 +234,11 @@ class SubstructureDb:
             mass_statement = "< {} AND exact_mass__{} > {}".format(exact_mass + tolerance,
                                                                    accuracy,
                                                                    exact_mass - tolerance)
-            
-        self.cursor.execute("""SELECT DISTINCT 
-                                                       C, 
-                                                       H, 
-                                                       N, 
-                                                       O, 
-                                                       P, 
-                                                       S 
-                                                   FROM {} 
-                                                   WHERE exact_mass__{} {}
-                                                """.format(table_name, accuracy, mass_statement))
+
+        self.cursor.execute("""SELECT DISTINCT C, H, N, O, P, S
+                                   FROM {} 
+                                   WHERE exact_mass__{} {}
+                            """.format(table_name, accuracy, mass_statement))
 
         return self.cursor.fetchall()
 
@@ -269,7 +258,7 @@ class SubstructureDb:
 
     def k_configs(self):
         self.cursor.execute("""SELECT id_pkl, nodes_valences 
-                               FROM subgraphs""")
+                                   FROM subgraphs""")
         records = self.cursor.fetchall()
         configs = {}
         for record in records:
@@ -282,13 +271,13 @@ class SubstructureDb:
         for i in range(len(l_atoms)):
 
             self.cursor.execute("""SELECT DISTINCT lib 
-                                   FROM {}
-                                   WHERE C = {} 
-                                   AND H = {} 
-                                   AND N = {} 
-                                   AND O = {}
-                                   AND P = {}
-                                   AND S = {}
+                                       FROM {}
+                                       WHERE C = {} 
+                                       AND H = {} 
+                                       AND N = {} 
+                                       AND O = {}
+                                       AND P = {}
+                                       AND S = {}
                                 """.format(table_name, l_atoms[i][0], l_atoms[i][1], l_atoms[i][2],
                                            l_atoms[i][3], l_atoms[i][4], l_atoms[i][5]))
             records = self.cursor.fetchall()
@@ -300,75 +289,75 @@ class SubstructureDb:
         return subsets
 
     def create_compound_database(self):
-        self.cursor.execute('DROP TABLE IF EXISTS compounds')
-        self.cursor.execute('DROP TABLE IF EXISTS substructures')
-        self.cursor.execute('DROP TABLE IF EXISTS hmdbid_substructures')
+        self.cursor.execute("DROP TABLE IF EXISTS compounds")
+        self.cursor.execute("DROP TABLE IF EXISTS substructures")
+        self.cursor.execute("DROP TABLE IF EXISTS hmdbid_substructures")
 
         self.cursor.execute("""CREATE TABLE compounds (
-                              hmdbid TEXT PRIMARY KEY,
-                              exact_mass INTEGER,
-                              formula TEXT,
-                              C INTEGER,
-                              H INTEGER,
-                              N INTEGER,
-                              O INTEGER,
-                              P INTEGER,
-                              S INTEGER,
-                              smiles TEXT,
-                              smiles_rdkit TEXT,
-                              smiles_rdkit_kek TEXT)""")
+                                   hmdbid TEXT PRIMARY KEY,
+                                   exact_mass INTEGER,
+                                   formula TEXT,
+                                   C INTEGER,
+                                   H INTEGER,
+                                   N INTEGER,
+                                   O INTEGER,
+                                   P INTEGER,
+                                   S INTEGER,
+                                   smiles TEXT,
+                                   smiles_rdkit TEXT,
+                                   smiles_rdkit_kek TEXT)""")
 
         self.cursor.execute("""CREATE TABLE substructures (
-                              smiles TEXT PRIMARY KEY, 
-                              heavy_atoms INTEGER,
-                              length INTEGER,
-                              exact_mass__1 INTEGER,
-                              exact_mass__0_1 REAL,
-                              exact_mass__0_01 REAL,
-                              exact_mass__0_001 REAL,
-                              exact_mass__0_0001 REAL,
-                              exact_mass REAL,
-                              count INTEGER,
-                              C INTEGER,
-                              H INTEGER,
-                              N INTEGER,
-                              O INTEGER,
-                              P INTEGER,
-                              S INTEGER,
-                              valence INTEGER,
-                              valence_atoms TEXT,
-                              atoms_available INTEGER,
-                              lib PICKLE)""")
+                                   smiles TEXT PRIMARY KEY, 
+                                   heavy_atoms INTEGER,
+                                   length INTEGER,
+                                   exact_mass__1 INTEGER,
+                                   exact_mass__0_1 REAL,
+                                   exact_mass__0_01 REAL,
+                                   exact_mass__0_001 REAL,
+                                   exact_mass__0_0001 REAL,
+                                   exact_mass REAL,
+                                   count INTEGER,
+                                   C INTEGER,
+                                   H INTEGER,
+                                   N INTEGER,
+                                   O INTEGER,
+                                   P INTEGER,
+                                   S INTEGER,
+                                   valence INTEGER,
+                                   valence_atoms TEXT,
+                                   atoms_available INTEGER,
+                                lib PICKLE)""")
 
         self.cursor.execute("""CREATE TABLE hmdbid_substructures (
-                              hmdbid TEXT,
-                              smiles_rdkit_kek,
-                              PRIMARY KEY (hmdbid, smiles_rdkit_kek))""")
+                                   hmdbid TEXT,
+                                   smiles_rdkit,
+                                   PRIMARY KEY (hmdbid, smiles_rdkit))""")
 
     def create_indexes(self):
 
-        self.cursor.execute("""DROP INDEX IF EXISTS heavy_atoms__Valence__mass__1__idx""")
-        self.cursor.execute("""DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_1__idx""")
-        self.cursor.execute("""DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_01__idx""")
-        self.cursor.execute("""DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_001__idx""")
-        self.cursor.execute("""DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_0001__idx""")
-        self.cursor.execute("""DROP INDEX IF EXISTS atoms__Valence__idx""")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__1__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_1__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_01__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_001__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_0001__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS atoms__Valence__idx")
 
         self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__1);""")
+                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__1)""")
         self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_1);""")
+                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_1)""")
         self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_01__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_01);""")
+                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_01)""")
         self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_001__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_001);""")
+                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_001)""")
         self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_0001__idx
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_0001);""")
+                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_0001)""")
         self.cursor.execute("""CREATE INDEX atoms__Valence__idx 
                                ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
 
     def close(self):
-        self.cursor.execute("drop table if exists subset_substructures")
+        self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
         self.conn.close()
 
 
@@ -392,8 +381,6 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
     mol_edit = Chem.EditableMol(mol)
     degree_atoms = {}
-
-    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
 
     for atom in reversed(mol.GetAtoms()):
 
@@ -424,6 +411,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
                 else:
                     degree_atoms[atom_n.GetIdx()] += 1
 
+    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
     bond_types = {}
 
     for b in mol_out.GetBonds():
@@ -446,11 +434,11 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
                 bond_types[b.GetBeginAtomIdx()].append(b.GetBondTypeAsDouble())
 
     try:
-        Chem.rdmolops.Kekulize(mol_out)
+        mol_out.UpdatePropertyCache()
     except:
-        return None
+        return
 
-    return {"smiles": Chem.MolToSmiles(mol_out, kekuleSmiles=True),  # REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES,
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -490,8 +478,11 @@ def _filter_hmdb_records(records):
     for record in records:
 
         if "smiles" in record:
-
-            mol = Chem.MolFromSmiles(record['smiles'])
+            mol = Chem.MolFromSmiles(record["smiles"])
+            try:
+                Chem.SanitizeMol(mol)
+            except:
+                continue
 
             if mol is None:
                 continue
@@ -503,18 +494,11 @@ def _filter_hmdb_records(records):
             if len(atom_check) > 0:
                 continue
 
-            smiles = Chem.rdmolfiles.MolToSmiles(mol, kekuleSmiles=True)
-            Chem.rdmolops.Kekulize(mol)
-            smiles_rdkit_kek = Chem.rdmolfiles.MolToSmiles(mol, kekuleSmiles=True)
+            smiles_rdkit = Chem.MolToSmiles(mol)
+            smiles_rdkit_kek = Chem.MolToSmiles(mol, kekuleSmiles=True)
 
-            if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles or "-" in smiles:
-                # print record['HMDB_ID'], record['smiles'], "+/-"
+            if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles_rdkit or "-" in smiles_rdkit:
                 continue
-
-            # try:
-            #     print("%s\t%s" % (record['accession'], record['monisotopic_molecular_weight']))
-            # except KeyError:
-            #     print(record['accession'])
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
@@ -523,7 +507,7 @@ def _filter_hmdb_records(records):
                            'formula': record["chemical_formula"],
                            'exact_mass': round(exact_mass, 6),
                            'smiles': record['smiles'],
-                           'smiles_rdkit': smiles,
+                           'smiles_rdkit': smiles_rdkit,
                            'smiles_rdkit_kek': smiles_rdkit_kek,
                            'C': els['C'],
                            'H': els['H'],
@@ -546,7 +530,6 @@ def get_substructure_bond_idx(prb_mol, ref_mol):
     for atom in ref_mol.GetAtoms():
         if atom.GetIdx() in atom_idx:
             for bond in atom.GetBonds():
-                # GetBondBetweenAtoms()
                 if bond.GetBeginAtomIdx() in atom_idx and bond.GetEndAtomIdx() in atom_idx:
                     if bond.GetIdx() not in bond_idx:
                         bond_idx = (*bond_idx, bond.GetIdx())
@@ -605,37 +588,36 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
     for record_dict in filter_records(records):
 
         cursor.execute("""INSERT OR IGNORE INTO compounds (
-                              hmdbid, 
-                              exact_mass, 
-                              formula, 
-                              C, H, N, O, P, S, 
-                              smiles, 
-                              smiles_rdkit, 
-                              smiles_rdkit_kek)
-                          values (
-                              :HMDB_ID, 
-                              :exact_mass,
-                              :formula, 
-                              :C, :H, :N, :O, :P, :S, 
-                              :smiles, 
-                              :smiles_rdkit, 
-                              :smiles_rdkit_kek)""", record_dict)
+                               hmdbid, 
+                               exact_mass, 
+                               formula, 
+                               C, H, N, O, P, S, 
+                               smiles, 
+                               smiles_rdkit, 
+                               smiles_rdkit_kek)
+                           VALUES (
+                               :HMDB_ID, 
+                               :exact_mass,
+                               :formula, 
+                               :C, :H, :N, :O, :P, :S, 
+                               :smiles, 
+                               :smiles_rdkit, 
+                               :smiles_rdkit_kek)""", record_dict)
 
         # Returns a tuple of 2-tuples with bond IDs
-
         for sgs in get_sgs(record_dict, n_min, n_max, method=method):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)
                 if lib is None:
                     continue
 
-                smiles_rdkit_kek = Chem.rdmolfiles.MolToSmiles(lib["mol"], kekuleSmiles=True)
+                smiles_rdkit = Chem.rdmolfiles.MolToSmiles(lib["mol"])
 
                 exact_mass = calculate_exact_mass(lib["mol"])
                 els = get_elements(lib["mol"])
 
                 pkl_lib = pickle.dumps(lib)
-                sub_smi_dict = {'smiles': smiles_rdkit_kek,
+                sub_smi_dict = {'smiles': smiles_rdkit,
                                 'exact_mass': exact_mass,
                                 'count': 0,
                                 'length': sum([els[atom] for atom in els if atom != "*"]),
@@ -692,24 +674,23 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       :S,
                                       :valence,
                                       :valence_atoms,
-                                      :atoms_available,:lib)
-                               """, sub_smi_dict)
+                                      :atoms_available,:lib)""", sub_smi_dict)
 
                 cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
                                       hmdbid, 
-                                      smiles_rdkit_kek) 
-                                  VALUES ("%s", "%s")
-                               """ % (record_dict['HMDB_ID'], smiles_rdkit_kek))
+                                      smiles_rdkit) 
+                                  VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
     conn.commit()
     conn.close()
 
 
-def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None):
+def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, path_RI=None, debug=False):
+    
     conn = sqlite3.connect(db_out)
     cursor = conn.cursor()
 
-    cursor.execute('''DROP TABLE IF EXISTS subgraphs''')
-    cursor.execute('''CREATE TABLE subgraphs (
+    cursor.execute("""DROP TABLE IF EXISTS subgraphs""")
+    cursor.execute("""CREATE TABLE subgraphs (
                           id_pkl INTEGER,
                           n_graphs INTEGER,
                           graph6 TEXT,
@@ -720,14 +701,15 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                           n_nodes INTEGER,
                           n_edges INTEGER,
                           PRIMARY KEY (graph6, k_partite, nodes_valences)
-                   );''')
+                   );""")
     conn.commit()
 
     id_pkl = 0
 
     for G, p in calculate_complete_multipartite_graphs(sizes, boxes):
 
-        print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])
+        if debug:
+            print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
         proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         geng_out, err = proc.communicate()
@@ -736,8 +718,9 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
         proc.stderr.close()
 
         for i, line_geng in enumerate(geng_out.split()):
-
-            print(line_geng)
+            
+            if debug:
+                print(line_geng)
 
             sG = nx.read_graph6(BytesIO(line_geng))
 
@@ -763,79 +746,57 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                 if line[0] == "{":
                     mappings.append(eval(line))
 
-                if len(mappings) == 20000:
-                    gi = graph_info(p, sG, mappings, )
-
-                    for vn in gi[0]:
-
-                        if vn not in subgraphs:
-                            subgraphs[vn] = gi[0][vn]
-                            # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
-                        else:
-
-                            before = len(subgraphs[vn])
-                            for es in gi[0][vn]:
-                                if es not in subgraphs[vn]:
-                                    subgraphs[vn].append(es)
-                                    # print vn, es, result[1][0], result[1][1], len(result[1][1])
-                            after = len(subgraphs[vn])
-                            print(before, after)
-
-                    mappings = []
-
             if len(mappings) > 0:
                 gi = graph_info(p, sG, mappings, )
-                # job = job_server.submit(graphInfo, (p, sG, mappings, ), (valences,), modules=(), globals=globals())
-                # jobs.append(job)
 
                 for vn in gi[0]:
-
                     if vn not in subgraphs:
                         subgraphs[vn] = gi[0][vn]
-                        # print vn, result[0][vn], result[1][0], result[1][1], len(result[1][1])
-                    else:
 
-                        before = len(subgraphs[vn])
+                    else:
                         for es in gi[0][vn]:
                             if es not in subgraphs[vn]:
                                 subgraphs[vn].append(es)
-                                # print vn, es, result[1][0], result[1][1], len(result[1][1])
-                        after = len(subgraphs[vn])
-                        print(before, after)
 
             if len(subgraphs) > 0:
-
                 for vn in subgraphs:
-
+                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])
                     root = {}
+
                     for fr in subgraphs[vn]:
+                        if debug:
+                            draw_subgraph(fr, eval(vn))
+
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
-                          sG.number_of_nodes(), sG.number_of_edges())
+                    if debug:
+                        print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
+                              sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
-                    cursor.execute('''INSERT INTO subgraphs (id_pkl, 
-                                      n_graphs, 
-                                      graph6,
-                                      k,
-                                      k_partite,
-                                      k_valences,
-                                      nodes_valences,
-                                      n_nodes, n_edges) 
-                                      values (?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
-                        id_pkl,
-                        len(subgraphs[vn]),
-                        line_geng,
-                        len(p),
-                        str(p),
-                        str(vt),
-                        str(vn),
-                        sG.number_of_nodes(),
-                        sG.number_of_edges()))
+                    cursor.execute("""INSERT INTO subgraphs (
+                                          id_pkl, 
+                                          n_graphs, 
+                                          graph6,
+                                          k,
+                                          k_partite,
+                                          k_valences,
+                                          nodes_valences,
+                                          n_nodes, n_edges)
+                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                                          id_pkl,
+                                          len(subgraphs[vn]),
+                                          line_geng,
+                                          len(p),
+                                          str(p),
+                                          str(vt),
+                                          str(vn),
+                                          sG.number_of_nodes(),
+                                          sG.number_of_edges()))
+
                     pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
             conn.commit()
     conn.close()
