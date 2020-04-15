@@ -23,13 +23,6 @@ import itertools
 import networkx as nx
 import pylab as plt
 
-
-# from animation import viz
-# sys.path.append("")
-# import pylab as plt
-# from graph_tool import draw as gt_draw
-
-
 def calculate_complete_multipartite_graphs(sizes, boxes):
     for nb in range(2, boxes+1):
         for p in itertools.combinations_with_replacement(sizes, nb):
@@ -38,9 +31,9 @@ def calculate_complete_multipartite_graphs(sizes, boxes):
 
 
 def cols_dict(sizes):
-
     num = 0
     temp = [0]
+
     for s in sizes:
         num += s
         temp.append(num)
@@ -55,23 +48,16 @@ def cols_dict(sizes):
 
 
 def valences(sizes, ug):
-
     num = 0
     temp = [0]
     for s in sizes:
         num += s
         temp.append(num)
 
-    # degrees_sub = ()
     degrees_nodes = ()
     for i in range(len(temp)-1):
-
         degree_nodes_sub = [t[1] for t in ug.degree(range(temp[i], temp[i + 1]))]
-        # degree_nodes_sub.sort()
         degrees_nodes += (tuple(degree_nodes_sub),)
-
-        # degree = sum(list(degree_nodes_sub))
-        # degrees_sub += (degree,)
 
     return degrees_nodes
 
@@ -81,22 +67,15 @@ def _hashGraph(g): return tuple(sorted(g.edges()))
 
 def kp_complete_graphs(sizes, boxes):
     for nboxes in range(2, boxes+1):
-        # for p in itertools.product(sizes, repeat = nboxes):
         for p in itertools.combinations_with_replacement(sizes, nboxes):
-            # p = list(p)
-            # p.sort()
             nodes, edges = complete_k_partite(p)
             yield nodes, edges, p
 
 
 def match_subgraphs(ug_comp, usg, sgi, sizes):
-
-    from graph_tool.topology import mark_subgraph
-
     frags = {}
 
     for sg in sgi:
-
         ug_comp.set_vertex_filter(None)
         ug_comp.set_edge_filter(None)
 
@@ -108,10 +87,9 @@ def match_subgraphs(ug_comp, usg, sgi, sizes):
         edges = [(int(e.target()), int(e.source())) for e in ug_comp.edges()]
         edges.sort()
 
-        #print edges, sg.a
-
         if str(vt) not in frags:
             frags[str(vt)] = [edges]
+
         else:
             if edges not in frags[str(vt)]:
                 frags[str(vt)].append(edges)
@@ -136,6 +114,7 @@ def draw_subgraph(edges, vn):
         if len(substructure) == 1:
             cD[(i,)] = cols[j]
             i += 1
+
         elif len(substructure) == 2:
             cD[(i, i + 1)] = cols[j]
             i += 2
@@ -151,20 +130,22 @@ def draw_subgraph(edges, vn):
 def graph_to_ri(graph, name):
     out = "#{}\n".format(name)
     out += "{}\n".format(graph.number_of_nodes())
+
     for n in graph.nodes():
         out += "n\n"
+
     out += "{}\n".format(graph.number_of_edges())
+
     for e in graph.edges():
         out += "{} {} e\n".format(e[0], e[1])
+
     return out
 
 
 def graph_info(sizes, sG, mappings):
-
     frags = {}
 
     for m in mappings:
-
         ug = nx.relabel_nodes(sG, m, copy=True)
         vn = valences(sizes, ug)
 

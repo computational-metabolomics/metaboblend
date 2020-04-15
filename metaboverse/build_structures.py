@@ -203,15 +203,16 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
 
 def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
     table_name = "subset_substructures"
-    db.cursor.execute("drop table if exists %s" % table_name)
-    db.cursor.execute("""create table {} as
-                             select * from substructures where
-                                 heavy_atoms in ({}) and
-                                 atoms_available <= {} and
-                                 valence <= {}""".format(table_name,
-                                                         ",".join(map(str, heavy_atoms)),
-                                                         max_valence,
-                                                         max_atoms_available,))
+    db.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
+    db.cursor.execute("""CREATE TABLE {} AS
+                             SELECT * FROM substructures WHERE
+                                 heavy_atoms IN ({}) AND
+                                 atoms_available <= {} AND
+                                 valence <= {}
+                      """.format(table_name,
+                                 ",".join(map(str, heavy_atoms)),
+                                 max_valence,
+                                 max_atoms_available,))
 
     return table_name
 
@@ -313,11 +314,10 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
 
                         molOut = mol_e.GetMol()
                         try:
-                            Chem.Kekulize(molOut)
                             Chem.SanitizeMol(molOut)
                         except:
                             if debug:
-                                print("Can't kekulize mol ISO: {}".format(iso_n))
+                                print("Can't sanitize mol ISO: {}".format(iso_n))
                             continue
 
                         # Draw.MolToFile(molOut, "main_after_" + "-".join(map(str, atoms_available)) + '.png')
