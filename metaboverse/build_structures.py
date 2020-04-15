@@ -30,6 +30,7 @@ from rdkit import Chem
 def subset_sum(l, mass, toll=0.001):
     if mass < -toll:
         return
+
     elif len(l) == 0:
         if -toll <= mass <= toll:
             yield []
@@ -61,10 +62,10 @@ def combine_ecs(ss2_grp, db, table_name, accuracy=None, ppm=None):
 
 def reindex_atoms(records):
     atoms_available, atoms_to_remove, bond_types = [], [], {}
-
     mol_comb = Chem.Mol()
     index_atoms = []
     c = 0
+
     for record in records:
         idxs = []
         for atom in record["mol"].GetAtoms():
@@ -100,9 +101,6 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 
     G = nx.relabel_nodes(G, dict(zip(sorted(G.nodes()), atoms_available)))
 
-    # Draw.MolToFile(mols, "main_before_" + "-".join(map(str, atoms_available)) + '.png')
-    # Draw.MolToFile(mols, "main_before_indexed_" + "-".join(map(str, atoms_available)) + '.png', includeAtomNumbers=True)
-
     mol_edit = Chem.EditableMol(mols)
     for edge in G.edges():
 
@@ -129,12 +127,11 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
                 print("## bondMatches empty")
                 print("")
             return None
-            # yield None
+
         else:
             bt_start.remove(bondMatches[0])
             bt_end.remove(bondMatches[0])
 
-        # print(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
         try:
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bondMatches[0]])
         except KeyError:
@@ -168,7 +165,7 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
         max_n_substructures -= 1
 
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
-    print(mass_values)
+
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
     configs_iso = db.k_configs()
@@ -184,11 +181,10 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
 
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
-        print(subsets_r2)
+
         if fragment_mass is not None:
             for i, subset in enumerate(subsets_r2):
                 subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
-
 
         if debug:
             print("Second round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__0_0001,
@@ -244,14 +240,15 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                     if debug:
                         print("## No substructures found")
                     continue
+
                 elif len(ll) == 1:
                     if debug:
                         print("## Single substructure")
+
                 else:
                     if debug:
                         print("## {} {} substructures found".format(sum([len(subs) for subs in ll]),
                                                                     str([len(subs) for subs in ll])))
-                    # print([[sub[""smiles] for sub in subs] for subs in ll])
 
                 if debug:
                     print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
@@ -271,9 +268,6 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                         v = v + (d["valence"],)
                         vA = vA + (tuple(d["degree_atoms"].values()),)
 
-                    # print(configs_iso)
-                    # print("============")
-
                     if str(vA) not in configs_iso:
                         if debug:
                             print("NO:", (str(nA), str(v), str(vA)))
@@ -283,9 +277,6 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                         if debug:
                             print("YES:", (str(nA), str(v), str(vA)))
                             print("============")
-
-                    # print("## ConnectivityGraphs found (%s)" % (len(list(db.isomorphismGraphs(str(tuple(nA)), str(tuple(v)))))))
-                    # print("## Atoms available (n) %s / Valence %s" % (str(tuple(nA)), str(tuple(v))))
 
                     mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
                     if debug:
@@ -320,7 +311,6 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                                 print("Can't sanitize mol ISO: {}".format(iso_n))
                             continue
 
-                        # Draw.MolToFile(molOut, "main_after_" + "-".join(map(str, atoms_available)) + '.png')
                         try:
                             out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut),
                                                         str([item["smiles"] for item in lll])))
@@ -328,5 +318,4 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                             if debug:
                                 print("Bad bond type violation")
                         if debug:
-                            print("## smi (result): {}".format(
-                                Chem.MolToSmiles(molOut)))  # , bond_types
+                            print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
