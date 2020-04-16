@@ -20,11 +20,13 @@
 #
 
 
+import os
 import sys
 import unittest
 from pathlib import Path
 
 from . import test_databases
+from . import test_isomorphism_database
 
 sys.path.insert(0, str(Path(__file__).parent.parent.resolve()))
 
@@ -33,6 +35,7 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     suite.addTest(unittest.findTestCases(test_databases))
+    suite.addTest(unittest.findTestCases(test_isomorphism_database))
 
     report = os.path.join(os.path.abspath(os.path.join(__file__, os.pardir)), 'results', 'results_test_suite_databases')
-    runTestSuite(suite, report, title = 'Process Test Suite Report', verbosity = 2)
+    runTestSuite(suite, report, title='Process Test Suite Report', verbosity=2)
