@@ -21,10 +21,16 @@
 
 
 import os
+import sys
 import unittest
 import zipfile
 import pickle
+from rdkit import Chem
 from metaboverse import *
+
+
+def to_test_result(*args):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
 
 
 class DatabasesTestCase(unittest.TestCase):
@@ -43,6 +49,13 @@ class DatabasesTestCase(unittest.TestCase):
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "test_mols.zip"
+                                               ), 'r')
+        zip_ref.extractall(to_test_result())
+        zip_ref.close()
+
+        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                               "data",
+                                               "substructures.zip"
                                                ), 'r')
         zip_ref.extractall(to_test_result())
         zip_ref.close()
@@ -105,6 +118,162 @@ class DatabasesTestCase(unittest.TestCase):
         subs_mol = Chem.MolFromSmiles("OC[C@@H]1C[C@H](O)[C@@H](O)[C@@H](O)O1")
         self.assertEqual(get_substructure_bond_idx(subs_mol, mol), (0, 1, 2, 22, 3, 4, 16, 17, 18, 19, 20))
 
+    def test_subset_sgs_sizes(self):
+        sgs = [[(0, 1, 2, 22, 3, 16, 17, 18, 19, 20, 21), (0, 1, 2, 22, 3, 4, 16, 17, 18, 19, 20)]]
+
+        self.assertEqual(len(subset_sgs_sizes(sgs, -10, 100)[0]), 2)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 100, 100)), 0)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 0, 0)), 0)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 11, 11)[0]), 2)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 11, 12)[0]), 2)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 10, 11)[0]), 2)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 12, 100)), 0)
+        self.assertEqual(len(subset_sgs_sizes(sgs, 0, 10)), 0)
+
+    def test_get_sgs(self):
+        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dict = pickle.load(test_hmdbs)["HMDB0000186"]
+            record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+            mol_ids = [bond.GetIdx() for bond in record_dict["mol"].GetBonds()]
+
+        sgs = get_sgs(record_dict, 2, 9, method="exhaustive")
+        for edges in sgs:
+            for edge_set in edges:
+                self.assertTrue(2 <= len(edge_set) <= 9)
+                [self.assertTrue(bond in mol_ids) for bond in edge_set]
+
+        sgs = get_sgs(record_dict, 0, 20, method="RECAP")
+        for edges in sgs:
+            for edge_set in edges:
+                self.assertTrue(0 <= len(edge_set) <= 20)
+                [self.assertTrue(bond in mol_ids) for bond in edge_set]
+
+        sgs = get_sgs(record_dict, 0, 20, method="BRICS")
+        for edges in sgs:
+            for edge_set in edges:
+                self.assertTrue(0 <= len(edge_set) <= 20)
+                [self.assertTrue(bond in mol_ids) for bond in edge_set]
+
+    def test_get_substructure(self):
+        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dict = pickle.load(test_hmdbs)["HMDB0000186"]
+            mol = Chem.MolFromSmiles(record_dict["smiles"])
+
+        libs = [{'smiles': '*[C@@H]1O[C@H](CO)[C@H](O)[C@H](O)[C@H]1O', 'bond_types': {4: [1.0]},
+                  'degree_atoms': {4: 1}, 'valence': 1, 'atoms_available': 1, 'dummies': [5]},
+                 {'smiles': '*O[C@@H]1O[C@H](CO)[C@H](*)[C@H](O)[C@H]1O', 'bond_types': {5: [1.0], 11: [1.0]},
+                  'degree_atoms': {5: 1, 11: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [6, 12]}]
+
+        for edges in [[(0, 1, 2, 22, 3, 16, 17, 18, 19, 20, 21), (0, 1, 2, 22, 3, 4, 16, 17, 18, 19, 20)]]:
+            for i, edge_idx in enumerate(edges):
+                lib = get_substructure(mol, edge_idx)
+                del lib["mol"]
+                self.assertEqual(lib, libs[i])
+
+    def test_get_elements(self):
+        compositions = [{'C': 8, 'H': 11, 'N': 1, 'O': 2, 'P': 0, 'S': 0, '*': 0},
+                        {'C': 6, 'H': 12, 'N': 0, 'O': 6, 'P': 0, 'S': 0, '*': 0},
+                        {'C': 9, 'H': 11, 'N': 1, 'O': 3, 'P': 0, 'S': 0, '*': 0},
+                        {'C': 12, 'H': 22, 'N': 0, 'O': 11, 'P': 0, 'S': 0, '*': 0}]
+
+        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+            for i, record_dict in enumerate(record_dicts.values()):
+                mol = Chem.MolFromSmiles(record_dict["smiles"])
+
+                self.assertEqual(get_elements(mol), compositions[i])
+
+    def test_calculate_exact_mass(self):
+        masses = [153.07897899999998, 180.06338999999997, 181.07389399999997, 342.1162150000005]
+
+        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+            for i, record_dict in enumerate(record_dicts.values()):
+                mol = Chem.MolFromSmiles(record_dict["smiles"])
+
+                self.assertEqual(calculate_exact_mass(mol), masses[i])
+
+        ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
+        ref_db_cursor = ref_db.cursor()
+        ref_db_cursor.execute("select exact_mass__0_0001, lib from substructures")
+        for row in ref_db_cursor.fetchall():
+            lib = pickle.loads(row[1])
+            self.assertEqual(round(calculate_exact_mass(lib["mol"]), 4), row[0])
+
+    def test_update_substructure_database(self):  # requires create_compound_database from SubstructureDb
+        db = SubstructureDb(to_test_result("test_db.sqlite"), "")
+        db.create_compound_database()
+        db.close()
+
+        records = os.listdir(to_test_result("test_mols", "hmdb"))
+        for record in records:
+            update_substructure_database(to_test_result("test_mols", "hmdb", record),
+                                         to_test_result("test_db.sqlite"), 3, 7, method="exhaustive")
+
+        print(to_test_result("test_db.sqlite"))
+        test_db = sqlite3.connect(to_test_result("test_db.sqlite"))
+        test_db_cursor = test_db.cursor()
+        ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
+        ref_db_cursor = ref_db.cursor()
+
+        test_db_cursor.execute("""SELECT smiles,
+                                         heavy_atoms,
+                                         length,
+                                         exact_mass__1,
+                                         exact_mass__0_1,
+                                         exact_mass__0_01,
+                                         exact_mass__0_001,
+                                         exact_mass__0_0001,
+                                         exact_mass,
+                                         count,
+                                         C,
+                                         H,
+                                         N,
+                                         O,
+                                         P,
+                                         S,
+                                         valence,
+                                         valence_atoms,
+                                         atoms_available 
+                                         FROM substructures WHERE valence <= 4""")
+        ref_db_cursor.execute("""SELECT smiles,
+                                         heavy_atoms,
+                                         length,
+                                         exact_mass__1,
+                                         exact_mass__0_1,
+                                         exact_mass__0_01,
+                                         exact_mass__0_001,
+                                         exact_mass__0_0001,
+                                         exact_mass,
+                                         count,
+                                         C,
+                                         H,
+                                         N,
+                                         O,
+                                         P,
+                                         S,
+                                         valence,
+                                         valence_atoms,
+                                         atoms_available  
+                                         FROM substructures WHERE valence <= 4""")
+        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+
+        test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
+        ref_db_cursor.execute("SELECT * FROM hmdbid_substructures")
+        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+
+        test_db_cursor.execute("SELECT * FROM compounds")
+        ref_db_cursor.execute("SELECT * FROM compounds")
+        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+
+        test_db_cursor.execute("SELECT heavy_atoms FROM substructures")
+        unique_ha = set()
+        for ha in test_db_cursor.fetchall():
+            self.assertTrue(4 <= ha[0] <= 8)
+            unique_ha.add(ha[0])
+
+        [self.assertTrue(ha in unique_ha) for ha in [4, 5, 6, 7, 8]]
+
     @classmethod
     def tearDownClass(cls):
         if os.path.isdir(to_test_result()):
@@ -138,6 +307,12 @@ class DatabasesTestCase(unittest.TestCase):
                     os.rmdir(to_test_result("test_mols", "hmdb"))
 
                 os.rmdir(to_test_result("test_mols"))
+
+            if os.path.isfile(to_test_result("test_db.sqlite")):
+                os.remove(to_test_result("test_db.sqlite"))
+
+            if os.path.isfile(to_test_result("substructures.sqlite")):
+                os.remove((to_test_result("substructures.sqlite")))
 
             os.rmdir(to_test_result())
 

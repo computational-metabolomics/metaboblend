@@ -21,16 +21,109 @@
 
 
 import os
+import sys
 import unittest
-
-import numpy as np
+import zipfile
 from metaboverse import *
+
+sys.path.append(os.path.join("..", "metaboverse"))
+from build_structures import *
+
+
+def to_test_result(*args):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
 
 
 class BuildStructuresTestCase(unittest.TestCase):
 
-    def test_function(self):
+    @classmethod
+    def setUpClass(cls):
+        os.mkdir(to_test_result())
+
+        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                               "data",
+                                               "connectivity.zip"
+                                               ), 'r')
+        zip_ref.extractall(to_test_result())
+        zip_ref.close()
+
+        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                               "data",
+                                               "test_mols.zip"
+                                               ), 'r')
+        zip_ref.extractall(to_test_result())
+        zip_ref.close()
+
+        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                               "data",
+                                               "substructures.zip"
+                                               ), 'r')
+        zip_ref.extractall(to_test_result())
+        zip_ref.close()
+
+    def test_build(self):
+        db = SubstructureDb(to_test_result("substructures_copy.sqlite"), to_test_result("connectivity", "pkls"),
+                            to_test_result("connectivity", "k_graphs.sqlite"))
+
+    def test_build_from_subsets(self):
         pass
+
+    def test_gen_subs_table(self):
+        pass
+
+    def test_subset_sum(self):
+        pass
+
+    def test_combine_ecs(self):
+        pass
+
+    def test_reindex_atoms(self):
+        pass
+
+    def test_add_bonds(self):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isdir(to_test_result()):
+            if os.path.isdir(to_test_result("connectivity")):
+                if os.path.isdir(to_test_result("connectivity", "pkls")):
+                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
+                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
+                            os.remove(to_test_result("connectivity", "pkls", pkl))
+
+                    os.rmdir(to_test_result("connectivity", "pkls"))
+
+                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
+                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
+
+                os.rmdir(to_test_result("connectivity"))
+
+            if os.path.isdir(to_test_result("test_mols")):
+                if os.path.isfile(to_test_result("test_mols", "test_hmdbs.dictionary")):
+                    os.remove(to_test_result("test_mols", "test_hmdbs.dictionary"))
+
+                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
+                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
+
+                if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
+                    os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
+
+                if os.path.isdir(to_test_result("test_mols", "hmdb")):
+                    for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
+                        os.remove(to_test_result("test_mols", "hmdb", hmdb_xml))
+
+                    os.rmdir(to_test_result("test_mols", "hmdb"))
+
+                os.rmdir(to_test_result("test_mols"))
+
+            if os.path.isfile(to_test_result("test_db.sqlite")):
+                os.remove(to_test_result("test_db.sqlite"))
+
+            if os.path.isfile(to_test_result("substructures.sqlite")):
+                os.remove((to_test_result("substructures.sqlite")))
+
+            os.rmdir(to_test_result())
 
 
 if __name__ == '__main__':

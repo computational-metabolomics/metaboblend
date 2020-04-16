@@ -2,11 +2,7 @@ import os
 import subprocess
 import sys
 import tempfile
-
-sys.path.append(os.path.join("..", "metaboverse"))
-from databases import update_substructure_database, create_isomorphism_database
-from databases import SubstructureDb, ConnectivityDb
-from build_structures import build
+from metaboverse import *
 
 
 def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
