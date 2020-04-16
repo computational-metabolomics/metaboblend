@@ -119,3 +119,27 @@ def sort_subgraphs(subgraphs):
         sorted_subgraphs.add(tuple(sorted([tuple(sorted(e)) for e in fr])))
 
     return [list(fr) for fr in sorted_subgraphs]
+
+
+def get_tool_paths():
+    if sys.platform == "win32" or sys.platform == "win64":
+        path_geng = os.path.join("..", "tools", "nauty25r9_win", "geng")
+        path_ri = os.path.join("..", "tools", "RI_win", "RI3.6-release", "ri36")
+
+    elif sys.platform == "darwin":
+        path_geng = os.path.join("..", "tools", "nauty25r9_mac", "geng")
+        path_ri = os.path.join("..", "tools", "RI_mac", "RI3.6-release", "ri36")
+
+    elif sys.platform == "linux2":
+        if "bb" in "socket.gethostname":
+            path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
+            path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
+        else:
+            path_geng = os.path.join("..", "tools", "nauty25r9_bb", "geng")
+            path_ri = os.path.join("..", "tools", "RI_bb", "RI3.6-release", "ri36")
+
+    elif sys.platform == "linux":
+        path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
+        path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
+        
+    return path_geng, path_ri
