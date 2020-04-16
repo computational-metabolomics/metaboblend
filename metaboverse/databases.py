@@ -119,7 +119,7 @@ class SubstructureDb:
 
     def select_compounds(self, cpds=[]):
         if len(cpds) > 0:
-            sql = "WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
+            sql = " WHERE hmdbid in ('%s')" % ("', '".join(map(str, cpds)))
         else:
             sql = ""
 
@@ -137,7 +137,6 @@ class SubstructureDb:
                                    SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
                                    GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
 
-        return self.cursor.fetchall()
 
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
         substructure_graph = nx.Graph()
@@ -188,7 +187,7 @@ class SubstructureDb:
                             substructure_graph.add_edge(adj1, adj2, weight=1)
                 substructure_graph.remove_node(unique_hmdb_id[0])
 
-            # remove self-loops and edges below weight threshold
+            # remove self-loops
             substructure_graph.remove_edges_from(nx.selfloop_edges(substructure_graph))
 
         return substructure_graph
@@ -224,6 +223,7 @@ class SubstructureDb:
         for record in records:
             mass_values.append(record[0])
         mass_values.sort()
+
         return mass_values
 
     def select_ecs(self, exact_mass, table_name, accuracy, ppm=None):
@@ -357,6 +357,8 @@ class SubstructureDb:
                                ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
 
     def close(self):
+        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
+        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
         self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
         self.conn.close()
 
@@ -764,7 +766,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     root = {}
 
                     if debug:
-                        col_plt, sG_plt = draw_subgraph(fr, eval(vn))
+                        col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
                         col_plt.show()
 
                     for fr in subgraphs[vn]:
