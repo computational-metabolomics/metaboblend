@@ -438,7 +438,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return
 
-    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -763,10 +763,11 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     subgraphs[vn] = sort_subgraphs(subgraphs[vn])
                     root = {}
 
-                    for fr in subgraphs[vn]:
-                        if debug:
-                            draw_subgraph(fr, eval(vn))
+                    if debug:
+                        col_plt, sG_plt = draw_subgraph(fr, eval(vn))
+                        col_plt.show()
 
+                    for fr in subgraphs[vn]:
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
@@ -797,6 +798,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                                           sG.number_of_nodes(),
                                           sG.number_of_edges()))
 
-                    pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
+                    with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
+                        pickle.dump(root, fn_pkls)
+
             conn.commit()
     conn.close()
