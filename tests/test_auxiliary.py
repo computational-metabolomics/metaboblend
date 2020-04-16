@@ -30,10 +30,6 @@ import pickle
 from metaboverse import *
 
 
-sys.path.append(os.path.join("..", "metaboverse"))
-from auxiliary import *
-
-
 def to_test_result(*args):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
 
@@ -65,7 +61,7 @@ class AuxiliaryTestCase(unittest.TestCase):
         cls.path_geng, cls.path_ri = get_tool_paths()
 
     def test_calculate_complete_multipartite_graphs(self):
-        self.assertListEqual(self.p_list, [(1, 1), (1, 2), (2, 2), (1, 1, 1), (1, 1, 2), (1, 2, 2), (2, 2, 2)])
+        self.assertEqual(self.p_list, [(1, 1), (1, 2), (2, 2), (1, 1, 1), (1, 1, 2), (1, 2, 2), (2, 2, 2)])
         self.assertEqual(nx.number_of_edges(self.final_graph), 12)
         self.assertEqual(nx.number_of_nodes(self.final_graph), 6)
         self.assertEqual(self.final_graph.edges(), [(0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (1, 5),

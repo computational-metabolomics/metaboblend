@@ -29,10 +29,6 @@ import pickle
 
 from metaboverse import *
 
-sys.path.append(os.path.join("..", "metaboverse"))
-from auxiliary import *
-from databases import create_isomorphism_database
-
 
 def to_test_result(*args):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
@@ -71,7 +67,7 @@ class IsomorphDbTestCase(unittest.TestCase):
         test_db_cursor = test_db.cursor()
         test_db_cursor.execute("SELECT * FROM subgraphs")
 
-        self.assertListEqual(ref_db_cursor.fetchall(), test_db_cursor.fetchall())
+        self.assertEqual(ref_db_cursor.fetchall(), test_db_cursor.fetchall())
 
         ref_db.close()
         test_db.close()
@@ -85,30 +81,30 @@ class IsomorphDbTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-            if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                os.remove(to_test_result("connectivity", "pkls", pkl))
-
-        if os.path.isdir(to_test_result("connectivity", "pkls")):
-            os.rmdir(to_test_result("connectivity", "pkls"))
-
-        for pkl in os.listdir(to_test_result("pkls")):
-            if os.path.isfile(to_test_result("pkls", pkl)):
-                os.remove(to_test_result("pkls", pkl))
-
-        if os.path.isdir(to_test_result("pkls")):
-            os.rmdir(to_test_result("pkls"))
-
-        if os.path.isfile(to_test_result("k_graphs.sqlite")):
-            os.remove(to_test_result("k_graphs.sqlite"))
-
-        if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-            os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-        if os.path.isdir(to_test_result("connectivity")):
-            os.rmdir(to_test_result("connectivity"))
-
         if os.path.isdir(to_test_result()):
+            if os.path.isdir(to_test_result("pkls")):
+                for pkl in os.listdir(to_test_result("pkls")):
+                    if os.path.isfile(to_test_result("pkls", pkl)):
+                        os.remove(to_test_result("pkls", pkl))
+
+                os.rmdir(to_test_result("pkls"))
+
+            if os.path.isfile(to_test_result("k_graphs.sqlite")):
+                os.remove(to_test_result("k_graphs.sqlite"))
+
+            if os.path.isdir(to_test_result("connectivity")):
+                if os.path.isdir(to_test_result("connectivity", "pkls")):
+                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
+                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
+                            os.remove(to_test_result("connectivity", "pkls", pkl))
+
+                    os.rmdir(to_test_result("connectivity", "pkls"))
+
+                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
+                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
+
+                os.rmdir(to_test_result("connectivity"))
+
             os.rmdir(to_test_result())
 
 
