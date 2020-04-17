@@ -250,7 +250,6 @@ class DatabasesTestCase(unittest.TestCase):
 
         test_db_cursor.execute("SELECT * FROM compounds")
         for i, row in enumerate(test_db_cursor.fetchall()):
-            print(row)
             if i == 0:
                 self.assertEqual(row, ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1',
                                        'NCCc1ccc(O)c(O)c1', 'NCCC1:C:C:C(O):C(O):C:1'))
