@@ -20,12 +20,9 @@
 #
 
 
-import os
 import unittest
 import zipfile
-import pickle
-from rdkit import Chem
-from metaboverse import *
+from metaboverse.databases import *
 
 
 def to_test_result(*args):
@@ -159,9 +156,9 @@ class DatabasesTestCase(unittest.TestCase):
             mol = Chem.MolFromSmiles(record_dict["smiles"])
 
         libs = [{'smiles': '*[C@@H]1O[C@H](CO)[C@H](O)[C@H](O)[C@H]1O', 'bond_types': {4: [1.0]},
-                  'degree_atoms': {4: 1}, 'valence': 1, 'atoms_available': 1, 'dummies': [5]},
-                 {'smiles': '*O[C@@H]1O[C@H](CO)[C@H](*)[C@H](O)[C@H]1O', 'bond_types': {5: [1.0], 11: [1.0]},
-                  'degree_atoms': {5: 1, 11: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [6, 12]}]
+                 'degree_atoms': {4: 1}, 'valence': 1, 'atoms_available': 1, 'dummies': [5]},
+                {'smiles': '*O[C@@H]1O[C@H](CO)[C@H](*)[C@H](O)[C@H]1O', 'bond_types': {5: [1.0], 11: [1.0]},
+                 'degree_atoms': {5: 1, 11: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [6, 12]}]
 
         for edges in [[(0, 1, 2, 22, 3, 16, 17, 18, 19, 20, 21), (0, 1, 2, 22, 3, 4, 16, 17, 18, 19, 20)]]:
             for i, edge_idx in enumerate(edges):
@@ -194,7 +191,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
         ref_db_cursor = ref_db.cursor()
-        ref_db_cursor.execute("select exact_mass__0_0001, lib from substructures")
+        ref_db_cursor.execute("SELECT exact_mass__0_0001, lib FROM substructures")
         for row in ref_db_cursor.fetchall():
             lib = pickle.loads(row[1])
             self.assertEqual(round(calculate_exact_mass(lib["mol"]), 4), row[0])

@@ -20,14 +20,10 @@
 #
 
 
-import os
 import unittest
 import zipfile
-import sqlite3
-import pickle
 from shutil import copyfile
-from rdkit import Chem
-from metaboverse import *
+from metaboverse.databases import *
 
 
 def to_test_result(*args):
@@ -98,7 +94,6 @@ class DatabasesTestCase(unittest.TestCase):
             self.assertTrue(cpd_entry[0] == "HMDB0000158" or cpd_entry[0] == "HMDB0000122")
 
         db.close()
-
 
     def test_filter_hmdbid_substructures(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), "")
@@ -339,6 +334,9 @@ class DatabasesTestCase(unittest.TestCase):
 
                 if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
                     os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
+
+                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
+                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
 
                 if os.path.isdir(to_test_result("test_mols", "hmdb")):
                     for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):

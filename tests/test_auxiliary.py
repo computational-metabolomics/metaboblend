@@ -21,13 +21,10 @@
 
 
 import unittest
-import networkx as nx
-import sys
-import os
 from io import BytesIO
 import zipfile
 import pickle
-from metaboverse import *
+from metaboverse.auxiliary import *
 
 
 def to_test_result(*args):
@@ -64,9 +61,9 @@ class AuxiliaryTestCase(unittest.TestCase):
         self.assertEqual(self.p_list, [(1, 1), (1, 2), (2, 2), (1, 1, 1), (1, 1, 2), (1, 2, 2), (2, 2, 2)])
         self.assertEqual(nx.number_of_edges(self.final_graph), 12)
         self.assertEqual(nx.number_of_nodes(self.final_graph), 6)
-        self.assertEqual(self.final_graph.edges(), [(0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (1, 5),
-                                                    (2, 4), (2, 5), (3, 4), (3, 5)])
-        self.assertEqual(self.final_graph.nodes(), [0, 1, 2, 3, 4, 5])
+        self.assertEqual(list(self.final_graph.edges()), [(0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4),
+                                                          (1, 5), (2, 4), (2, 5), (3, 4), (3, 5)])
+        self.assertEqual(list(self.final_graph.nodes()), [0, 1, 2, 3, 4, 5])
 
     def test_draw_subgraph(self):
         # INSERT: 1 CU 1 2 (2, 2) (3, 3) ((1, 2), (2, 1)) 4 3

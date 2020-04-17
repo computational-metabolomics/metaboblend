@@ -20,14 +20,10 @@
 #
 
 
-import os
 import unittest
-import sys
 import zipfile
-import sqlite3
-import pickle
-
-from metaboverse import *
+from metaboverse.databases import *
+from metaboverse.auxiliary import get_tool_paths
 
 
 def to_test_result(*args):

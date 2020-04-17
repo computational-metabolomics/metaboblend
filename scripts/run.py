@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from metaboverse import *
+from metaboverse.databases import *
 
 
 def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,

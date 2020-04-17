@@ -20,11 +20,10 @@
 #
 
 
-import os
 import unittest
 import zipfile
-from rdkit import Chem
-from metaboverse import *
+from metaboverse.build_structures import *
+from metaboverse.databases import *
 
 
 def to_test_result(*args):
@@ -160,18 +159,17 @@ class BuildStructuresTestCase(unittest.TestCase):
         mass_0_0001 = 5.005
         masses = [1, 2, 3, 4]
 
-        self.assertEqual([sum for sum in subset_sum(masses, mass_1)], [[2, 3], [1, 4]])
-        self.assertEqual([sum for sum in subset_sum(masses, mass_0_0001)], [])
+        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_1)], [[2, 3], [1, 4]])
+        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [])
 
         masses = [1.005, 2, 3, 4]
-        self.assertEqual([sum for sum in subset_sum(masses, mass_0_0001)], [[1.005, 4]])
+        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [[1.005, 4]])
 
         masses = [1.004, 2, 3, 4]
-        self.assertEqual([sum for sum in subset_sum(masses, mass_0_0001)], [[1.004, 4]])
+        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [[1.004, 4]])
 
         masses = [1.003, 2, 3, 4]
-        self.assertEqual([sum for sum in subset_sum(masses, mass_0_0001)], [])
-
+        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [])
 
     def test_combine_ecs(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), "")
@@ -215,8 +213,8 @@ class BuildStructuresTestCase(unittest.TestCase):
 
     def test_add_bonds(self):
         mol_comb = [Chem.MolFromSmiles("*C(*)C(=O)O.NCCc1c:*:*:cc1", False),
-                     Chem.MolFromSmiles("*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", False),
-                     Chem.MolFromSmiles("*C[C@H](N)C(=O)O.*c1ccc(O)cc1", False)]
+                    Chem.MolFromSmiles("*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", False),
+                    Chem.MolFromSmiles("*C[C@H](N)C(=O)O.*c1ccc(O)cc1", False)]
 
         atoms_available = [[1, 10, 13], [1, 3, 6, 10], [2, 8]]
 
