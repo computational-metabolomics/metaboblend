@@ -21,7 +21,6 @@
 
 
 import os
-import sys
 import unittest
 import zipfile
 import pickle
@@ -200,6 +199,8 @@ class DatabasesTestCase(unittest.TestCase):
             lib = pickle.loads(row[1])
             self.assertEqual(round(calculate_exact_mass(lib["mol"]), 4), row[0])
 
+        ref_db.close()
+
     def test_update_substructure_database(self):  # requires create_compound_database from SubstructureDb
         db = SubstructureDb(to_test_result("test_db.sqlite"), "")
         db.create_compound_database()
@@ -273,6 +274,9 @@ class DatabasesTestCase(unittest.TestCase):
             unique_ha.add(ha[0])
 
         [self.assertTrue(ha in unique_ha) for ha in [4, 5, 6, 7, 8]]
+
+        test_db.close()
+        ref_db.close()
 
     @classmethod
     def tearDownClass(cls):

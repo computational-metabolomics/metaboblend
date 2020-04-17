@@ -46,7 +46,7 @@ def subset_sum(l, mass, toll=0.001):
         yield [l[0]] + subset
 
 
-def combine_ecs(ss2_grp, db, table_name, accuracy=None, ppm=None):
+def combine_ecs(ss2_grp, db, table_name, accuracy, ppm=None):
     ecs = []
 
     for i in range(len(ss2_grp)):

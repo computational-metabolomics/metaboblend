@@ -452,9 +452,11 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 def get_elements(mol, elements=None):
     if not elements:
         elements = {"C": 0, "H": 0, "N": 0, "O": 0, "P": 0, "S": 0, "*": 0}
+
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
         elements[atom.GetSymbol()] += 1
+
     return elements
 
 
@@ -555,7 +557,7 @@ def subset_sgs_sizes(sgs, n_min, n_max):
     return sgs_new
 
 
-def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
+def get_sgs(record_dict, n_min, n_max, method="exhaustive"):  # n_min, n_max = number of edges
     if method == "exhaustive":
         return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
 
