@@ -23,7 +23,6 @@
 import unittest
 import zipfile
 from metaboverse.databases import *
-from metaboverse.auxiliary import get_tool_paths
 
 
 def to_test_result(*args):
@@ -36,7 +35,25 @@ class IsomorphDbTestCase(unittest.TestCase):
     def setUpClass(cls):
         os.mkdir(to_test_result())
 
-        cls.path_geng, cls.path_ri = get_tool_paths()
+        if sys.platform == "win32" or sys.platform == "win64":
+            cls.path_geng = os.path.join("..", "tools", "nauty25r9_win", "geng")
+            cls.path_ri = os.path.join("..", "tools", "RI_win", "RI3.6-release", "ri36")
+
+        elif sys.platform == "darwin":
+            cls.path_geng = os.path.join("..", "tools", "nauty25r9_mac", "geng")
+            cls.path_ri = os.path.join("..", "tools", "RI_mac", "RI3.6-release", "ri36")
+
+        elif sys.platform == "linux2":
+            if "bb" in "socket.gethostname":
+                cls.path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
+                cls.path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
+            else:
+                cls.path_geng = os.path.join("..", "tools", "nauty25r9_bb", "geng")
+                cls.path_ri = os.path.join("..", "tools", "RI_bb", "RI3.6-release", "ri36")
+
+        elif sys.platform == "linux":
+            cls.path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
+            cls.path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
