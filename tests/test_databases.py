@@ -210,8 +210,6 @@ class DatabasesTestCase(unittest.TestCase):
 
         test_db = sqlite3.connect(to_test_result("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
-        ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
-        ref_db_cursor = ref_db.cursor()
 
         test_db_cursor.execute("""SELECT smiles,
                                          heavy_atoms,
@@ -233,26 +231,6 @@ class DatabasesTestCase(unittest.TestCase):
                                          valence_atoms,
                                          atoms_available 
                                          FROM substructures WHERE valence <= 4""")
-        ref_db_cursor.execute("""SELECT smiles,
-                                         heavy_atoms,
-                                         length,
-                                         exact_mass__1,
-                                         exact_mass__0_1,
-                                         exact_mass__0_01,
-                                         exact_mass__0_001,
-                                         exact_mass__0_0001,
-                                         exact_mass,
-                                         count,
-                                         C,
-                                         H,
-                                         N,
-                                         O,
-                                         P,
-                                         S,
-                                         valence,
-                                         valence_atoms,
-                                         atoms_available  
-                                         FROM substructures WHERE valence <= 4""")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
                 self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.1, 56.05, 56.05, 56.05, 56.05002399999998,
@@ -263,12 +241,22 @@ class DatabasesTestCase(unittest.TestCase):
         self.assertEqual(total_rows, 585)
 
         test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
-        ref_db_cursor.execute("SELECT * FROM hmdbid_substructures")
-        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row, ('HMDB0000073', '*:c(:*)CCN'))
+            total_rows = i
+
+        self.assertEqual(total_rows, 1292)
 
         test_db_cursor.execute("SELECT * FROM compounds")
-        ref_db_cursor.execute("SELECT * FROM compounds")
-        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            print(row)
+            if i == 0:
+                self.assertEqual(row, ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1',
+                                       'NCCc1ccc(O)c(O)c1', 'NCCC1:C:C:C(O):C(O):C:1'))
+            total_rows = i
+
+        self.assertEqual(total_rows, 3)
 
         test_db_cursor.execute("SELECT heavy_atoms FROM substructures")
         unique_ha = set()
@@ -279,7 +267,6 @@ class DatabasesTestCase(unittest.TestCase):
         [self.assertTrue(ha in unique_ha) for ha in [4, 5, 6, 7, 8]]
 
         test_db.close()
-        ref_db.close()
 
     @classmethod
     def tearDownClass(cls):
