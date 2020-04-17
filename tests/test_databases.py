@@ -208,7 +208,6 @@ class DatabasesTestCase(unittest.TestCase):
             update_substructure_database(to_test_result("test_mols", "hmdb", record),
                                          to_test_result("test_db.sqlite"), 3, 7, method="exhaustive")
 
-        print(to_test_result("test_db.sqlite"))
         test_db = sqlite3.connect(to_test_result("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
         ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
@@ -254,7 +253,14 @@ class DatabasesTestCase(unittest.TestCase):
                                          valence_atoms,
                                          atoms_available  
                                          FROM substructures WHERE valence <= 4""")
-        self.assertEqual(test_db_cursor.fetchall(), ref_db_cursor.fetchall())
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.1, 56.05, 56.05, 56.05, 56.05002399999998,
+                                       0, 3, 6, 1, 0, 0, 0, 2, '{3: 2}', 1))
+
+            total_rows = i
+
+        self.assertEqual(total_rows, 585)
 
         test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
         ref_db_cursor.execute("SELECT * FROM hmdbid_substructures")
