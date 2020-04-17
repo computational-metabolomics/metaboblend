@@ -55,26 +55,6 @@ class AuxiliaryTestCase(unittest.TestCase):
             cls.p_list.append(p)
             cls.final_graph = G
 
-        if sys.platform == "win32" or sys.platform == "win64":
-            cls.path_geng = os.path.join("..", "tools", "nauty25r9_win", "geng")
-            cls.path_ri = os.path.join("..", "tools", "RI_win", "RI3.6-release", "ri36")
-
-        elif sys.platform == "darwin":
-            cls.path_geng = os.path.join("..", "tools", "nauty25r9_mac", "geng")
-            cls.path_ri = os.path.join("..", "tools", "RI_mac", "RI3.6-release", "ri36")
-
-        elif sys.platform == "linux2":
-            if "bb" in "socket.gethostname":
-                cls.path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
-                cls.path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
-            else:
-                cls.path_geng = os.path.join("..", "tools", "nauty25r9_bb", "geng")
-                cls.path_ri = os.path.join("..", "tools", "RI_bb", "RI3.6-release", "ri36")
-
-        elif sys.platform == "linux":
-            cls.path_geng = os.path.join("..", "tools", "nauty25r9_unix", "geng")
-            cls.path_ri = os.path.join("..", "tools", "RI_unix", "RI3.6-release", "ri36")
-
     def test_calculate_complete_multipartite_graphs(self):
         self.assertEqual(self.p_list, [(1, 1), (1, 2), (2, 2), (1, 1, 1), (1, 1, 2), (1, 2, 2), (2, 2, 2)])
         self.assertEqual(nx.number_of_edges(self.final_graph), 12)
