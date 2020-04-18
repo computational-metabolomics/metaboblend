@@ -81,7 +81,12 @@ class IsomorphDbTestCase(unittest.TestCase):
         test_db_cursor = test_db.cursor()
         test_db_cursor.execute("SELECT * FROM subgraphs")
 
-        self.assertEqual(ref_db_cursor.fetchall(), test_db_cursor.fetchall())
+        ref_rows = {}
+        for row in ref_db_cursor.fetchall():
+            ref_rows[row[0]] = row
+
+        for row in test_db_cursor.fetchall():
+            self.assertEqual(row, ref_rows[row[0]])
 
         ref_db.close()
         test_db.close()
