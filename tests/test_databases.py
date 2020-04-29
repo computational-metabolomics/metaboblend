@@ -20,6 +20,7 @@
 #
 
 
+import os
 import unittest
 import zipfile
 from metaboverse.databases import *
