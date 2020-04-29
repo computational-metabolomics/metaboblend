@@ -1,21 +1,27 @@
-.. Metabo? documentation master file, created by
-   sphinx-quickstart on Wed Apr 29 12:59:33 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Metaboverse's documentation!
 =======================================
-
+TODO: change package name
 |Version| |Py versions| |Git| |Bioconda| |Build Status (Travis)| |Build Status (AppVeyor)| |License| |RTD doc| |codecov| |binder|
 
 Python package for *de novo* structural elucidation of small molecules in mass spectrometry-based Metabolomics
 
-Contents
-==================
-
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
+
+   installation
+   bugs_and_issues
+   changelog
+   citation
+   license
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Metaboverse:
+
+   metaboverse.auxiliary
+   metaboverse.build_structures
+   metaboverse.databases
 
 .. |Build Status (Travis)| image:: https://img.shields.io/travis/computational-metabolomics/metaboverse.svg?style=flat&maxAge=3600&label=Travis-CI
    :target: https://travis-ci.com/computational-metabolomics/metaboverse
@@ -48,8 +54,7 @@ Contents
    :target: https://mybinder.org/v2/gh/computational-metabolomics/metaboverse/master?filepath=notebooks%2Fworkflow.ipynb
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

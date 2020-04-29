@@ -22,11 +22,17 @@
 import itertools
 import networkx as nx
 import pylab as plt
-import sys
-import os
 
 
 def calculate_complete_multipartite_graphs(sizes, boxes):
+    """
+    Test docstring
+
+    :param sizes: Test
+    :param boxes: Test
+    :return: Test
+    """
+
     for nb in range(2, boxes+1):
         for p in itertools.combinations_with_replacement(sizes, nb):
             g = nx.complete_multipartite_graph(*p)
