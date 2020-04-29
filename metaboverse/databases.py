@@ -21,11 +21,10 @@
 
 import io
 import os
-from io import BytesIO
+import sys
 import subprocess
 import pickle
 import sqlite3
-import sys
 import tempfile
 from collections import OrderedDict
 import xml.etree.ElementTree as etree
@@ -39,6 +38,17 @@ sqlite3.register_converter("PICKLE", pickle.loads)
 
 
 def reformat_xml(source, encoding="utf8"):
+    """
+    Reformats HMDB xml files to be compatible with :py:meth:`metaboverse.databases.parse_xml`; some such files do not
+    contain a `<hmdb xmlns="http://www.hmdb.ca">` header.
+
+    :param source: File to be reformatted.
+
+    :param encoding: Encoding of source file.
+
+    :return: Source file destination.
+    """
+
     with io.open(source, "r", encoding=encoding) as xml:
         xml_contents = xml.readlines()
         if "hmdb" in xml_contents[1]:
@@ -55,14 +65,30 @@ def reformat_xml(source, encoding="utf8"):
 
 
 def parse_xml(source, encoding="utf8", reformat=False):
+    """
+    Parses the contents of HMDB xml files to to extract information for the generation of substructures.
+
+    :param source: Source file destination.
+
+    :param encoding: Encoding of source file.
+
+    :param reformat: Whether to apply :py:meth:`metaboverse.databases.reformat_xml` to the XML file. Is required for
+        XML files recording single metabolites.
+
+        * **True** Add a `<hmdb xmlns="http://www.hmdb.ca">` header to the XML file before parsing.
+        * **False** Parse the XML file as it is (recommended if header is present).
+
+    :return: The XML file converted to a dictionary.
+    """
+
     if reformat:
         reformat_xml(source, encoding)
 
     with io.open(source, "r", encoding=encoding) as inp:
         record_out = OrderedDict()
 
-        xmldec = inp.readline()  # required despite variables not used
-        xmldec2 = inp.readline()
+        inp.readline()
+        inp.readline()
 
         xml_record = ""
         path = []
@@ -99,14 +125,35 @@ def parse_xml(source, encoding="utf8", reformat=False):
 
 
 class ConnectivityDb:
+    """
+    Object containing a reference to the connectivity database.
+
+    :param db: Path to the connectivity database.
+    """
 
     def __init__(self, db):
+        """Constructor method"""
+
         self.db = db
 
 
 class SubstructureDb:
+    """
+    Methods for interacting with the SQLITE3 substructure and connectivity databases. Provides a connection to the
+    substructure database and, if provided, the connectivity database.
 
-    def __init__(self, db, path_pkls, db2=None):
+    :ivar db: Path to the substructure database.
+    :ivar db2: Path to the connectivity database.
+    :ivar path_pkls: Path to the directory containing connectivity graph PKLs
+    :ivar conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
+        as 'graphs'.
+    :ivar cursor: A :py:meth:`sqlite3.connection.cursor` for the substructure database; the connectivity database will
+        be attached as "graphs".
+    """
+
+    def __init__(self, db, path_pkls="", db2=None):
+        """Constructor method"""
+
         self.db = db
         self.db2 = db2
         self.path_pkls = path_pkls
@@ -118,6 +165,15 @@ class SubstructureDb:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
 
     def select_compounds(self, cpds=[]):
+        """
+        Select all keys from the compounds table of the substructure database, filtered by HMDB IDs if provided.
+
+        :param cpds: A list of HMDB IDs by which to filter the compounds; applies no filter if not provided.
+
+        :return: Returns the result of the compounds table query as :py:meth:`sqlite3.connection.cursor.fetchall`;
+            essentially provides a list containing a list for the values of each row.
+        """
+
         if len(cpds) > 0:
             sql = " WHERE hmdbid in ('%s')" % ("', '".join(map(str, cpds)))
         else:
@@ -125,6 +181,7 @@ class SubstructureDb:
 
         self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles,
                                smiles_rdkit, smiles_rdkit_kek FROM compounds%s""" % sql)
+
         return self.cursor.fetchall()
 
     def filter_hmdbid_substructures(self, min_node_weight):
@@ -726,7 +783,7 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
             if debug:
                 print(line_geng)
 
-            sG = nx.read_graph6(BytesIO(line_geng))
+            sG = nx.read_graph6(io.BytesIO(line_geng))
 
             k_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
             k_gfu.write(graph_to_ri(G, "k_graph"))
