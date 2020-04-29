@@ -87,10 +87,14 @@ def reindex_atoms(records):
     return mol_comb, atoms_available, atoms_to_remove, bond_types
 
 
+def get_rdkit_bond_types():
+    return {1: Chem.rdchem.BondType.SINGLE,
+            1.5: Chem.rdchem.BondType.AROMATIC,
+            2: Chem.rdchem.BondType.DOUBLE}
+
+
 def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
-    rdkit_bond_types = {1: Chem.rdchem.BondType.SINGLE,
-                        1.5: Chem.rdchem.BondType.AROMATIC,
-                        2: Chem.rdchem.BondType.DOUBLE}
+    rdkit_bond_types = get_rdkit_bond_types()
 
     G = nx.Graph()
     G.add_edges_from(edges)
@@ -210,6 +214,8 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
                                  max_valence,
                                  max_atoms_available,))
 
+    db.create_indexes(table=table_name, selection="gen_subs_table")
+
     return table_name
 
 
@@ -222,7 +228,6 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
 
         iii = 0
         for l in itertools.product(*list_ecs):
-
             sum_ec = list(numpy.array(l).sum(axis=0))
             iii += 1
 
@@ -262,20 +267,17 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
 
                     lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
 
-                    nA, v, vA = (), (), ()
+                    vA = ()
                     for d in lll:
-                        nA = nA + (d["atoms_available"],)
-                        v = v + (d["valence"],)
-                        vA = vA + (tuple(d["degree_atoms"].values()),)
-
+                        vA += (tuple(d["degree_atoms"].values()),)
                     if str(vA) not in configs_iso:
                         if debug:
-                            print("NO:", (str(nA), str(v), str(vA)))
+                            print("NO:", str(vA))
                             print("============")
                         continue
                     else:
                         if debug:
-                            print("YES:", (str(nA), str(v), str(vA)))
+                            print("YES:", str(vA))
                             print("============")
 
                     mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
@@ -284,6 +286,7 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                         print("## Atoms Available (indexes):", atoms_available)
                         print("## Atoms to remove (dummies):", atoms_to_remove)
                         print("## Type of bonds to form:", bond_types)
+
                     iso_n = 0
                     for edges in db.isomorphism_graphs(configs_iso[str(vA)]):  # EDGES
 
@@ -292,7 +295,6 @@ def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=Non
                             print("## ISO {}".format(iso_n))
 
                         if debug:
-                            print(edges)
                             print("1: Add bonds")
                         mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
                         if mol_e is None:
