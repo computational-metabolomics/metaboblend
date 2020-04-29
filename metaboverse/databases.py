@@ -334,27 +334,33 @@ class SubstructureDb:
                                    smiles_rdkit,
                                    PRIMARY KEY (hmdbid, smiles_rdkit))""")
 
-    def create_indexes(self):
+    def create_indexes(self, table="substructures", selection="all"):
 
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__1__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_1__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_01__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_001__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_0001__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS atoms__Valence__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__1")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_1")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_001")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_0001")
+        self.cursor.execute("DROP INDEX IF EXISTS atoms")
+        if selection != "gen_subs_table":
+            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available")
 
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__1)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_1)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_01__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_01)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_001__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_001)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_0001__idx
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_0001)""")
-        self.cursor.execute("""CREATE INDEX atoms__Valence__idx 
-                               ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
+        self.cursor.execute("""CREATE INDEX mass__1
+                               ON %s (exact_mass__1)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_1
+                               ON %s (exact_mass__0_1)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_01
+                               ON %s (exact_mass__0_01)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_001 
+                               ON %s (exact_mass__0_001)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_0001
+                               ON %s (exact_mass__0_0001)""" % table)
+        self.cursor.execute("""CREATE INDEX atoms 
+                               ON %s (C, H, N, O, P, S);""" % table)
+        if selection != "gen_subs_table":
+            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available 
+                                   ON %s (heavy_atoms, atoms_available, valence);""" % table)
 
     def close(self):
         self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
