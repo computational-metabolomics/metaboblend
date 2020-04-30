@@ -96,10 +96,7 @@ class AuxiliaryTestCase(unittest.TestCase):
 
             if len(mappings) > 0:
                 gi = graph_info(self.p_list[-1], sG, mappings, )
-                self.assertEqual(gi[0], gi_val)  # test gi vs reference values
-                self.assertEqual(gi[1][0], self.p_list[-1])
-                self.assertEqual(gi[1][1], sG)
-                self.assertEqual(gi[1][2], mappings)
+                self.assertEqual(gi, gi_val)  # test gi vs reference values
 
                 for m in mappings:
                     ug = nx.relabel_nodes(sG, m, copy=True)
