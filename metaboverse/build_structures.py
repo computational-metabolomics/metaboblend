@@ -19,12 +19,16 @@
 # along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+import os
+import multiprocessing
 import copy
 import itertools
+from functools import partial
 import networkx as nx
 import numpy
 from operator import itemgetter
 from rdkit import Chem
+from .databases import SubstructureDb
 
 
 def subset_sum(l, mass, toll=0.001):
