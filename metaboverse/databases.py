@@ -903,7 +903,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
             if edge_idxs is not None:
                 sgs.append(edge_idxs)
 
-        return subset_sgs_max_atoms_available([sgs], n_min, n_max)
+        return subset_sgs_sizes([sgs], n_min, n_max)
 
     elif method == "BRICS":
 
@@ -916,7 +916,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
             if edge_idxs is not None:
                 sgs.append(edge_idxs)
 
-        return subset_sgs_max_atoms_available([sgs], n_min, n_max)
+        return subset_sgs_sizes([sgs], n_min, n_max)
 
 
 def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive"):
