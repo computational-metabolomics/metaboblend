@@ -151,7 +151,7 @@ class SubstructureDb:
         be attached as "graphs".
     """
 
-    def __init__(self, db, path_pkls="", db2=None):
+    def __init__(self, db, path_pkls="", db2=None, clean=True):
         """Constructor method"""
 
         self.db = db
@@ -160,6 +160,8 @@ class SubstructureDb:
 
         self.conn = sqlite3.connect(self.db)
         self.cursor = self.conn.cursor()
+
+        self.clean = clean
 
         if self.db2 is not None:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
@@ -492,9 +494,11 @@ class SubstructureDb:
                                    ON %s (heavy_atoms, atoms_available, valence);""" % table)
 
     def close(self):
-        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
-        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
-        self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
+        if self.clean:
+            self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
+            self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
+            self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
+
         self.conn.close()
 
 
