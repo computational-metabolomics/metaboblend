@@ -831,7 +831,7 @@ def get_substructure_bond_idx(prb_mol, ref_mol):
     return bond_idx
 
 
-def subset_sgs_max_atoms_available(sgs, n_min, n_max):
+def subset_sgs_sizes(sgs, n_min, n_max):
     """
     Some substructure generation methods require that their results be filtered to ensure that they are within the
     databvase substructure size requirements.
