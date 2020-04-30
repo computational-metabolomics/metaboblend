@@ -142,12 +142,12 @@ class SubstructureDb:
     Methods for interacting with the SQLITE3 substructure and connectivity databases. Provides a connection to the
     substructure database and, if provided, the connectivity database.
 
-    :ivar db: Path to the substructure database.
-    :ivar db2: Path to the connectivity database.
+    :param db: Path to the substructure database.
+    :param db2: Path to the connectivity database.
     :ivar path_pkls: Path to the directory containing connectivity graph PKLs
-    :ivar conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
+    :param conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
         as 'graphs'.
-    :ivar cursor: A :py:meth:`sqlite3.connection.cursor` for the substructure database; the connectivity database will
+    :param cursor: A :py:meth:`sqlite3.connection.cursor` for the substructure database; the connectivity database will
         be attached as "graphs".
     """
 
@@ -170,7 +170,7 @@ class SubstructureDb:
 
         :param cpds: A list of HMDB IDs by which to filter the compounds; applies no filter if not provided.
 
-        :return: Returns the result of the compounds table query as :py:meth:`sqlite3.connection.cursor.fetchall`;
+        :return: Returns the result of the compounds table query via :py:meth:`sqlite3.connection.cursor.fetchall`;
             essentially provides a list containing a list for the values of each row.
         """
 
@@ -184,7 +184,16 @@ class SubstructureDb:
 
         return self.cursor.fetchall()
 
-    def filter_hmdbid_substructures(self, min_node_weight):
+    def filter_hmdbid_substructures(self, min_node_weight=2):
+        """
+        Filters `hmdbid_substructures` table in the substructure database by the frequency of the substructure; allows
+        for the removal of non-unique (min_node_weight = 2) or infrequent (min_node_weight > 2) substructures. Generates
+        a new table, `unique_hmdbid`, which contains distinct hmdbids and 'filtered_hmdbid_substructures' which contains
+        the filtered substructures with their frequency.
+
+        :param min_node_weight: Minimal count of the substructure within 'hmdbid_substructures'.
+        """
+
         self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
         self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
 
@@ -194,8 +203,37 @@ class SubstructureDb:
                                    SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
                                    GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
 
-
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
+        """
+        Generate networks to explore the co-occurence of substructures in the substructure database.
+        
+        :param method: Which method to use for the generation of a substructure co-occurence network.
+
+            * **default** Generate a standard substructure network using the most time-efficient method. Node weights
+                represent the frequency of substructures in the substructure database whilst edge weights represent the
+                co-occurence of these substructures. See
+                :py:meth:`metaboverse.databases.default_substructure_network`.
+
+            * **extended** Alternative method for generating substructure networks that generates an intermediate
+                metabolite-substructure linkage network; returns the same network as the **default** method. See
+                :py:meth:`metaboverse.databases.extended_substructure_network`.
+
+            * **parent_structure_linkage**  Uses the **extended** method and returns the intermediate
+                metabolite-substructure linkage network; instead of weighted edges between substructures being present,
+                the substructures are connected to the metabolites by which they were generated.
+
+        :param min_node_weight: Minimum frequency of substructures to be included in the network; a minimum node weight
+            of 2 means that all non-unique substructures will be present.
+
+        :param remove_isolated: Isolated nodes are substructures that do not co-occur with any others.
+
+            * **True** Remove isolated nodes from the final network.
+
+            * **False** Allow isolated nodes to remain in the final network.
+
+        :return: A :py:meth:`networkx.Graph` object containing the specified network.
+        """
+
         substructure_graph = nx.Graph()
         self.filter_hmdbid_substructures(min_node_weight)
 
@@ -223,6 +261,28 @@ class SubstructureDb:
         return substructure_graph
 
     def extended_substructure_network(self, substructure_graph, unique_hmdb_ids, include_parents=False):
+        """
+        Extended method for substructure network generation - ie, an intermediate substructure network is generated
+        which involves substructure nodes, weighted by frequency, and metabolite nodes; unweighted edges are found
+        between substructures and metabolites, representing the structures from which substructures were generated.
+        This intermediate network can be returned, or it may be transformed into the standard substructure network
+        generated by :py:meth:`metaboverse.databases.default_substructure_network`.
+
+        :param substructure_graph: A :py:meth:`networkx.Graph` containing substructure nodes, weighted by their
+            frequencies in the substructure database. Can be passed by
+            :py:meth:`metaboverse.databases.generate_substructure_network`.
+
+        :param unique_hmdb_ids: A list containing distinct HMDB IDs from the substructure database.
+
+        :param include_parents: Which type of substructure network to return.
+
+            * **True** Return the intermediate network containing metabolite nodes.
+
+            * **False** Return the standard substructure network.
+
+        :return: A :py:meth:`networkx.Graph` object containing the specified network.
+        """
+
         # add node for each parent structure
         for unique_hmdb_id in unique_hmdb_ids:
             substructure_graph.add_node(unique_hmdb_id[0])
@@ -250,6 +310,18 @@ class SubstructureDb:
         return substructure_graph
 
     def default_substructure_network(self, substructure_graph, unique_hmdb_ids):
+        """
+        Standard method for generating substructure co-occurence networks.
+
+        :param substructure_graph: A :py:meth:`networkx.Graph` containing substructure nodes, weighted by their
+            frequencies in the substructure database. Can be passed by
+            :py:meth:`metaboverse.databases.generate_substructure_network`.
+
+        :param unique_hmdb_ids: A list containing distinct HMDB IDs from the substructure database.
+
+        :return: A :py:meth:`networkx.Graph` object containing the specified network.
+        """
+
         # add edges by walking through hmdbid_substructures
         for unique_hmdb_id in unique_hmdb_ids:
             self.cursor.execute("""SELECT * FROM hmdbid_substructures 
