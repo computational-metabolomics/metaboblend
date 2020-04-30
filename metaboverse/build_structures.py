@@ -91,14 +91,10 @@ def reindex_atoms(records):
     return mol_comb, atoms_available, atoms_to_remove, bond_types
 
 
-def get_rdkit_bond_types():
-    return {1: Chem.rdchem.BondType.SINGLE,
-            1.5: Chem.rdchem.BondType.AROMATIC,
-            2: Chem.rdchem.BondType.DOUBLE}
-
-
 def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
-    rdkit_bond_types = get_rdkit_bond_types()
+    rdkit_bond_types = {1: Chem.rdchem.BondType.SINGLE,
+                        1.5: Chem.rdchem.BondType.AROMATIC,
+                        2: Chem.rdchem.BondType.DOUBLE}
 
     G = nx.Graph()
     G.add_edges_from(edges)
@@ -150,8 +146,11 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
     return mol_edit
 
 
-def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
-          fragment_mass=None, ppm=None, debug=False, out_mode="w"):
+def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
+          path_db_k_graphs="../databases/k_graphs.sqlite", path_pkls="../databases/pkls",
+          path_db="../databases/substructures.sqlite", fragment_mass=None, ppm=None, debug=False, out_mode="w"):
+
+    db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
     table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
 
     if fragment_mass is None:  # standard build method
@@ -171,6 +170,12 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
             tolerance = round(tolerance, 4)
 
         max_n_substructures -= 1
+
+    if os.name == "nt":  # multiprocessing freeze support on windows
+        multiprocessing.freeze_support()
+
+    if out_mode == "w":
+        open(fn_out, "w").close()
 
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
 
@@ -200,9 +205,20 @@ def build(mc, exact_mass, db, fn_out, heavy_atoms, max_valence, accuracy, max_at
                                                                                    len(subsets_r2)))
             print("------------------------------------------------------")
 
-        build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm, debug)
+        l = multiprocessing.Lock()
+        with multiprocessing.Pool(initializer=multiprocess_init, initargs=(l,)) as pool:
 
-    out.close()
+            pool.map(partial(build_from_subsets, configs_iso=configs_iso, mc=mc, table_name=table_name, ppm=ppm,
+                             fn_out=fn_out, debug=debug, path_db_k_graphs=path_db_k_graphs, path_pkls=path_pkls,
+                             path_db=path_db),
+                     subsets_r2)
+
+    db.close()
+
+
+def multiprocess_init(l):
+    global lock
+    lock = l
 
 
 def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
@@ -223,105 +239,120 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
     return table_name
 
 
-def build_from_subsets(configs_iso, subsets_r2, mc, db, out, table_name, ppm=None, debug=False):
-    for ss2_grp in subsets_r2:
-        list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
+def build_from_subsets(ss2_grp, configs_iso, mc, table_name, fn_out,
+                       path_db_k_graphs="../databases/k_graphs.sqlite", path_pkls="../databases/pkls",
+                       path_db="../databases/substructures.sqlite", ppm=None, debug=False):
 
-        if len(list_ecs) == 0:
-            continue
+    out = open(fn_out, "a")
 
-        iii = 0
-        for l in itertools.product(*list_ecs):
-            sum_ec = list(numpy.array(l).sum(axis=0))
-            iii += 1
+    db = SubstructureDb(path_db, path_pkls, path_db_k_graphs, False)
+    list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
-            if mc != sum_ec and debug:
-                print("No match for elemental composition: {}".format(str(sum_ec)))
+    if len(list_ecs) == 0:
+        db.close()
+        return
 
-            elif mc == sum_ec:
+    iii = 0
+    for l in itertools.product(*list_ecs):
+
+        sum_ec = list(numpy.array(l).sum(axis=0))
+        iii += 1
+
+        if mc != sum_ec and debug:
+            print("No match for elemental composition: {}".format(str(sum_ec)))
+
+        elif mc == sum_ec:
+
+            if debug:
+                print("Match elemental composition: {}".format(str(sum_ec)))
+
+            ll = db.select_sub_structures(l, table_name)
+
+            if len(ll) == 0:
+                if debug:
+                    print("## No substructures found")
+                continue
+
+            elif len(ll) == 1:
+                if debug:
+                    print("## Single substructure")
+
+            else:
+                if debug:
+                    print("## {} {} substructures found".format(sum([len(subs) for subs in ll]),
+                                                                str([len(subs) for subs in ll])))
+
+            if debug:
+                print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
+
+            smis = []
+            for lll in itertools.product(*ll):
 
                 if debug:
-                    print("Match elemental composition: {}".format(str(sum_ec)))
+                    for record in lll:
+                        print(record)
+                    print("---------------")
 
-                ll = db.select_sub_structures(l, table_name)
+                lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
 
-                if len(ll) == 0:
+                vA = ()
+                for d in lll:
+                     vA += (tuple(d["degree_atoms"].values()),)
+
+                if str(vA) not in configs_iso:
                     if debug:
-                        print("## No substructures found")
+                        print("NO:", str(vA))
+                        print("============")
                     continue
-
-                elif len(ll) == 1:
-                    if debug:
-                        print("## Single substructure")
-
                 else:
                     if debug:
-                        print("## {} {} substructures found".format(sum([len(subs) for subs in ll]),
-                                                                    str([len(subs) for subs in ll])))
+                        print("YES:", str(vA))
+                        print("============")
 
+                mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
                 if debug:
-                    print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
+                    print("## Mols (in memory):", mol_comb)
+                    print("## Atoms Available (indexes):", atoms_available)
+                    print("## Atoms to remove (dummies):", atoms_to_remove)
+                    print("## Type of bonds to form:", bond_types)
+                iso_n = 0
+                for edges in db.isomorphism_graphs(configs_iso[str(vA)]):  # EDGES
 
-                for lll in itertools.product(*ll):
+                    iso_n += 1
+                    if debug:
+                        print("## ISO {}".format(iso_n))
 
                     if debug:
-                        for record in lll:
-                            print(record)
-                        print("---------------")
 
-                    lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
-
-                    vA = ()
-                    for d in lll:
-                        vA += (tuple(d["degree_atoms"].values()),)
-                    if str(vA) not in configs_iso:
-                        if debug:
-                            print("NO:", str(vA))
-                            print("============")
+                        print("1: Add bonds")
+                    mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
+                    if mol_e is None:
                         continue
-                    else:
-                        if debug:
-                            print("YES:", str(vA))
-                            print("============")
-
-                    mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
                     if debug:
-                        print("## Mols (in memory):", mol_comb)
-                        print("## Atoms Available (indexes):", atoms_available)
-                        print("## Atoms to remove (dummies):", atoms_to_remove)
-                        print("## Type of bonds to form:", bond_types)
+                        print("2: Add bonds")
 
-                    iso_n = 0
-                    for edges in db.isomorphism_graphs(configs_iso[str(vA)]):  # EDGES
+                    atoms_to_remove.sort(reverse=True)
+                    [mol_e.RemoveAtom(a) for a in atoms_to_remove]
 
-                        iso_n += 1
+                    molOut = mol_e.GetMol()
+                    try:
+                        Chem.SanitizeMol(molOut)
+                    except:
                         if debug:
-                            print("## ISO {}".format(iso_n))
+                            print("Can't sanitize mol ISO: {}".format(iso_n))
+                        continue
 
+                    try:
+                        smis.append("{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll])))
+                    except RuntimeError:
                         if debug:
-                            print("1: Add bonds")
-                        mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
-                        if mol_e is None:
-                            continue
-                        if debug:
-                            print("2: Add bonds")
+                            print("Bad bond type violation")
 
-                        atoms_to_remove.sort(reverse=True)
-                        [mol_e.RemoveAtom(a) for a in atoms_to_remove]
+                    if debug:
+                        print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
 
-                        molOut = mol_e.GetMol()
-                        try:
-                            Chem.SanitizeMol(molOut)
-                        except:
-                            if debug:
-                                print("Can't sanitize mol ISO: {}".format(iso_n))
-                            continue
+            with lock:
+                for smi in smis:
+                    out.write(smi)
 
-                        try:
-                            out.write("{}\t{}\n".format(Chem.MolToSmiles(molOut),
-                                                        str([item["smiles"] for item in lll])))
-                        except RuntimeError:
-                            if debug:
-                                print("Bad bond type violation")
-                        if debug:
-                            print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
+    db.close()
