@@ -816,12 +816,12 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
             if len(mappings) > 0:
                 gi = graph_info(p, sG, mappings, )
 
-                for vn in gi[0]:
+                for vn in gi:
                     if vn not in subgraphs:
-                        subgraphs[vn] = gi[0][vn]
+                        subgraphs[vn] = gi[vn]
 
                     else:
-                        for es in gi[0][vn]:
+                        for es in gi[vn]:
                             if es not in subgraphs[vn]:
                                 subgraphs[vn].append(es)
 
