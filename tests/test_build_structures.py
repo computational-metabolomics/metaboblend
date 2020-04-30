@@ -76,11 +76,12 @@ class BuildStructuresTestCase(unittest.TestCase):
             for i, record_dict in enumerate(record_dicts.values()):
                 record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
 
-                build([record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                       record_dict["S"]],
-                      record_dict["exact_mass"], db, to_test_result(record_dict["HMDB_ID"] + ".smi"),
-                      heavy_atoms=range(4, 9), max_valence=4, accuracy="1", max_atoms_available=2,
-                      max_n_substructures=3)
+                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
+                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
+                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
+                      max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
+                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
@@ -107,11 +108,12 @@ class BuildStructuresTestCase(unittest.TestCase):
                 if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
                     os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
 
-                build([record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                       record_dict["S"]],
-                      record_dict["exact_mass"], db, to_test_result(record_dict["HMDB_ID"] + ".smi"),
-                      heavy_atoms=range(4, 9), max_valence=4, accuracy="1", max_atoms_available=2,
-                      max_n_substructures=3, fragment_mass=fragments[i], ppm=15)
+                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
+                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
+                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
+                      accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
+                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
