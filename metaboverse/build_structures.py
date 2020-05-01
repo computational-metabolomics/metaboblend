@@ -237,7 +237,8 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 
 def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
           path_db_k_graphs="../databases/k_graphs.sqlite", path_pkls="../databases/pkls",
-          path_db="../databases/substructures.sqlite", fragment_mass=None, ppm=None, debug=False, out_mode="w"):
+          path_db="../databases/substructures.sqlite", fragment_mass=None, ppm=None, debug=False, out_mode="w",
+          processes=None):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -298,6 +299,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         database.
         * **True** Print debug statements.
         * **False** Hide debug print statements.
+
+    :param processes: How many worker processes to utilise; if left as None, os.cpu_count is used.
     """
 
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
@@ -357,7 +360,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
             print("------------------------------------------------------")
 
         l = multiprocessing.Lock()
-        with multiprocessing.Pool(initializer=multiprocess_init, initargs=(l,)) as pool:
+        with multiprocessing.Pool(processes=processes, initializer=multiprocess_init, initargs=(l,)) as pool:
 
             pool.map(partial(build_from_subsets, configs_iso=configs_iso, mc=mc, table_name=table_name, ppm=ppm,
                              fn_out=fn_out, debug=debug, path_db_k_graphs=path_db_k_graphs, path_pkls=path_pkls,
