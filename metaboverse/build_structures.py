@@ -78,9 +78,13 @@ def combine_ecs(ss2_grp, db, table_name, accuracy, ppm=None):
     :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
+
             * **0_1** One decimal place
+
             * **0_01** Two decimal places
+
             * **0_001** Three decimal places
+
             * **0_0001** Four decimal places
 
     :param ppm: The allowable error of the query (in parts per million). If unspecified, only exact matches are
@@ -115,11 +119,11 @@ def reindex_atoms(records):
 
         * **atoms_available** A list of the indices of atoms that are available for bonding.
 
-        * **atoms_to_remove*** A list of the indices of dummy atoms that are to be removed in order to bond with other
-            substructures.
+        * **atoms_to_remove** A list of the indices of dummy atoms that are to be removed in order to bond with other
+        substructures.
 
         * **bond_types** A dictionary containing the indices of atoms that are available for bonding as keys and values
-            detailing their bond types. See :py:meth:`metaboverse.build_structures.add_bonds`.
+        detailing their bond types. See :py:meth:`metaboverse.build_structures.add_bonds`.
     """
 
     atoms_available, atoms_to_remove, bond_types = [], [], {}
@@ -300,7 +304,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         * **True** Print debug statements.
         * **False** Hide debug print statements.
 
-    :param processes: How many worker processes to utilise; if left as None, os.cpu_count is used.
+    :param processes: How many worker processes to utilise; if left as None, :py:meth:`os.cpu_count` is used.
     """
 
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
@@ -436,7 +440,7 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, fn_out,
         database.
 
     :param mc: List of integers detailing the molecular composition of the target metabolite, in the format
-        [C, H, N, O, P, S].
+        `[C, H, N, O, P, S]`.
 
     :param fn_out: The path of the file to which smile strings should be written representing the final structures
         generated; the substructures used to generate these final structures are also written.
@@ -455,7 +459,9 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, fn_out,
 
     :param debug: Debug print statements provide further information on how the function is generating the connectivity
         database.
+
         * **True** Print debug statements.
+
         * **False** Hide debug print statements.
 
     :param configs_iso: Possible substructure combinations extracted from the connectivity database. A tuple containing

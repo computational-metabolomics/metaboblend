@@ -42,7 +42,7 @@ def reformat_xml(source, encoding="utf8"):
     Reformats HMDB xml files to be compatible with :py:meth:`metaboverse.databases.parse_xml`; some such files do not
     contain a `<hmdb xmlns="http://www.hmdb.ca">` header.
 
-    :param source: File to be reformatted.
+    :param source: Path to file to be reformatted.
 
     :param encoding: Encoding of source file.
 
@@ -76,6 +76,7 @@ def parse_xml(source, encoding="utf8", reformat=False):
         XML files recording single metabolites.
 
         * **True** Add a `<hmdb xmlns="http://www.hmdb.ca">` header to the XML file before parsing.
+
         * **False** Parse the XML file as it is (recommended if header is present).
 
     :return: The XML file converted to a dictionary.
@@ -143,10 +144,14 @@ class SubstructureDb:
     substructure database and, if provided, the connectivity database.
 
     :param db: Path to the substructure database.
+
     :param db2: Path to the connectivity database.
+
     :ivar path_pkls: Path to the directory containing connectivity graph PKLs
+
     :param conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
         as 'graphs'.
+
     :param cursor: A :py:meth:`sqlite3.connection.cursor` for the substructure database; the connectivity database will
         be attached as "graphs".
     """
@@ -190,7 +195,7 @@ class SubstructureDb:
         """
         Filters `hmdbid_substructures` table in the substructure database by the frequency of the substructure; allows
         for the removal of non-unique (min_node_weight = 2) or infrequent (min_node_weight > 2) substructures. Generates
-        a new table, `unique_hmdbid`, which contains distinct hmdbids and 'filtered_hmdbid_substructures' which contains
+        a new table, *unique_hmdbid*, which contains distinct hmdbids and *filtered_hmdbid_substructures* which contains
         the filtered substructures with their frequency.
 
         :param min_node_weight: Minimal count of the substructure within 'hmdbid_substructures'.
@@ -415,17 +420,43 @@ class SubstructureDb:
         return self.cursor.fetchall()
 
     def paths(self, tree, cur=()):
+        """
+        Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
+        to be used to connect substructures together to generate molecules.
+
+        :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
+
+        :param cur: Tuple for results to be appended to.
+
+        :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
+        """
+
         if tree == {}:
             yield cur
+
         else:
             for n, s in tree.items():
                 for path in self.paths(s, cur + (n,)):
                     yield path
 
     def isomorphism_graphs(self, id_pkl):
+        """
+        Loads a PKL file of a particular ID to build a molecule from a set of substructures. The PKL file contains
+        the set of non-isomorphic graphs for the particular ID, before passing it to
+        `:py:meth:`metaboverse.databases.SubstructureDb.isomorphism_graphs` to be parsed.
+
+        :param id_pkl: The ID of the PKL file to be retrieved.
+
+        :return: For each graph in the PKL file, yields a tuple representing bonds to be created between substructures
+            for combining substructures for the generation of molecules.
+        """
+
         with open(os.path.join(self.path_pkls, "{}.pkl".format(id_pkl)), 'rb') as pickle_file:
+
             nGcomplete = pickle.load(pickle_file)
+
         for p in self.paths(nGcomplete):
+
             yield p
 
     def k_configs(self):
@@ -579,7 +610,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     """
     Generates information for the substructure database from a reference molecule and the bond IDs of a substructure.
 
-    :param mol: An :py:meth:`rdkit.Chem.Mol' object containing a reference molecule that has been fragmented.
+    :param mol: An :py:meth:`rdkit.Chem.Mol` object containing a reference molecule that has been fragmented.
 
     :param idxs_edges_subgraph: List of atom indices within the reference molecule that make up the substructure.
 
@@ -611,8 +642,10 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
         :param debug: Debug print statements provide further information on how the function is generating the connectivity
             database.
-        * **True** Print debug statements.
-        * **False** Hide debug print statements.
+
+            * **True** Print debug statements.
+
+            * **False** Hide debug print statements.
     """
 
     atom_idxs_subgraph = []
@@ -771,7 +804,7 @@ def filter_records(records):
 
         * "C", "H", "N", "O", "P", "S": Integers referring to elemental composition.
 
-        * "**mol**": An :py:meth:`rdkit.Chem.Mol' object containing the molecule.
+        * "**mol**": An :py:meth:`rdkit.Chem.Mol` object containing the molecule.
     """
 
     for record in records:
@@ -1095,7 +1128,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     :param debug: Debug print statements provide further information on how the function is generating the connectivity
         database.
+
         * **True** Print debug statements.
+
         * **False** Hide debug print statements.
     """
     
