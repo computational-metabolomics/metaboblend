@@ -336,7 +336,12 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
 
-    subsets = list(subset_sum(mass_values, exact_mass__1))
+    try:
+        subsets = list(subset_sum(mass_values, exact_mass__1))
+    except RecursionError:  # TODO: Handle subset_sum recursion issue
+        if debug:
+            print("Building mol failed due to subset_sum recursion error.")
+        return
 
     configs_iso = db.k_configs()
     if out_mode:
