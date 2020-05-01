@@ -27,7 +27,7 @@ import pickle
 import sqlite3
 import tempfile
 from collections import OrderedDict
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree as ElementTree
 import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
@@ -102,7 +102,7 @@ def parse_xml(source, encoding="utf8", reformat=False):
                 else:
                     inp = io.BytesIO(xml_record.encode('utf-8').strip())
 
-                for event, elem in etree.iterparse(inp, events=("start", "end")):
+                for event, elem in ElementTree.iterparse(inp, events=("start", "end")):
                     if event == 'end':
                         path.pop()
 
@@ -608,6 +608,11 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
         * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
             represented by `*`.
+
+        :param debug: Debug print statements provide further information on how the function is generating the connectivity
+            database.
+        * **True** Print debug statements.
+        * **False** Hide debug print statements.
     """
 
     atom_idxs_subgraph = []

@@ -332,7 +332,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     subsets = list(subset_sum(mass_values, exact_mass__1))
 
     configs_iso = db.k_configs()
-    out = open(fn_out, out_mode)
+    if out_mode:
+        open(fn_out, out_mode).close()
 
     if debug:
         print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values),
@@ -471,7 +472,7 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, fn_out,
 
                 vA = ()
                 for d in lll:
-                     vA += (tuple(d["degree_atoms"].values()),)
+                    vA += (tuple(d["degree_atoms"].values()),)
 
                 if str(vA) not in configs_iso:
                     if debug:
