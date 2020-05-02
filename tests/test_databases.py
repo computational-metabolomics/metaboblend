@@ -80,7 +80,6 @@ class DatabasesTestCase(unittest.TestCase):
 
         for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
             for record_out in parse_xml(to_test_result("test_mols", "hmdb", hmdb_xml)):
-                # print(record_out)
                 ref = [i for i, hmdb in enumerate(hmdbs) if hmdb == hmdb_xml.replace(".xml", "")][0]
 
                 self.assertEqual(len(record_out), lengths[ref])
