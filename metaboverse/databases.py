@@ -156,7 +156,7 @@ class SubstructureDb:
         be attached as "graphs".
     """
 
-    def __init__(self, db, path_pkls="", db2=None, clean=True):
+    def __init__(self, db, path_pkls=None, db2=None, clean=True):
         """Constructor method"""
 
         self.db = db
@@ -166,10 +166,10 @@ class SubstructureDb:
         self.conn = sqlite3.connect(self.db)
         self.cursor = self.conn.cursor()
 
-        self.clean = clean
-
         if self.db2 is not None:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
+
+        self.clean = clean
 
     def select_compounds(self, cpds=[]):
         """

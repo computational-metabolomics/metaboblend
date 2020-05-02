@@ -242,7 +242,7 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
           path_db_k_graphs="../databases/k_graphs.sqlite", path_pkls="../databases/pkls",
           path_db="../databases/substructures.sqlite", fragment_mass=None, ppm=None, debug=False, out_mode="w",
-          processes=None):
+          processes=None, table_name=None):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -311,7 +311,9 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     """
 
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
-    table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
+
+    if table_name is None:
+        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
 
     if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
@@ -337,13 +339,14 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     if out_mode == "w":
         open(fn_out, "w").close()
 
+    # select groups of masses at low mass resolution
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
 
     try:
         subsets = list(subset_sum(mass_values, exact_mass__1))
     except RecursionError:  # TODO: Handle subset_sum recursion issue
         if debug:
-            print("Building mol failed due to subset_sum recursion error.")
+            print("Building mol failed due to subset_sum recursion error")
         return
 
     configs_iso = db.k_configs()
@@ -351,8 +354,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         open(fn_out, out_mode).close()
 
     if debug:
-        print("First round (mass: {}) - Values: {} - Correct Sums: {}".format(exact_mass__1, len(mass_values),
-                                                                              len(subsets)))
+        print("""First round (mass: {}) - Values: {} - Correct Sums: {}
+              """.format(exact_mass__1, len(mass_values), len(subsets)))
         print("------------------------------------------------------")
     for ss_grp in subsets:
         if len(ss_grp) > max_n_substructures:
@@ -362,7 +365,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
-        if fragment_mass is not None:
+        if fragment_mass is not None:  # add fragments to groups if provided
             for i, subset in enumerate(subsets_r2):
                 subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
 
@@ -382,23 +385,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db.close()
 
 
-def multiprocess_init(l):
-    """
-    Initialisation method for a multiprocessing lock, called by :py:meth:`metaboverse.build_structures.build` in order
-    to allow for multiple parallel instances of :py:meth:`metaboverse.build_structures.build_from_subsets` to write
-    to the same out file. Normal :py:meth:`multiprocessing.Lock` objects cannot be passed to
-    :py:meth:`multiprocessing.Pool` as they cannot be pickled. A :py:meth:`multiprocessing.Manager` instance could be
-    used, however requires the creation of an additional process. The lock is instead passed at pool initialisation and
-    is available to all child processes.
-
-    :param l: A :py:meth:`multiprocessing.Lock` object.
-    """
-
-    global lock
-    lock = l
-
-
-def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available):
+def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="subset_substructures"):
     """
     Generate a temporary secondary substructure table restricted by a set of parameters. Generated as an initial step
     in :py:meth:`metaboverse.build_structures.build` in order to limit the processing overhead as a result of
