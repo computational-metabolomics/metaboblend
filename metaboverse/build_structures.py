@@ -129,11 +129,12 @@ def reindex_atoms(records):
 
     atoms_available, atoms_to_remove, bond_types = [], [], {}
     mol_comb = Chem.Mol()
-    index_atoms = []
+    index_atoms, all_bond_types = [], {}
     c = 0
 
-    for record in records:
+    for i, record in enumerate(records):
         idxs = []
+        all_bond_types[i] = []
         for atom in record["mol"].GetAtoms():
 
             newIdx = atom.GetIdx() + c
@@ -145,12 +146,25 @@ def reindex_atoms(records):
                 atoms_to_remove.append(newIdx)
             if atom.GetIdx() in record["bond_types"]:
                 bond_types[newIdx] = record["bond_types"][atom.GetIdx()]
+                all_bond_types[i] += record["bond_types"][atom.GetIdx()]
 
         mol_comb = Chem.CombineMols(mol_comb, record["mol"])
         index_atoms.append(idxs)
         c = idxs[-1] + 1
 
-    return mol_comb, atoms_available, atoms_to_remove, bond_types
+    # check that bond types add up
+    bond_mismatch = False
+    for i in range(len(records)):
+        other_bonds = []
+        for j in range(len(records)):
+            if i != j:
+                other_bonds += all_bond_types[j]
+
+        for bond in all_bond_types[i]:
+            if bond not in other_bonds:
+                bond_mismatch = True
+
+    return mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch
 
 
 def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
@@ -462,6 +476,7 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls,
         :py:meth:`metaboverse.build_structures.gen_subs_table`.
     """
 
+    smi_list = []
     list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
     if len(list_ecs) == 0:
@@ -576,7 +591,6 @@ def lll_build(lll, configs_iso, path_pkls, debug):
     :return: List of smiles representing molecules generated (and the substructures used to generate them).
     """
 
-    pkl_db = SubstructureDb("", path_pkls=path_pkls, clean=False)
     smis = []
 
     if debug:
@@ -601,7 +615,10 @@ def lll_build(lll, configs_iso, path_pkls, debug):
             print("YES:", str(vA))
             print("============")
 
-    mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
+    mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
+
+    if bond_mismatch:
+        return []
 
     if debug:
         print("## Mols (in memory):", mol_comb)
@@ -611,7 +628,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
 
     iso_n = 0
 
-    for edges in pkl_db.isomorphism_graphs(configs_iso[str(vA)]):  # build mols for each graph in connectivity db
+    for edges in isomorphism_graphs(path_pkls, configs_iso[str(vA)]):  # build mols for each graph in connectivity db
 
         iso_n += 1
         if debug:
@@ -619,7 +636,9 @@ def lll_build(lll, configs_iso, path_pkls, debug):
 
         if debug:
             print("1: Add bonds")
+
         mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
+
         if mol_e is None:
             continue
         if debug:
@@ -638,7 +657,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
             continue
 
         try:
-            smis.append("{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll])))
+            smis += ["{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll]))]
         except RuntimeError:
             if debug:
                 print("Bad bond type violation")
@@ -646,5 +665,4 @@ def lll_build(lll, configs_iso, path_pkls, debug):
         if debug:
             print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
 
-    pkl_db.close()
     return smis

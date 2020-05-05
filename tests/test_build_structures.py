@@ -210,7 +210,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             lll[0]["mol"] = Chem.MolFromSmiles(lll[0]["smiles"], False)
             lll[1]["mol"] = Chem.MolFromSmiles(lll[1]["smiles"], False)
 
-            mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
+            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
             self.assertEqual([Chem.MolToSmiles(mol_comb), atoms_available, atoms_to_remove, bond_types], reindex)
 
     def test_add_bonds(self):

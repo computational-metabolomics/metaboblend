@@ -419,46 +419,6 @@ class SubstructureDb:
 
         return self.cursor.fetchall()
 
-    def paths(self, tree, cur=()):
-        """
-        Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
-        to be used to connect substructures together to generate molecules.
-
-        :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
-
-        :param cur: Tuple for results to be appended to.
-
-        :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
-        """
-
-        if tree == {}:
-            yield cur
-
-        else:
-            for n, s in tree.items():
-                for path in self.paths(s, cur + (n,)):
-                    yield path
-
-    def isomorphism_graphs(self, id_pkl):
-        """
-        Loads a PKL file of a particular ID to build a molecule from a set of substructures. The PKL file contains
-        the set of non-isomorphic graphs for the particular ID, before passing it to
-        `:py:meth:`metaboverse.databases.SubstructureDb.isomorphism_graphs` to be parsed.
-
-        :param id_pkl: The ID of the PKL file to be retrieved.
-
-        :return: For each graph in the PKL file, yields a tuple representing bonds to be created between substructures
-            for combining substructures for the generation of molecules.
-        """
-
-        with open(os.path.join(self.path_pkls, "{}.pkl".format(id_pkl)), 'rb') as pickle_file:
-
-            nGcomplete = pickle.load(pickle_file)
-
-        for p in self.paths(nGcomplete):
-
-            yield p
-
     def k_configs(self):
         """
         Obtains strings detailing the valences for each substructure in a connectivity graph and the ID of the related
