@@ -27,6 +27,7 @@ from functools import partial
 import networkx as nx
 import numpy
 from operator import itemgetter
+import pickle
 from rdkit import Chem
 from .databases import SubstructureDb
 
@@ -501,12 +502,56 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls,
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
         with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
-            smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso),
-                                itertools.product(*ll))
+            smi_list += [item for sublist in pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug,
+                                                              configs_iso=configs_iso),
+                                                      itertools.product(*ll)) for item in sublist]
 
-        for smis in smi_list:
-            for smi in smis:
-                out.write(smi)
+    if len(smi_list) != 0:
+        out.writelines(smi_list)
+
+
+def paths(tree, cur=()):
+    """
+    Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
+    to be used to connect substructures together to generate molecules.
+
+    :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
+
+    :param cur: Tuple for results to be appended to.
+
+    :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
+    """
+
+    if tree == {}:
+        yield cur
+
+    else:
+        for n, s in tree.items():
+            for path in paths(s, cur + (n,)):
+                yield path
+
+
+def isomorphism_graphs(path_pkls, id_pkl):
+    """
+    Loads a PKL file of a particular ID to build a molecule from a set of substructures. The PKL file contains
+    the set of non-isomorphic graphs for the particular ID, before passing it to
+    `:py:meth:`metaboverse.databases.SubstructureDb.isomorphism_graphs` to be parsed.
+
+    :param path_pkls: The directory containing PKL files.
+
+    :param id_pkl: The ID of the PKL file to be retrieved.
+
+    :return: For each graph in the PKL file, yields a tuple representing bonds to be created between substructures
+        for combining substructures for the generation of molecules.
+    """
+
+    with open(os.path.join(path_pkls, "{}.pkl".format(id_pkl)), 'rb') as pickle_file:
+
+        nGcomplete = pickle.load(pickle_file)
+
+    for p in paths(nGcomplete):
+
+        yield p
 
 
 def lll_build(lll, configs_iso, path_pkls, debug):
