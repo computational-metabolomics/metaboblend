@@ -43,7 +43,7 @@ def subset_sum(l, mass, toll=0.001):
 
     :param toll: The allowable deviation of the sum of subsets from the target mass.
 
-    :return: A list of lists containing the masses of valid subsets.
+    :return: Generates of lists containing the masses of valid subsets.
     """
 
     if mass < -toll:
@@ -517,12 +517,12 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls,
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
         with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
-            smi_list += [item for sublist in pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug,
-                                                              configs_iso=configs_iso),
-                                                      itertools.product(*ll)) for item in sublist]
+            smi_list += pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso),
+                                 itertools.product(*ll))
 
     if len(smi_list) != 0:
-        out.writelines(smi_list)
+        for smis in smi_list:
+            out.writelines(smis)
 
 
 def paths(tree, cur=()):
