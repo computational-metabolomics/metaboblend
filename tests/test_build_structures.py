@@ -236,6 +236,52 @@ class BuildStructuresTestCase(unittest.TestCase):
             else:
                 self.assertEqual(Chem.MolToSmiles(mol_e.GetMol(), False), mol_out[i])
 
+    def test_paths(self):
+        with open(to_test_result("connectivity", "pkls", "5.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
+
+        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
+              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
+              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
+        ps_found = []
+
+        with open(to_test_result("connectivity", "pkls", "60.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        for i in range(len(ps)):
+            self.assertTrue(i in ps_found)
+
+        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
+        ps_found = []
+        with open(to_test_result("connectivity", "pkls", "100.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        self.assertEqual(sorted(ps_found), [0, 1])
+
+    def test_isomorphism_graphs(self):
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 5):
+            self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
+
+        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
+              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
+              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
+        ps_found = []
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 60):
+            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        for i in range(len(ps)):
+            self.assertTrue(i in ps_found)
+
+        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
+        ps_found = []
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 100):
+            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        self.assertEqual(sorted(ps_found), [0, 1])
+
     @classmethod
     def tearDownClass(cls):
         if os.path.isdir(to_test_result()):
