@@ -372,6 +372,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
               """.format(exact_mass__1, len(mass_values), len(subsets)))
         print("------------------------------------------------------")
 
+    lls = []
     for ss_grp in subsets:
         if fragment_mass is None:
             if len(ss_grp) > max_n_substructures:
@@ -393,16 +394,15 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
                   """.format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
             print("------------------------------------------------------")
 
-        lls = []
         for ss_grp2 in subsets_r2:  # refine masses to high mass resolution
             build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm,
                                debug=debug, db=db, lls=lls)
 
-        with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
-            smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso), lls)
+    with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
+        smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso), lls)
 
-        if len(smi_list) != 0:
-            out.writelines(smi_list)
+    if len(smi_list) != 0:
+        out.writelines(smi_list)
 
     out.close()
     db.close()
