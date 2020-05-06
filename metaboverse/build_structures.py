@@ -393,9 +393,16 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
                   """.format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
             print("------------------------------------------------------")
 
+        lls = []
         for ss_grp2 in subsets_r2:  # refine masses to high mass resolution
-            build_from_subsets(ss_grp2, configs_iso=configs_iso, mc=mc, table_name=table_name, ppm=ppm, out=out,
-                               debug=debug, db=db, processes=processes, path_pkls=path_pkls)
+            build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm,
+                               debug=debug, db=db, lls=lls)
+
+        with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
+            smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso), lls)
+
+        if len(smi_list) != 0:
+            out.writelines(smi_list)
 
     out.close()
     db.close()
@@ -439,7 +446,7 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name
     return table_name
 
 
-def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls, processes=None, ppm=None, debug=False):
+def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=False,):
     """
     A stage of the :py:meth:`metaboverse.build_structures.build` workflow for generating molecules to a given mass
     from substructures. At this stage, mass subsets have been identified in the substructure database. Each of these
@@ -476,7 +483,6 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls,
         :py:meth:`metaboverse.build_structures.gen_subs_table`.
     """
 
-    smi_list = []
     list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
     if len(list_ecs) == 0:
@@ -516,13 +522,7 @@ def build_from_subsets(ss2_grp, configs_iso, mc, table_name, out, db, path_pkls,
         if debug:
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
-        with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
-            smi_list += pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso),
-                                 itertools.product(*ll))
-
-    if len(smi_list) != 0:
-        for smis in smi_list:
-            out.writelines(smis)
+        lls += itertools.product(*ll)
 
 
 def paths(tree, cur=()):
@@ -591,7 +591,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
     :return: List of smiles representing molecules generated (and the substructures used to generate them).
     """
 
-    smis = []
+    smis = ""
 
     if debug:
         for record in lll:
@@ -608,7 +608,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
         if debug:
             print("NO:", str(vA))
             print("============")
-        return []
+        return ""
 
     else:
         if debug:
@@ -618,7 +618,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
     mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
 
     if bond_mismatch:
-        return []
+        return ""
 
     if debug:
         print("## Mols (in memory):", mol_comb)
@@ -657,7 +657,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
             continue
 
         try:
-            smis += ["{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll]))]
+            smis += "{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll]))
         except RuntimeError:
             if debug:
                 print("Bad bond type violation")
