@@ -7,6 +7,7 @@ import networkx as nx
 from rdkit import Chem
 from shutil import rmtree
 import pickle
+from rdkit.Chem import Descriptors
 
 sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
@@ -241,7 +242,6 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
 
     for category in ms_data.keys():
         for hmdb in ms_data[category].keys():
-
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
 
             subset_substructures([hmdb], db_path, "subset.sqlite", subset=subset)
@@ -256,7 +256,7 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
                   path_pkls="../../Data/databases/pkls",  out_mode="w", table_name="msn_subset")
 
             i = -1
-            with open("temp_structures.smi") as smi:
+            with open("temp_structures.smi", "r") as smi:
                 for i, l in enumerate(smi):
                     pass
 
@@ -266,15 +266,12 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
             reconstructed = False
             mol_smi = Chem.MolToSmiles(ms_data[category][hmdb]["mol"])
             get_uniq_subs("temp_structures.smi", ignore_substructures=True)
-            with open("temp_structures.smi") as smi:
+            with open("temp_structures.smi", "r") as smi:
                 for i, line in enumerate(smi):
                     if line.strip() == mol_smi:
                         reconstructed = True
 
             uniq_structures = i + 1
-
-            print(reconstructed)
-            print(uniq_structures)
 
             results.append([
                 str(category),
