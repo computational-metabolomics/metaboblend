@@ -12,14 +12,24 @@ from msp2db.db import create_db
 from msp2db.parse import LibraryData
 import sqlite3
 
-metaboverse_path = os.path.join("..", "..", "..", "metaboverse")
-
-sys.path.append(os.path.join(metaboverse_path, "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
 from databases import update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
 from build_structures import build
 
 
 def parse_testing_data(csv_path, hmdb_path):
+    """
+    Method for converting a CSV file, containing information on MS2 peaks, into a dictionary to be used for running
+    the tool on.
+
+    :param csv_path: The path of the CSV file to be parsed.
+
+    :param hmdb_path: The directory containing HMDB xmls to acquire further data from.
+
+    :return: A dictionary containing dictionaries for each "category" of data; each of these contains a dictionary of
+        an HMDB record.
+    """
+
     with open(csv_path) as csv_file:
         csv_data = csv.reader(csv_file)
 
@@ -54,8 +64,15 @@ def parse_testing_data(csv_path, hmdb_path):
 
 
 def add_small_substructures(path_subs):
+    """
+    Add a curated set of small substructures to a substructure database - useful for improving the number of peaks
+    that the MS2 method can annotate.
+
+    :param path_subs: Path of the SQLite substructure database to be appended to.
+    """
+
     substructures = SubstructureDb(path_subs, "")
-    small_mols = ["C*", "*C*", "O*", "*O*", "N*", "*N*"]
+    small_mols = ["C*", "*C*", "O*", "*O*", "N*", "*N*"]  # the curated set of smiles
     for smi in small_mols:
         mol = Chem.MolFromSmiles(smi)
         Chem.SanitizeMol(mol)
@@ -170,6 +187,17 @@ def add_small_substructures(path_subs):
 
 
 class MspDatabase:
+    """
+    Class for parsing msp files for MS/MS data.
+
+    :param path_db: The path of the SQLite substructure database to be generated.
+
+    :param path_msp: The path of the msp file to be parsed. If given, a database is automatically generated upon
+        initialisation of the class.
+
+    :param schema: The schema of the msp file. "mona" or "massbank".
+    """
+
     def __init__(self, path_db, path_msp=None, schema="mona"):
         self.path_db = path_db
         self.schema = schema
@@ -186,11 +214,34 @@ class MspDatabase:
         self.cursor = self.conn.cursor()
 
     def generate_db(self, path_msp):
+        """
+        Generate the SQLite database using msp2db.
+
+        :param path_msp: The path of the msp database to be parsed.
+
+        :return: LibraryData class.
+        """
+
         create_db(file_pth=self.path_db)
 
         return LibraryData(msp_pth=path_msp, db_pth=self.path_db, db_type='sqlite', schema=self.schema)
 
     def get_fragments(self, precursor_type="[M+H]+", ms_level=2, max_mass=200, min_mass=100, snr=2.0):
+        """
+        Get MS data from the SQLite database.
+
+        :param precursor_type: The precursor type to filter by.
+
+        :param ms_level: The MS level of datasets to be obtained.
+
+        :param max_mass: The maximum mass of compounds to be considered.
+
+        :param min_mass: The minimum mass of compounds to be considered.
+
+        :param snr: Signal to noise ratio to filter MS/MS datasets by.
+
+        :return: Yields a list including MS/MS datasets from the database.
+        """
 
         self.cursor.execute("""select distinct inchikey_id, name, exact_mass, smiles
                                from metab_compound where exact_mass > {0} and exact_mass < {1}
@@ -233,10 +284,27 @@ class MspDatabase:
             yield list(compound) + list(spectra_meta[1:3]) + [mz] + [intensity]
 
     def close(self):
+        """
+        Close connection to the SQLite database.
+        """
+
         self.conn.close()
 
 
 def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids):
+    """
+    See parse_testing_data. Generatesa dictionary for running the MS2 build method on.
+
+    :param paths_msp_db: Path to MSP files to be parses.
+
+    :param names_msp: The name of the categories/datasets.
+
+    :param path_hmdb_ids: Path to a CSV file that relates each compound to a HMDB ID.
+
+    :return: A dictionary containing a dictionary for each dataset passed to the function. These dictionaries contain
+        dictionaries, each of which contain relevant meta and MS2 data.
+    """
+
     with open(path_hmdb_ids) as hmdb_ids:
         hmdb_ids_csv = csv.reader(hmdb_ids)
         

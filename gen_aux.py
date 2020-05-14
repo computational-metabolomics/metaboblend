@@ -8,22 +8,45 @@ from rdkit import Chem
 from shutil import rmtree
 import pickle
 
-metaboverse_path = os.path.join("..", "..", "..", "metaboverse")
-
-sys.path.append(os.path.join(metaboverse_path, "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass, create_isomorphism_database
 from build_structures import build
 
 
 def get_from_hmdb(name, hmdb, out_dir):
-    urllib.request.urlretrieve("http://www.hmdb.ca/metabolites/" + hmdb + ".xml",
-                                   os.path.join(out_dir, name + ".xml"))
+    """
+    Gets individual metabocards from HMDB.
+
+    :param name: What to name the XML file.
+
+    :param hmdb: The HMDB ID to be found.
+
+    :param out_dir: The directory to save the XML file in.
+    """
+
+    urllib.request.urlretrieve("http://www.hmdb.ca/metabolites/" + hmdb + ".xml", os.path.join(out_dir, name + ".xml"))
 
     reformat_xml(os.path.join(out_dir, name + ".xml"))
 
 
 def build_substructure_database(records, path_input, path_db="../databases/substructures.sqlite", n_min=2,
                                 n_max=9, method="exhaustive"):
+    """
+    Build a substructure database from a series of compounds.
+
+    :param records: HMDB IDs to be used to generate the substructure database.
+
+    :param path_input: The path of HMDB XML files.
+
+    :param path_db: The path at which to generate the SQLite database.
+
+    :param n_min: The minimum number of bonds to be included in substructures.
+
+    :param n_max: The maximum number of bonds to be included in substructures.
+
+    :param method: The fragmentation method to be used.
+    """
+
     db = SubstructureDb(path_db, "", "")
     db.create_compound_database()
     db.close()
@@ -37,6 +60,14 @@ def build_substructure_database(records, path_input, path_db="../databases/subst
 
 
 def get_uniq_subs(smi_out, ignore_substructures=False):
+    """
+    Filter out multiply generated substructures.
+
+    :param smi_out: The file of smiles to be filtered.
+
+    :param ignore_substructures: If True, get unique structures, if False, get unique combinations of structures and
+        the substructures they were generated from.
+    """
     temp_fn = tempfile.NamedTemporaryFile(mode="w")
     seen_lines = set()
 
@@ -57,6 +88,21 @@ def get_uniq_subs(smi_out, ignore_substructures=False):
 
 
 def subset_substructures(hmdb_ids, in_db, out_db, substructures_only=True, subset=True):
+    """
+    Take the substructures of a single, or series of compounds, from one database, and create a new substructure
+    database that only includes them.
+
+    :param hmdb_ids: List of HMDB IDs.
+
+    :param in_db: The database to extract substructures from.
+
+    :param out_db: The new database to be generated.
+
+    :param substructures_only: Only extract the substructure database if True, else extract all major tables.
+
+    :param subset: If True, subset the substructures by the HMDBIDs, else simply makes a copy of the database.
+    """
+
     original_substructures = SubstructureDb(in_db, "")
 
     original_substructures.cursor.execute("attach database '%s' as subset" % out_db)

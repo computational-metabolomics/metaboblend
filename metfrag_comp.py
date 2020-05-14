@@ -8,9 +8,7 @@ from rdkit import Chem
 from shutil import rmtree
 import pickle
 
-metaboverse_path = os.path.join("..", "..", "..", "metaboverse")
-
-sys.path.append(os.path.join(metaboverse_path, "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
 from build_structures import build
 
@@ -18,6 +16,10 @@ sys.path.append(os.path.join("..", "functions"))
 from gen_aux import get_uniq_subs
 
 def hmdb_sdf_to_csv(path_in, path_out):
+    """
+    Converts the entire HMDB database, in sdf format, to a csv for processing by MetFrag.
+    """
+
     with open(path_out, "w", encoding="utf-8", newline="") as csv_db_file:
         csv_db = csv.writer(csv_db_file)
         csv_db.writerow([
@@ -63,6 +65,10 @@ def hmdb_sdf_to_csv(path_in, path_out):
 
 def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, path_pkls, heavy_atoms, max_valence,
                accuracy, fragment_masses, ppm, hydrogenation_allowance=2, max_atoms_available=2, max_n_substructures=3):
+    """
+    Altered build method - see msn_build.py for full description. Returns the recurrence dictionary for use in
+    calculating the ROC graph.
+    """
 
     mol_smi = Chem.MolToSmiles(mol, kekuleSmiles=True)
     pre_reccurence = {}
