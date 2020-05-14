@@ -438,8 +438,8 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name
                                  valence <= {}
                       """.format(table_name,
                                  ",".join(map(str, heavy_atoms)),
-                                 max_valence,
-                                 max_atoms_available,))
+                                 max_atoms_available,
+                                 max_valence,))
 
     db.create_indexes(table=table_name, selection="gen_subs_table")
 
