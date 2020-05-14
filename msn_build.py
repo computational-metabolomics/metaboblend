@@ -238,6 +238,7 @@ def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy,
 def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2):
     """Run a test on the standard build method. See run_test."""
     results = []
+
     for category in ms_data.keys():
         for hmdb in ms_data[category].keys():
 
@@ -249,18 +250,19 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="msn_subset")
             db.close()
 
-            build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["neutral_precursor_ion_mass"],
+            build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
                   path_db="subset.sqlite", path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
                   path_pkls="../../Data/databases/pkls",  out_mode="w", table_name="msn_subset")
 
-            i = 0
+            i = -1
             with open("temp_structures.smi") as smi:
                 for i, l in enumerate(smi):
                     pass
 
             total_structures = i + 1
 
+            i = -1
             reconstructed = False
             mol_smi = Chem.MolToSmiles(ms_data[category][hmdb]["mol"])
             get_uniq_subs("temp_structures.smi", ignore_substructures=True)
@@ -270,6 +272,9 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
                         reconstructed = True
 
             uniq_structures = i + 1
+
+            print(reconstructed)
+            print(uniq_structures)
 
             results.append([
                 str(category),
