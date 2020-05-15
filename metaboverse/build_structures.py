@@ -374,12 +374,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
     lls = []
     for ss_grp in subsets:
-        if fragment_mass is None:
-            if len(ss_grp) > max_n_substructures:
-                continue
-        else:
-            if len(ss_grp) > max_n_substructures - 1:
-                continue
+        if len(ss_grp) > max_n_substructures:
+            continue
 
         # refine groups of masses to
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
