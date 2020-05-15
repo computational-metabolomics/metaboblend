@@ -75,15 +75,38 @@ def add_small_substructures(path_subs):
     """
 
     substructures = SubstructureDb(path_subs, "")
-    small_mols = ["C*", "*C*", "O*", "*O*", "N*", "*N*"]  # the curated set of smiles
-    for smi in small_mols:
-        mol = Chem.MolFromSmiles(smi)
-        Chem.SanitizeMol(mol)
+    small_smis = ["CCC", "C=C-C", "C=C=C", "ccc", "ccC", "C=N", "CN", "cnc", "CO", "C=O"]
 
+    for smi in small_smis:
+        mol = Chem.MolFromSmarts(smi)
+
+        atom_idxs_subgraph = [1]
+        atoms_to_dummy = []
+        for idx in atom_idxs_subgraph:
+            for atom in mol.GetAtomWithIdx(idx).GetNeighbors():
+                if atom.GetIdx() not in atom_idxs_subgraph:
+                    atoms_to_dummy.append(atom.GetIdx())
+
+        mol_edit = Chem.EditableMol(mol)
         degree_atoms = {}
-        dummies = [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetSymbol() == "*"]
 
-        for atom in mol.GetAtoms():
+        for atom in reversed(mol.GetAtoms()):
+
+            if atom.GetIdx() in atoms_to_dummy:
+                mol_edit.ReplaceAtom(atom.GetIdx(), Chem.Atom("*"))
+
+        mol = mol_edit.GetMol()
+        mol_edit = Chem.EditableMol(mol)
+
+        for atom in reversed(mol.GetAtoms()):
+            if atom.GetIdx() not in atom_idxs_subgraph and atom.GetSymbol() != "*":
+                mol_edit.RemoveAtom(atom.GetIdx())
+
+        mol_out = mol_edit.GetMol()
+
+        dummies = [atom.GetIdx() for atom in mol_out.GetAtoms() if atom.GetSymbol() == "*"]
+
+        for atom in mol_out.GetAtoms():
 
             if atom.GetIdx() in dummies:
 
@@ -96,36 +119,43 @@ def add_small_substructures(path_subs):
                     else:
                         degree_atoms[atom_n.GetIdx()] += 1
 
+        # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
         bond_types = {}
 
-        for b in mol.GetBonds():
-            if mol.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
+        for b in mol_out.GetBonds():
+
+            if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
                 if b.GetEndAtomIdx() not in bond_types:
                     bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
                 else:
                     bond_types[b.GetEndAtomIdx()].append(b.GetBondTypeAsDouble())
 
-            elif mol.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol() == "*":
+            elif mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol() == "*":
                 if b.GetBeginAtomIdx() not in bond_types:
                     bond_types[b.GetBeginAtomIdx()] = [b.GetBondTypeAsDouble()]
                 else:
                     bond_types[b.GetBeginAtomIdx()].append(b.GetBondTypeAsDouble())
 
-        lib = {"smiles": Chem.MolToSmiles(mol),
-            "mol": mol,
-            "bond_types": bond_types,
-            "degree_atoms": degree_atoms,
-            "valence": sum(degree_atoms.values()),
-            "atoms_available": len(degree_atoms.keys()),
-            "dummies": dummies}
+        try:
+            mol_out.UpdatePropertyCache()  # alternative to Chem.SanitizeMol that updates valence information
+        except:
+            continue
 
-        smiles_rdkit_kek = Chem.rdmolfiles.MolToSmiles(lib["mol"])
+        lib = {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES
+               "mol": mol_out,
+               "bond_types": bond_types,
+               "degree_atoms": degree_atoms,
+               "valence": sum(degree_atoms.values()),
+               "atoms_available": len(degree_atoms.keys()),
+               "dummies": dummies}
+
+        smiles_rdkit = Chem.MolToSmiles(lib["mol"])
 
         exact_mass = calculate_exact_mass(lib["mol"])
         els = get_elements(lib["mol"])
 
         pkl_lib = pickle.dumps(lib)
-        sub_smi_dict = {'smiles': smiles_rdkit_kek,
+        sub_smi_dict = {'smiles': smiles_rdkit,
                         'exact_mass': exact_mass,
                         'count': 0,
                         'length': sum([els[atom] for atom in els if atom != "*"]),
@@ -144,49 +174,48 @@ def add_small_substructures(path_subs):
         sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
 
         substructures.cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                                  smiles, 
-                                                  heavy_atoms, 
-                                                  length, 
-                                                  exact_mass__1, 
-                                                  exact_mass__0_1, 
-                                                  exact_mass__0_01, 
-                                                  exact_mass__0_001, 
-                                                  exact_mass__0_0001, 
-                                                  exact_mass, count, 
-                                                  C, 
-                                                  H, 
-                                                  N, 
-                                                  O, 
-                                                  P, 
-                                                  S, 
-                                                  valence, 
-                                                  valence_atoms, 
-                                                  atoms_available, 
-                                                  lib)
-                                              values (
-                                                  :smiles,
-                                                  :heavy_atoms,
-                                                  :length,
-                                                  :exact_mass__1,
-                                                  :exact_mass__0_1,
-                                                  :exact_mass__0_01,
-                                                  :exact_mass__0_001,
-                                                  :exact_mass__0_0001,
-                                                  :exact_mass,
-                                                  :count,
-                                                  :C,
-                                                  :H,
-                                                  :N,
-                                                  :O,
-                                                  :P,
-                                                  :S,
-                                                  :valence,
-                                                  :valence_atoms,
-                                                  :atoms_available,:lib)
-                                           """, sub_smi_dict)
+                                              smiles, 
+                                              heavy_atoms, 
+                                              length, 
+                                              exact_mass__1, 
+                                              exact_mass__0_1, 
+                                              exact_mass__0_01, 
+                                              exact_mass__0_001, 
+                                              exact_mass__0_0001, 
+                                              exact_mass, count, 
+                                              C, 
+                                              H, 
+                                              N, 
+                                              O, 
+                                              P, 
+                                              S, 
+                                              valence, 
+                                              valence_atoms, 
+                                              atoms_available, 
+                                              lib)
+                                          values (
+                                              :smiles,
+                                              :heavy_atoms,
+                                              :length,
+                                              :exact_mass__1,
+                                              :exact_mass__0_1,
+                                              :exact_mass__0_01,
+                                              :exact_mass__0_001,
+                                              :exact_mass__0_0001,
+                                              :exact_mass,
+                                              :count,
+                                              :C,
+                                              :H,
+                                              :N,
+                                              :O,
+                                              :P,
+                                              :S,
+                                              :valence,
+                                              :valence_atoms,
+                                              :atoms_available,:lib)""", sub_smi_dict)
 
     substructures.conn.commit()
-    substructures.close()
+    substructures.conn.close()
 
 
 class MspDatabase:
