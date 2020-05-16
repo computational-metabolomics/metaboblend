@@ -63,9 +63,9 @@ class BuildStructuresTestCase(unittest.TestCase):
         smis = [{'NCCc1cc(O)cc(O)c1', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1'},
                 None,
                 {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
-                set()]
+                None]
 
-        std_lens = [15, 76, 5, 0]
+        std_lens = [15, 76, 5, 1920]
 
         fragments = [58.005, 60.021, 58.005, 58.005]
 
@@ -103,7 +103,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 if smis[i] is not None:
                     self.assertEqual(unique_smis, smis[i])
                 else:
-                    self.assertEqual(len(unique_smis), 51)
+                    self.assertTrue(len(unique_smis) == 51 or len(unique_smis) == 1892)
 
                 if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
                     os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
@@ -152,7 +152,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             self.assertTrue(row[1] <= 4)
             self.assertTrue(row[2] <= 2)
 
-        self.assertEqual(i, 25)
+        self.assertEqual(i, 58)
 
         db.close()
 
