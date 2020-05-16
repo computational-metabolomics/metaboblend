@@ -152,7 +152,7 @@ def reindex_atoms(records):
         index_atoms.append(idxs)
         c = idxs[-1] + 1
 
-    # check that bond types add up
+    # check that bond types add up - removes some mismatched configurations
     bond_mismatch = False
     for i in range(len(records)):
         other_bonds = []
@@ -327,7 +327,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
 
-    if table_name is None:
+    if table_name is None:  # generate "temp" table containing only substructures in parameter space
         table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
 
     if fragment_mass is None:  # standard build method
@@ -335,6 +335,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         exact_mass__0_0001 = round(exact_mass, 4)
 
         tolerance = 0.001
+
     else:  # prescribed substructure build method
         loss = exact_mass - fragment_mass
         exact_mass__1 = round(loss)
@@ -346,13 +347,10 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         else:
             tolerance = round(tolerance, 4)
 
-        max_n_substructures -= 1
+        max_n_substructures -= 1  # we find sets of mols that add up to the loss, not the precursor mass
 
     if os.name == "nt":  # multiprocessing freeze support on windows
         multiprocessing.freeze_support()
-
-    if out_mode == "w":
-        open(fn_out, "w").close()
 
     # select groups of masses at low mass resolution
     mass_values = db.select_mass_values(str(accuracy), [], table_name)
@@ -377,11 +375,11 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         if len(ss_grp) > max_n_substructures:
             continue
 
-        # refine groups of masses to
+        # refine groups of masses to 4dp mass resolution
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
-        if fragment_mass is not None:  # add fragments to groups if provided
+        if fragment_mass is not None:  # add fragments mass to to loss group
             for i, subset in enumerate(subsets_r2):
                 subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
 
@@ -390,9 +388,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
                   """.format(exact_mass__0_0001, len(mass_values_r2), len(subsets_r2)))
             print("------------------------------------------------------")
 
-        for ss_grp2 in subsets_r2:  # refine masses to high mass resolution
-            build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm,
-                               debug=debug, db=db, lls=lls)
+        for ss_grp2 in subsets_r2:  # refines groups based on ecs and gets substructures from db (appends to lls)
+            build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm, debug=debug, db=db, lls=lls)
 
     with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
         smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso), lls)
@@ -485,12 +482,12 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         return
 
     iii = 0
-    for l in itertools.product(*list_ecs):  # check each set of elemental compositions matches the target mol
+    for l in itertools.product(*list_ecs):
 
         sum_ec = list(numpy.array(l).sum(axis=0))
         iii += 1
 
-        if mc != sum_ec:
+        if mc != sum_ec:  # check each set of elemental compositions matches the target mol
             if debug:
                 print("No match for elemental composition: {}".format(str(sum_ec)))
 
@@ -518,7 +515,7 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         if debug:
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
-        lls += itertools.product(*ll)
+        lls += itertools.product(*ll)  # get the combinations of retrieved substructures
 
 
 def paths(tree, cur=()):
@@ -598,7 +595,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
 
     vA = ()
     for d in lll:
-        vA += (tuple(d["degree_atoms"].values()),)
+        vA += (tuple(d["degree_atoms"].values()),)  # obtain valence configuration of the set of substructures
 
     if str(vA) not in configs_iso:  # check mols "fit" together according to the connectivity database
         if debug:
@@ -614,7 +611,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
     mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
 
     if bond_mismatch:
-        return ""
+        return ""  # check that bond types are compatible (imperfect check)
 
     if debug:
         print("## Mols (in memory):", mol_comb)
@@ -633,7 +630,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
         if debug:
             print("1: Add bonds")
 
-        mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)
+        mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)  # add bonds between substructures
 
         if mol_e is None:
             continue
@@ -641,18 +638,18 @@ def lll_build(lll, configs_iso, path_pkls, debug):
             print("2: Add bonds")
 
         atoms_to_remove.sort(reverse=True)
-        [mol_e.RemoveAtom(a) for a in atoms_to_remove]
+        [mol_e.RemoveAtom(a) for a in atoms_to_remove]  # clean up dummy atoms
 
-        molOut = mol_e.GetMol()
+        molOut = mol_e.GetMol()  # generate the final (non-editable) mol
 
         try:
-            Chem.SanitizeMol(molOut)
+            Chem.SanitizeMol(molOut)  # clean the mol - ensure it is valid & canonical
         except:
             if debug:
                 print("Can't sanitize mol ISO: {}".format(iso_n))
             continue
 
-        try:
+        try:  # append the canonical smiles of the final structure
             smis += "{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll]))
         except RuntimeError:
             if debug:

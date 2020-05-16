@@ -608,6 +608,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
             * **False** Hide debug print statements.
     """
 
+    # convert list of bond indices to list of atom indices
     atom_idxs_subgraph = []
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
@@ -619,6 +620,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if a2 not in atom_idxs_subgraph:
             atom_idxs_subgraph.append(a2)
 
+    # identify atoms which will become dummy elements in the final substructure
     atoms_to_dummy = []
     for idx in atom_idxs_subgraph:
         for atom in mol.GetAtomWithIdx(idx).GetNeighbors():
@@ -644,6 +646,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
     dummies = [atom.GetIdx() for atom in mol_out.GetAtoms() if atom.GetSymbol() == "*"]
 
+    # get bond degrees
     for atom in mol_out.GetAtoms():
 
         if atom.GetIdx() in dummies:
@@ -657,7 +660,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
                 else:
                     degree_atoms[atom_n.GetIdx()] += 1
 
-    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
+    # returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
     bond_types = {}
 
     for b in mol_out.GetBonds():
@@ -667,6 +670,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
             print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
                   mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
+        # use bond types to dummy atoms to inform future structure building from compatible substructures
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
@@ -771,8 +775,9 @@ def filter_records(records):
 
         if "smiles" in record:
             mol = Chem.MolFromSmiles(record["smiles"])
+
             try:
-                Chem.SanitizeMol(mol)
+                Chem.SanitizeMol(mol)  # confirm mols are legitimate
             except:
                 continue
 
@@ -780,7 +785,7 @@ def filter_records(records):
                 continue
 
             if mol.GetNumHeavyAtoms() < 4:
-                continue
+                continue  # structures with <3 heavy atoms will not produce useful substructures
 
             atom_check = [True for atom in mol.GetAtoms() if atom.GetSymbol() not in ["C", "H", "N", "O", "P", "S"]]
             if len(atom_check) > 0:
@@ -790,7 +795,7 @@ def filter_records(records):
             smiles_rdkit_kek = Chem.MolToSmiles(mol, kekuleSmiles=True)
 
             if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles_rdkit or "-" in smiles_rdkit:
-                continue
+                continue  # only neutral molecules are compatible
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
@@ -988,11 +993,12 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
         # Returns a tuple of 2-tuples with bond IDs
         for sgs in get_sgs(record_dict, n_min, n_max, method=method):
             for edge_idxs in sgs:
-                lib = get_substructure(record_dict["mol"], edge_idxs)
+                lib = get_substructure(record_dict["mol"], edge_idxs)  # convert bond IDs to substructure mol
+
                 if lib is None:
                     continue
 
-                smiles_rdkit = Chem.MolToSmiles(lib["mol"])
+                smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
 
                 exact_mass = calculate_exact_mass(lib["mol"])
                 els = get_elements(lib["mol"])
@@ -1061,6 +1067,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       hmdbid, 
                                       smiles_rdkit) 
                                   VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+
     conn.commit()
     conn.close()
 
@@ -1116,6 +1123,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     for G, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
 
+        # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
         if debug:
             print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
         proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
@@ -1125,6 +1133,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
         proc.stdout.close()
         proc.stderr.close()
 
+        # pipe geng output to RI to generate mappings (complete set of non-isomorphic configurations)
         for i, line_geng in enumerate(geng_out.split()):
             
             if debug:
@@ -1155,7 +1164,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                     mappings.append(eval(line))
 
             if len(mappings) > 0:
-                gi = graph_info(p, sG, mappings, )
+                gi = graph_info(p, sG, mappings, )  # convert mappings to valence/connectivity specifications
 
                 for vn in gi:
                     if vn not in subgraphs:
@@ -1167,9 +1176,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                 subgraphs[vn].append(es)
 
             if len(subgraphs) > 0:
-                for vn in subgraphs:
-                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])
-                    root = {}
+                for vn in subgraphs:  # for each valence configuration
+                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])  # sort to remove duplicate configurations
+                    root = {}  # graph to be pickled
 
                     if debug:
                         col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
@@ -1207,7 +1216,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           sG.number_of_edges()))
 
                     with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
-                        pickle.dump(root, fn_pkls)
+                        pickle.dump(root, fn_pkls)  # pickled graph for generating structures from substructures
 
             conn.commit()
     conn.close()
