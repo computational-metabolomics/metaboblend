@@ -446,17 +446,17 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
     groups are now filtered further by identifying masses that refer to valid subsets of molecules, before they are
     built to generate new molecules.
 
+    :param db: The substructure and connectivity database. Elemental compositions and substructures are retrieved from
+        the database; this information is listed as "ll" and will be appended to the lls list provided as a parameter.
+
+    :param lls: List of substructure combinations, as determined by this function. Note that this list will be appended
+        to by the function, but the original items in the list will not be changed.
+
     :param ss2_grp: Group of masses that sum to the correct total mass, refer to substructures in the substructure
         database.
 
     :param mc: List of integers detailing the molecular composition of the target metabolite, in the format
         `[C, H, N, O, P, S]`.
-
-    :param out: The file to which smile strings should be written representing the final structures
-        generated; the substructures used to generate these final structures are also written.
-
-    :param path_pkls: The path to the connectivity graphs described by the SQLite 3 connectivity database, as generated
-        by :py:meth:`metaboverse.databases.create_isomorphism_database`.
 
     :param ppm: The allowable error of the query (in parts per million). Designed to be used in accordance with
         `fragment_mass`.
@@ -467,9 +467,6 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         * **True** Print debug statements.
 
         * **False** Hide debug print statements.
-
-    :param configs_iso: Possible substructure combinations extracted from the connectivity database. A tuple containing
-        tuples for each substructure; these tuples specify how many bonds each substructure can make.
 
     :param table_name: The name of the table within the substructure database from which to extract substructures. A
         prefiltered table based on the parameters specified in :py:meth:`metaboverse.build_structures.build`. See
