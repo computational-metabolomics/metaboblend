@@ -416,7 +416,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
     lls = []
     for ss_grp in subsets:
-        if len(ss_grp) > max_n_substructures:
+        if len(ss_grp) > max_n_substructures or len(ss_grp) == 0:
             continue
 
         # refine groups of masses to 4dp mass resolution
