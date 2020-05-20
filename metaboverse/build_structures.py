@@ -403,14 +403,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         multiprocessing.freeze_support()
 
     # select groups of masses at low mass resolution
-    mass_values = db.select_mass_values(str(accuracy), [], table_name)
-
-    try:
-        subsets = list(subset_sum(mass_values, exact_mass__1))
-    except RecursionError:  # TODO: Handle subset_sum recursion issue
-        if debug:
-            print("Building mol failed due to subset_sum recursion error")
-        return
+    mass_values = db.select_mass_values("1", [], table_name)
+    subsets = list(subset_sum(mass_values, exact_mass__1, max_n_substructures))
 
     configs_iso = db.k_configs()
     out = open(fn_out, out_mode)
@@ -430,8 +424,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
 
         if fragment_mass is not None:  # add fragments mass to to loss group
-            for i, subset in enumerate(subsets_r2):
-                subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
+            subsets_r2 = [subset + (round(exact_mass - loss, 4),) for subset in subsets_r2]
 
         if debug:
             print("""Second round (mass: {}) - Values: {} - Correct Sums: {}
