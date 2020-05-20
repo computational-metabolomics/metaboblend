@@ -403,7 +403,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         multiprocessing.freeze_support()
 
     # select groups of masses at low mass resolution
-    mass_values = [m for m in db.select_mass_values("1", [], table_name) if m < exact_mass__1]
+    mass_values = [m for m in db.select_mass_values("1", [], table_name) if m <= exact_mass__1]
     subsets = list(subset_sum(mass_values, exact_mass__1, max_n_substructures))
 
     configs_iso = db.k_configs()
