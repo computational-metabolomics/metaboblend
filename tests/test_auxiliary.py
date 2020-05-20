@@ -20,6 +20,7 @@
 #
 
 
+import os
 import unittest
 from io import BytesIO
 import zipfile
@@ -95,22 +96,19 @@ class AuxiliaryTestCase(unittest.TestCase):
 
             if len(mappings) > 0:
                 gi = graph_info(self.p_list[-1], sG, mappings, )
-                self.assertEqual(gi[0], gi_val)  # test gi vs reference values
-                self.assertEqual(gi[1][0], self.p_list[-1])
-                self.assertEqual(gi[1][1], sG)
-                self.assertEqual(gi[1][2], mappings)
+                self.assertEqual(gi, gi_val)  # test gi vs reference values
 
                 for m in mappings:
                     ug = nx.relabel_nodes(sG, m, copy=True)
-                    vn = valences(self.p_list[-1], ug)
+                    vn = get_degrees(self.p_list[-1], ug)
                     self.assertEqual(len(vn), len(self.p_list[-1]))
                     [self.assertEqual(len(t), 2) for t in vn]
 
-                for vn in gi[0]:
-                    sorted_subgraphs = sort_subgraphs(gi[0][vn])
-                    self.assertLessEqual(len(sorted_subgraphs), len(gi[0][vn]))
+                for vn in gi:
+                    sorted_subgraphs = sort_subgraphs(gi[vn])
+                    self.assertLessEqual(len(sorted_subgraphs), len(gi[vn]))
 
-                    for subgraph in gi[0][vn]:
+                    for subgraph in gi[vn]:
                         self.assertTrue(sorted([tuple(sorted(e)) for e in subgraph]) in sorted_subgraphs)
 
     @classmethod

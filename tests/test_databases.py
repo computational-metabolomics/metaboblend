@@ -20,6 +20,7 @@
 #
 
 
+import os
 import unittest
 import zipfile
 from metaboverse.databases import *
@@ -95,7 +96,7 @@ class DatabasesTestCase(unittest.TestCase):
         with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             filtered_records = pickle.load(test_hmdbs)
 
-        record_gen = filter_records(parsed_records.values(), db_type="hmdb")
+        record_gen = filter_records(parsed_records.values())
         test_filtered_records = {}
         for record in record_gen:
             del record["mol"]
