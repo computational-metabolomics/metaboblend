@@ -354,29 +354,35 @@ class SubstructureDb:
         :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
-            * **0_1** One decimal place
-            * **0_01** Two decimal places
-            * **0_001** Three decimal places
             * **0_0001** Four decimal places
 
-        :param masses: A list of integers to limit the query by.
+        :param masses: A list of integers to limit the query by. If a non-empty list of masses is given, the query
+            is returned as a list of lists for each mass query, as opposed to a single list of masses.
 
         :param table_name: Name of the substructure table to be queried.
 
         :return: Sorted list of mass values from the substructure database, filtered by the supplied parameters.
         """
 
-        mass_values = []
-        filter_mass = ""
         if type(masses) == list:
             if len(masses) > 0:
-                filter_mass = " WHERE exact_mass__1 IN ({})".format(",".join(map(str, masses)))
+                mass_values = []
 
-        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}{}".format(accuracy, table_name, filter_mass))
+                for m in masses:
+                    self.cursor.execute("""SELECT DISTINCT exact_mass__{} 
+                                           FROM {}
+                                           WHERE exact_mass__1 = {}
+                                        """.format(accuracy, table_name, m))
 
-        records = self.cursor.fetchall()
-        for record in records:
-            mass_values.append(record[0])
+                    m_values = [record[0] for record in self.cursor.fetchall()]
+                    m_values.sort()
+
+                    mass_values.append(m_values)
+
+                return mass_values
+
+        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}".format(accuracy, table_name))
+        mass_values = [record[0] for record in self.cursor.fetchall()]
         mass_values.sort()
 
         return mass_values
