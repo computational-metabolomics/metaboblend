@@ -421,7 +421,15 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
         # refine groups of masses to 4dp mass resolution
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
-        subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
+        subsets_r2 = []
+
+        # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
+        for mass_combo in itertools.product(*mass_values_r2):
+            if abs(sum(mass_combo) - exact_mass__0_0001) <= tolerance:
+                subsets_r2.append(mass_combo)
+
+        if len(subsets_r2) == 0:
+            continue
 
         if fragment_mass is not None:  # add fragments mass to to loss group
             subsets_r2 = [subset + (round(exact_mass - loss, 4),) for subset in subsets_r2]
