@@ -192,59 +192,6 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_paths(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
-
-        with open(to_test_result("connectivity", "pkls", "5.pkl"), "rb") as root_pkl:
-            for p in db.paths(pickle.load(root_pkl)):
-                self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
-
-        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
-              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
-              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
-        ps_found = []
-        with open(to_test_result("connectivity", "pkls", "60.pkl"), "rb") as root_pkl:
-            for p in db.paths(pickle.load(root_pkl)):
-                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        for i in range(len(ps)):
-            self.assertTrue(i in ps_found)
-
-        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
-        ps_found = []
-        with open(to_test_result("connectivity", "pkls", "100.pkl"), "rb") as root_pkl:
-            for p in db.paths(pickle.load(root_pkl)):
-                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        self.assertEqual(sorted(ps_found), [0, 1])
-        db.close()
-
-    def test_isomorphism_graphs(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
-        for p in db.isomorphism_graphs(5):
-            self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
-
-        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
-              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
-              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
-        ps_found = []
-        for p in db.isomorphism_graphs(60):
-            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        for i in range(len(ps)):
-            self.assertTrue(i in ps_found)
-
-        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
-        ps_found = []
-        for p in db.isomorphism_graphs(100):
-            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        self.assertEqual(sorted(ps_found), [0, 1])
-
-        db.close()
-
     def test_k_configs(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
                             to_test_result("connectivity", "k_graphs.sqlite"))

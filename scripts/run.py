@@ -67,6 +67,7 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
                      path_pkls="../databases/pkls",
                      path_db="../databases/substructures.sqlite",
                      path_out="results/", debug=False):
+
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
 
     # Select all HMDB compounds in database
@@ -79,8 +80,8 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
         fn_out = os.path.join(path_out, "{}.smi".format(record[0]))
 
         # build & write structures
-        build(list(record[3:9]), record[1], db, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available,
-              max_n_substructures, debug=debug)
+        build(list(record[3:9]), record[1], fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available,
+              max_n_substructures, debug=debug, path_db_k_graphs=path_db_k_graphs, path_pkls=path_pkls, path_db=path_db)
 
         # write figures to svg files
         with open(fn_out) as smiles:

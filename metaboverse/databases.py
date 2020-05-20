@@ -27,7 +27,7 @@ import pickle
 import sqlite3
 import tempfile
 from collections import OrderedDict
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree as ElementTree
 import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
@@ -42,7 +42,7 @@ def reformat_xml(source, encoding="utf8"):
     Reformats HMDB xml files to be compatible with :py:meth:`metaboverse.databases.parse_xml`; some such files do not
     contain a `<hmdb xmlns="http://www.hmdb.ca">` header.
 
-    :param source: File to be reformatted.
+    :param source: Path to file to be reformatted.
 
     :param encoding: Encoding of source file.
 
@@ -76,6 +76,7 @@ def parse_xml(source, encoding="utf8", reformat=False):
         XML files recording single metabolites.
 
         * **True** Add a `<hmdb xmlns="http://www.hmdb.ca">` header to the XML file before parsing.
+
         * **False** Parse the XML file as it is (recommended if header is present).
 
     :return: The XML file converted to a dictionary.
@@ -102,7 +103,7 @@ def parse_xml(source, encoding="utf8", reformat=False):
                 else:
                     inp = io.BytesIO(xml_record.encode('utf-8').strip())
 
-                for event, elem in etree.iterparse(inp, events=("start", "end")):
+                for event, elem in ElementTree.iterparse(inp, events=("start", "end")):
                     if event == 'end':
                         path.pop()
 
@@ -143,15 +144,19 @@ class SubstructureDb:
     substructure database and, if provided, the connectivity database.
 
     :param db: Path to the substructure database.
+
     :param db2: Path to the connectivity database.
+
     :ivar path_pkls: Path to the directory containing connectivity graph PKLs
+
     :param conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
         as 'graphs'.
+
     :param cursor: A :py:meth:`sqlite3.connection.cursor` for the substructure database; the connectivity database will
         be attached as "graphs".
     """
 
-    def __init__(self, db, path_pkls="", db2=None):
+    def __init__(self, db, path_pkls=None, db2=None, clean=True):
         """Constructor method"""
 
         self.db = db
@@ -163,6 +168,8 @@ class SubstructureDb:
 
         if self.db2 is not None:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
+
+        self.clean = clean
 
     def select_compounds(self, cpds=[]):
         """
@@ -188,7 +195,7 @@ class SubstructureDb:
         """
         Filters `hmdbid_substructures` table in the substructure database by the frequency of the substructure; allows
         for the removal of non-unique (min_node_weight = 2) or infrequent (min_node_weight > 2) substructures. Generates
-        a new table, `unique_hmdbid`, which contains distinct hmdbids and 'filtered_hmdbid_substructures' which contains
+        a new table, *unique_hmdbid*, which contains distinct hmdbids and *filtered_hmdbid_substructures* which contains
         the filtered substructures with their frequency.
 
         :param min_node_weight: Minimal count of the substructure within 'hmdbid_substructures'.
@@ -206,7 +213,7 @@ class SubstructureDb:
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
         """
         Generate networks to explore the co-occurence of substructures in the substructure database.
-        
+
         :param method: Which method to use for the generation of a substructure co-occurence network.
 
             * **default** Generate a standard substructure network using the most time-efficient method. Node weights
@@ -412,20 +419,6 @@ class SubstructureDb:
 
         return self.cursor.fetchall()
 
-    def paths(self, tree, cur=()):
-        if tree == {}:
-            yield cur
-        else:
-            for n, s in tree.items():
-                for path in self.paths(s, cur + (n,)):
-                    yield path
-
-    def isomorphism_graphs(self, id_pkl):
-        with open(os.path.join(self.path_pkls, "{}.pkl".format(id_pkl)), 'rb') as pickle_file:
-            nGcomplete = pickle.load(pickle_file)
-        for p in self.paths(nGcomplete):
-            yield p
-
     def k_configs(self):
         """
         Obtains strings detailing the valences for each substructure in a connectivity graph and the ID of the related
@@ -533,33 +526,43 @@ class SubstructureDb:
                                    smiles_rdkit,
                                    PRIMARY KEY (hmdbid, smiles_rdkit))""")
 
-    def create_indexes(self):
+    def create_indexes(self, table="substructures", selection="all"):
         """Creates indexes for the `substructures` table for use by the build method."""
 
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__1__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_1__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_01__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_001__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__Valence__mass__0_0001__idx")
-        self.cursor.execute("DROP INDEX IF EXISTS atoms__Valence__idx")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__1")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_1")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_001")
+        self.cursor.execute("DROP INDEX IF EXISTS mass__0_0001")
+        self.cursor.execute("DROP INDEX IF EXISTS atoms")
 
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__1)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_1__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_1)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_01__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_01)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_001__idx 
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_001)""")
-        self.cursor.execute("""CREATE INDEX heavy_atoms__Valence__mass__0_0001__idx
-                               ON substructures (heavy_atoms, valence, valence_atoms, exact_mass__0_0001)""")
-        self.cursor.execute("""CREATE INDEX atoms__Valence__idx 
-                               ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
+        if selection != "gen_subs_table":
+            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available")
+
+        self.cursor.execute("""CREATE INDEX mass__1
+                               ON %s (exact_mass__1)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_1
+                               ON %s (exact_mass__0_1)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_01
+                               ON %s (exact_mass__0_01)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_001 
+                               ON %s (exact_mass__0_001)""" % table)
+        self.cursor.execute("""CREATE INDEX mass__0_0001
+                               ON %s (exact_mass__0_0001)""" % table)
+        self.cursor.execute("""CREATE INDEX atoms 
+                               ON %s (C, H, N, O, P, S);""" % table)
+
+        if selection != "gen_subs_table":
+            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available 
+                                   ON %s (heavy_atoms, atoms_available, valence);""" % table)
 
     def close(self):
-        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
-        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
-        self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
+        if self.clean:
+            self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
+            self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
+            self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
+
         self.conn.close()
 
 
@@ -567,7 +570,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     """
     Generates information for the substructure database from a reference molecule and the bond IDs of a substructure.
 
-    :param mol: An :py:meth:`rdkit.Chem.Mol' object containing a reference molecule that has been fragmented.
+    :param mol: An :py:meth:`rdkit.Chem.Mol` object containing a reference molecule that has been fragmented.
 
     :param idxs_edges_subgraph: List of atom indices within the reference molecule that make up the substructure.
 
@@ -596,8 +599,16 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
         * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
             represented by `*`.
+
+        :param debug: Debug print statements provide further information on how the function is generating the connectivity
+            database.
+
+            * **True** Print debug statements.
+
+            * **False** Hide debug print statements.
     """
 
+    # convert list of bond indices to list of atom indices
     atom_idxs_subgraph = []
     for bIdx in idxs_edges_subgraph:
         b = mol.GetBondWithIdx(bIdx)
@@ -609,6 +620,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
         if a2 not in atom_idxs_subgraph:
             atom_idxs_subgraph.append(a2)
 
+    # identify atoms which will become dummy elements in the final substructure
     atoms_to_dummy = []
     for idx in atom_idxs_subgraph:
         for atom in mol.GetAtomWithIdx(idx).GetNeighbors():
@@ -634,6 +646,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
     dummies = [atom.GetIdx() for atom in mol_out.GetAtoms() if atom.GetSymbol() == "*"]
 
+    # get bond degrees
     for atom in mol_out.GetAtoms():
 
         if atom.GetIdx() in dummies:
@@ -647,7 +660,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
                 else:
                     degree_atoms[atom_n.GetIdx()] += 1
 
-    # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
+    # returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
     bond_types = {}
 
     for b in mol_out.GetBonds():
@@ -657,6 +670,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
             print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
                   mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
+        # use bond types to dummy atoms to inform future structure building from compatible substructures
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
@@ -754,15 +768,16 @@ def filter_records(records):
 
         * "C", "H", "N", "O", "P", "S": Integers referring to elemental composition.
 
-        * "**mol**": An :py:meth:`rdkit.Chem.Mol' object containing the molecule.
+        * "**mol**": An :py:meth:`rdkit.Chem.Mol` object containing the molecule.
     """
 
     for record in records:
 
         if "smiles" in record:
             mol = Chem.MolFromSmiles(record["smiles"])
+
             try:
-                Chem.SanitizeMol(mol)
+                Chem.SanitizeMol(mol)  # confirm mols are legitimate
             except:
                 continue
 
@@ -770,7 +785,7 @@ def filter_records(records):
                 continue
 
             if mol.GetNumHeavyAtoms() < 4:
-                continue
+                continue  # structures with <3 heavy atoms will not produce useful substructures
 
             atom_check = [True for atom in mol.GetAtoms() if atom.GetSymbol() not in ["C", "H", "N", "O", "P", "S"]]
             if len(atom_check) > 0:
@@ -780,7 +795,7 @@ def filter_records(records):
             smiles_rdkit_kek = Chem.MolToSmiles(mol, kekuleSmiles=True)
 
             if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles_rdkit or "-" in smiles_rdkit:
-                continue
+                continue  # only neutral molecules are compatible
 
             els = get_elements(mol)
             exact_mass = calculate_exact_mass(mol)
@@ -978,11 +993,12 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
         # Returns a tuple of 2-tuples with bond IDs
         for sgs in get_sgs(record_dict, n_min, n_max, method=method):
             for edge_idxs in sgs:
-                lib = get_substructure(record_dict["mol"], edge_idxs)
+                lib = get_substructure(record_dict["mol"], edge_idxs)  # convert bond IDs to substructure mol
+
                 if lib is None:
                     continue
 
-                smiles_rdkit = Chem.MolToSmiles(lib["mol"])
+                smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
 
                 exact_mass = calculate_exact_mass(lib["mol"])
                 els = get_elements(lib["mol"])
@@ -1051,6 +1067,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       hmdbid, 
                                       smiles_rdkit) 
                                   VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+
     conn.commit()
     conn.close()
 
@@ -1063,7 +1080,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     :param db_out: The path of the SQLite 3 database to be generated.
 
-    :param pkls_out: The directory in which to dump the PKL files containing teh graphs required for building 
+    :param pkls_out: The directory in which to dump the PKL files containing teh graphs required for building
         molecules from substructures.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
@@ -1078,7 +1095,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     :param debug: Debug print statements provide further information on how the function is generating the connectivity
         database.
+
         * **True** Print debug statements.
+
         * **False** Hide debug print statements.
     """
     
@@ -1104,6 +1123,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     for G, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
 
+        # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
         if debug:
             print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
         proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
@@ -1113,6 +1133,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
         proc.stdout.close()
         proc.stderr.close()
 
+        # pipe geng output to RI to generate mappings (complete set of non-isomorphic configurations)
         for i, line_geng in enumerate(geng_out.split()):
             
             if debug:
@@ -1143,7 +1164,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                     mappings.append(eval(line))
 
             if len(mappings) > 0:
-                gi = graph_info(p, sG, mappings, )
+                gi = graph_info(p, sG, mappings, )  # convert mappings to valence/connectivity specifications
 
                 for vn in gi:
                     if vn not in subgraphs:
@@ -1155,9 +1176,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                 subgraphs[vn].append(es)
 
             if len(subgraphs) > 0:
-                for vn in subgraphs:
-                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])
-                    root = {}
+                for vn in subgraphs:  # for each valence configuration
+                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])  # sort to remove duplicate configurations
+                    root = {}  # graph to be pickled
 
                     if debug:
                         col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
@@ -1195,7 +1216,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           sG.number_of_edges()))
 
                     with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
-                        pickle.dump(root, fn_pkls)
+                        pickle.dump(root, fn_pkls)  # pickled graph for generating structures from substructures
 
             conn.commit()
     conn.close()

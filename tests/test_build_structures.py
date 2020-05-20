@@ -63,9 +63,9 @@ class BuildStructuresTestCase(unittest.TestCase):
         smis = [{'NCCc1cc(O)cc(O)c1', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1'},
                 None,
                 {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
-                set()]
+                None]
 
-        std_lens = [15, 76, 5, 0]
+        std_lens = [15, 76, 5, 1920]
 
         fragments = [58.005, 60.021, 58.005, 58.005]
 
@@ -76,11 +76,12 @@ class BuildStructuresTestCase(unittest.TestCase):
             for i, record_dict in enumerate(record_dicts.values()):
                 record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
 
-                build([record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                       record_dict["S"]],
-                      record_dict["exact_mass"], db, to_test_result(record_dict["HMDB_ID"] + ".smi"),
-                      heavy_atoms=range(4, 9), max_valence=4, accuracy="1", max_atoms_available=2,
-                      max_n_substructures=3)
+                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
+                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
+                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
+                      max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
+                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
@@ -102,16 +103,17 @@ class BuildStructuresTestCase(unittest.TestCase):
                 if smis[i] is not None:
                     self.assertEqual(unique_smis, smis[i])
                 else:
-                    self.assertEqual(len(unique_smis), 51)
+                    self.assertTrue(len(unique_smis) == 51 or len(unique_smis) == 1892)
 
                 if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
                     os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
 
-                build([record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                       record_dict["S"]],
-                      record_dict["exact_mass"], db, to_test_result(record_dict["HMDB_ID"] + ".smi"),
-                      heavy_atoms=range(4, 9), max_valence=4, accuracy="1", max_atoms_available=2,
-                      max_n_substructures=3, fragment_mass=fragments[i], ppm=15)
+                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
+                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
+                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
+                      accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
+                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
@@ -150,7 +152,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             self.assertTrue(row[1] <= 4)
             self.assertTrue(row[2] <= 2)
 
-        self.assertEqual(i, 25)
+        self.assertEqual(i, 58)
 
         db.close()
 
@@ -208,7 +210,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             lll[0]["mol"] = Chem.MolFromSmiles(lll[0]["smiles"], False)
             lll[1]["mol"] = Chem.MolFromSmiles(lll[1]["smiles"], False)
 
-            mol_comb, atoms_available, atoms_to_remove, bond_types = reindex_atoms(lll)
+            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
             self.assertEqual([Chem.MolToSmiles(mol_comb), atoms_available, atoms_to_remove, bond_types], reindex)
 
     def test_add_bonds(self):
@@ -233,6 +235,52 @@ class BuildStructuresTestCase(unittest.TestCase):
                 self.assertTrue(mol_e is None)
             else:
                 self.assertEqual(Chem.MolToSmiles(mol_e.GetMol(), False), mol_out[i])
+
+    def test_paths(self):
+        with open(to_test_result("connectivity", "pkls", "5.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
+
+        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
+              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
+              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
+        ps_found = []
+
+        with open(to_test_result("connectivity", "pkls", "60.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        for i in range(len(ps)):
+            self.assertTrue(i in ps_found)
+
+        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
+        ps_found = []
+        with open(to_test_result("connectivity", "pkls", "100.pkl"), "rb") as root_pkl:
+            for p in paths(pickle.load(root_pkl)):
+                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        self.assertEqual(sorted(ps_found), [0, 1])
+
+    def test_isomorphism_graphs(self):
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 5):
+            self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
+
+        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
+              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
+              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
+        ps_found = []
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 60):
+            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        for i in range(len(ps)):
+            self.assertTrue(i in ps_found)
+
+        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
+        ps_found = []
+        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 100):
+            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
+
+        self.assertEqual(sorted(ps_found), [0, 1])
 
     @classmethod
     def tearDownClass(cls):
