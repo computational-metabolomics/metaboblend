@@ -378,7 +378,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
 
     if table_name is None:  # generate "temp" table containing only substructures in parameter space
-        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
+        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(exact_mass))
 
     if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
@@ -455,11 +455,14 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db.close()
 
 
-def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="subset_substructures"):
+def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures"):
     """
     Generate a temporary secondary substructure table restricted by a set of parameters. Generated as an initial step
     in :py:meth:`metaboverse.build_structures.build` in order to limit the processing overhead as a result of
     repeatedly querying the SQLite substructure database.
+
+    :param max_mass: The maximum allowed mass of substructures in the temporary table; there is no point considering
+        substructures with greater mass than the target mol.
 
     :param db: Connection to a :py:meth:`metaboverse.databases.SubstructureDb` from which to extract substructures.
 
@@ -482,11 +485,13 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name
                              SELECT * FROM substructures WHERE
                                  heavy_atoms IN ({}) AND
                                  atoms_available <= {} AND
-                                 valence <= {}
+                                 valence <= {} AND
+                                 exact_mass__1 < {}
                       """.format(table_name,
                                  ",".join(map(str, heavy_atoms)),
                                  max_atoms_available,
-                                 max_valence,))
+                                 max_valence,
+                                 max_mass,))
 
     db.create_indexes(table=table_name, selection="gen_subs_table")
 

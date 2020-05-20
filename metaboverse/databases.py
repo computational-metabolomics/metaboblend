@@ -536,32 +536,22 @@ class SubstructureDb:
         """Creates indexes for the `substructures` table for use by the build method."""
 
         self.cursor.execute("DROP INDEX IF EXISTS mass__1")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_1")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_001")
         self.cursor.execute("DROP INDEX IF EXISTS mass__0_0001")
         self.cursor.execute("DROP INDEX IF EXISTS atoms")
 
         if selection != "gen_subs_table":
-            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available")
+            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
 
         self.cursor.execute("""CREATE INDEX mass__1
                                ON %s (exact_mass__1)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_1
-                               ON %s (exact_mass__0_1)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_01
-                               ON %s (exact_mass__0_01)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_001 
-                               ON %s (exact_mass__0_001)""" % table)
         self.cursor.execute("""CREATE INDEX mass__0_0001
                                ON %s (exact_mass__0_0001)""" % table)
         self.cursor.execute("""CREATE INDEX atoms 
                                ON %s (C, H, N, O, P, S);""" % table)
 
         if selection != "gen_subs_table":
-            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available 
-                                   ON %s (heavy_atoms, atoms_available, valence);""" % table)
+            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
+                                   ON %s (heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
     def close(self):
         if self.clean:
