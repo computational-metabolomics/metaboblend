@@ -164,12 +164,16 @@ class DatabasesTestCase(unittest.TestCase):
         for exact in exacts:
             self.assertTrue(round(exact) in ests)
 
-        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"), [50.0156, 64.0313, 73.029])
-        self.assertEqual(db.select_mass_values("0_0001", [120, 87, 87], "substructures"), [87.0082, 87.0446, 120.0423])
-        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"), [50.0156, 64.0313, 73.029])
+        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"),
+                         [[50.0156], [64.0313], [73.029]])
+        self.assertEqual(db.select_mass_values("0_0001", [120, 87, 87], "substructures"),
+                         [[120.0423], [87.0082, 87.0446], [87.0082, 87.0446]])
+        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"),
+                         [[50.0156], [64.0313], [73.029]])
         self.assertEqual(db.select_mass_values("0_0001", [55, 80, 107], "substructures"),
-                         [55.0184, 55.0422, 80.0262, 80.05, 107.0497, 107.0735])
-        self.assertEqual(db.select_mass_values("0_0001", [63, 63, 63], "substructures"), [63.0235])
+                         [[55.0184, 55.0422], [80.0262, 80.05], [107.0497, 107.0735]])
+        self.assertEqual(db.select_mass_values("0_0001", [63, 63, 63], "substructures"),
+                         [[63.0235], [63.0235], [63.0235]])
 
         self.assertRaises(sqlite3.OperationalError,
                           lambda: db.select_mass_values("0_0001", [63, 63, 63], "substrusctures"))
