@@ -22,29 +22,15 @@
 import itertools
 import networkx as nx
 import pylab as plt
+import sys
+import os
+
 
 def calculate_complete_multipartite_graphs(sizes, boxes):
     for nb in range(2, boxes+1):
         for p in itertools.combinations_with_replacement(sizes, nb):
             g = nx.complete_multipartite_graph(*p)
             yield g, p
-
-
-def cols_dict(sizes):
-    num = 0
-    temp = [0]
-
-    for s in sizes:
-        num += s
-        temp.append(num)
-
-    colsDict = {}
-    cols = ["b", "r", "y", "g"]
-
-    for i in range(len(temp)-1):
-        colsDict[tuple(range(temp[i], temp[i+1]))] = cols[i]
-
-    return colsDict
 
 
 def valences(sizes, ug):
@@ -60,41 +46,6 @@ def valences(sizes, ug):
         degrees_nodes += (tuple(degree_nodes_sub),)
 
     return degrees_nodes
-
-
-def _hashGraph(g): return tuple(sorted(g.edges()))
-
-
-def kp_complete_graphs(sizes, boxes):
-    for nboxes in range(2, boxes+1):
-        for p in itertools.combinations_with_replacement(sizes, nboxes):
-            nodes, edges = complete_k_partite(p)
-            yield nodes, edges, p
-
-
-def match_subgraphs(ug_comp, usg, sgi, sizes):
-    frags = {}
-
-    for sg in sgi:
-        ug_comp.set_vertex_filter(None)
-        ug_comp.set_edge_filter(None)
-
-        vmask, emask = mark_subgraph(ug_comp, usg, sg)
-        ug_comp.set_filters(emask, vmask)
-
-        vt, vn = valences(sizes, ug_comp)
-
-        edges = [(int(e.target()), int(e.source())) for e in ug_comp.edges()]
-        edges.sort()
-
-        if str(vt) not in frags:
-            frags[str(vt)] = [edges]
-
-        else:
-            if edges not in frags[str(vt)]:
-                frags[str(vt)].append(edges)
-
-    return frags
 
 
 def draw_subgraph(edges, vn):
@@ -124,7 +75,7 @@ def draw_subgraph(edges, vn):
 
     nx.draw_networkx_labels(sG, pos=pos)
 
-    plt.show()
+    return plt, sG
 
 
 def graph_to_ri(graph, name):

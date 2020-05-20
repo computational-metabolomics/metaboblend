@@ -119,7 +119,7 @@ class SubstructureDb:
 
     def select_compounds(self, cpds=[]):
         if len(cpds) > 0:
-            sql = "WHERE HMDBID in ('%s')" % (", ".join(map(str, cpds)))
+            sql = " WHERE hmdbid in ('%s')" % ("', '".join(map(str, cpds)))
         else:
             sql = ""
 
@@ -137,7 +137,6 @@ class SubstructureDb:
                                    SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
                                    GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
 
-        return self.cursor.fetchall()
 
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
         substructure_graph = nx.Graph()
@@ -188,7 +187,7 @@ class SubstructureDb:
                             substructure_graph.add_edge(adj1, adj2, weight=1)
                 substructure_graph.remove_node(unique_hmdb_id[0])
 
-            # remove self-loops and edges below weight threshold
+            # remove self-loops
             substructure_graph.remove_edges_from(nx.selfloop_edges(substructure_graph))
 
         return substructure_graph
@@ -224,6 +223,7 @@ class SubstructureDb:
         for record in records:
             mass_values.append(record[0])
         mass_values.sort()
+
         return mass_values
 
     def select_ecs(self, exact_mass, table_name, accuracy, ppm=None):
@@ -357,6 +357,8 @@ class SubstructureDb:
                                ON substructures (C, H, N, O, P, S, valence, valence_atoms);""")
 
     def close(self):
+        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
+        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
         self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
         self.conn.close()
 
@@ -438,7 +440,7 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     except:
         return
 
-    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES,
+    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -450,9 +452,11 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 def get_elements(mol, elements=None):
     if not elements:
         elements = {"C": 0, "H": 0, "N": 0, "O": 0, "P": 0, "S": 0, "*": 0}
+
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
         elements[atom.GetSymbol()] += 1
+
     return elements
 
 
@@ -553,7 +557,7 @@ def subset_sgs_sizes(sgs, n_min, n_max):
     return sgs_new
 
 
-def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
+def get_sgs(record_dict, n_min, n_max, method="exhaustive"):  # n_min, n_max = number of edges
     if method == "exhaustive":
         return Chem.rdmolops.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
 
@@ -763,10 +767,11 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                     subgraphs[vn] = sort_subgraphs(subgraphs[vn])
                     root = {}
 
-                    for fr in subgraphs[vn]:
-                        if debug:
-                            draw_subgraph(fr, eval(vn))
+                    if debug:
+                        col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
+                        col_plt.show()
 
+                    for fr in subgraphs[vn]:
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
@@ -797,6 +802,8 @@ def create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng=None, 
                                           sG.number_of_nodes(),
                                           sG.number_of_edges()))
 
-                    pickle.dump(root, open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb"))
+                    with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
+                        pickle.dump(root, fn_pkls)
+
             conn.commit()
     conn.close()

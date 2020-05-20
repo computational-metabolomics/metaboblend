@@ -21,6 +21,7 @@
 
 
 import sys
+import os
 import unittest
 from pathlib import Path
 
@@ -35,4 +36,4 @@ if __name__ == '__main__':
     suite.addTest(unittest.findTestCases(test_auxiliary))
 
     report = os.path.join(os.path.abspath(os.path.join(__file__, os.pardir)), 'results', 'results_test_suite_auxiliary')
-    runTestSuite(suite, report, title = 'Process Test Suite Report', verbosity = 2)
+    runTestSuite(suite, report, title='Process Test Suite Report', verbosity=2)
