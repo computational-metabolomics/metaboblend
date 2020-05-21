@@ -930,10 +930,15 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
         return subset_sgs_sizes([sgs], n_min, n_max)
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive"):
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive",
+                                 max_atoms_available=None, max_valence=None):
     """
     Add entries to the substructure database by fragmenting a set of molecules. Combinations of substructures in this
     database are used to build new molecules.
+
+    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures.
+
+    :param max_valence: Maximum valence of valid substructures.
 
     :param fn_hmdb: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
         `records` if provided.
@@ -993,6 +998,14 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
 
                 if lib is None:
                     continue
+
+                if max_atoms_available is not None:
+                    if lib["atoms_available"] > max_atoms_available:
+                        continue
+
+                if max_valence is not None:
+                    if lib["valence"] > max_valence:
+                        continue
 
                 smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
 
