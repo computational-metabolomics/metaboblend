@@ -258,7 +258,7 @@ class MspDatabase:
 
         return LibraryData(msp_pth=path_msp, db_pth=self.path_db, db_type='sqlite', schema=self.schema)
 
-    def get_fragments(self, precursor_type="[M+H]+", ms_level=2, max_mass=200, min_mass=100, snr=2.0):
+    def get_fragments(self, precursor_type="[M+H]+", ms_level=2, max_mass=400, min_mass=100, snr=2.0):
         """
         Get MS data from the SQLite database.
 
@@ -323,7 +323,7 @@ class MspDatabase:
         self.conn.close()
 
 
-def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path):
+def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no_hmdb=False):
     """
     See parse_testing_data. Generatesa dictionary for running the MS2 build method on.
 
@@ -383,16 +383,25 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path):
             try:
                 hmdb_id = hmdb_dict[spectra[0]]
             except KeyError:
-                continue
+                if no_hmdb:
+                    hmdb_id = spectra[0]
+                else:
+                    continue
 
             if hmdb_id in seen_hmdbs:
                 continue
             elif hmdb_id is None:
-                continue
+                if no_hmdb:
+                    hmdb_id = spectra[0]
+                else:
+                    continue
             elif hmdb_id == "":
-                continue
+                if not no_hmdb:
+                    continue
+
             else:
-                seen_hmdbs.add(hmdb_id)
+                if hmdb_id != "":
+                    seen_hmdbs.add(hmdb_id)
 
             data_categories[name_msp][hmdb_id] = {"name": spectra[1], "inchikey_id": spectra[0],
                                                       "precursor_ion_mass": float(spectra[5]), "peaks": [],
@@ -400,10 +409,14 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path):
                                                      "actual_accession": spectra[4]}
 
             if hmdb_id + ".xml" not in os.listdir(hmdb_path):
-                get_from_hmdb(hmdb_id, hmdb_id, hmdb_path)
+                if not no_hmdb:
+                    get_from_hmdb(hmdb_id, hmdb_id, hmdb_path)
 
-            for record_dict in filter_records(parse_xml(os.path.join(hmdb_path, hmdb_id + ".xml"))):
-                data_categories[name_msp][hmdb_id]["exact_mass"] = record_dict["exact_mass"]
+            if no_hmdb:
+                data_categories[name_msp][hmdb_id]["exact_mass"] = float(spectra[5]) - 1.007276
+            else:
+                for record_dict in filter_records(parse_xml(os.path.join(hmdb_path, hmdb_id + ".xml"))):
+                    data_categories[name_msp][hmdb_id]["exact_mass"] = record_dict["exact_mass"]
 
             data_categories[name_msp][hmdb_id]["mol"] = mol
             data_categories[name_msp][hmdb_id]["smiles"] = Chem.MolToSmiles(mol)

@@ -115,6 +115,15 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
     else:
         max_recurrence = str(0)
 
+    print("-------------")
+    for frag in fragment_masses:
+        print(str(frag) + " 1")
+    print(exact_mass)
+    print(mol_smi)
+    print(hmdb_id)
+    print(pre_reccurence[mol_smi])
+    print(len(fragment_masses))
+
     return [
         str(hmdb_id),
         str(mol_smi),
@@ -205,6 +214,9 @@ def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy,
     for category in ms_data.keys():
         os.mkdir(os.path.join(out_dir, category))
         for hmdb in ms_data[category].keys():
+            if hmdb == "":
+                continue
+
             os.mkdir(os.path.join(out_dir, category, hmdb))
 
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb][
@@ -215,7 +227,8 @@ def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy,
             add_small_substructures("subset.sqlite")
 
             db = SubstructureDb("subset.sqlite", "")
-            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="msn_subset")
+            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
+                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset")
             db.close()
 
             results.append([category] + test_build(

@@ -142,7 +142,7 @@ def subset_substructures(hmdb_ids, in_db, out_db, substructures_only=True, subse
 
 def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
                                      db_out='../databases/k_graphs.sqlite',
-                                     pkls_out='../databases/pkls', path="..", debug=True):
+                                     pkls_out='../databases/pkls', path="..", debug=False):
     #########################################
     # BUILD GRAPH ISOMORPHISM DATABASE
     #########################################
@@ -179,4 +179,4 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     print(pkls_out)
     print(sizes, boxes)
     print("==================================")
-    create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri, debug=True)
+    create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri, debug=debug)
