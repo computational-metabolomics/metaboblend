@@ -129,13 +129,6 @@ def combine_ecs(ss2_grp, db, table_name, accuracy, ppm=None):
     :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
-
-            * **0_1** One decimal place
-
-            * **0_01** Two decimal places
-
-            * **0_001** Three decimal places
-
             * **0_0001** Four decimal places
 
     :param ppm: The allowable error of the query (in parts per million). If unspecified, only exact matches are
@@ -333,13 +326,6 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         intial subset_sum pass; in the second stage, the maximum accuracy (d.p.) is always used.
 
             * **1** Integer level
-
-            * **0_1** One decimal place
-
-            * **0_01** Two decimal places
-
-            * **0_001** Three decimal places
-
             * **0_0001** Four decimal places
 
     :param max_n_substructures: The maximum number of substructures to be used for building molecules.

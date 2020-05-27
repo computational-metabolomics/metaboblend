@@ -167,7 +167,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         self.assertEqual(combine_ecs([54.0106, 69.0578], db, "substructures", "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 5, 0, 1, 0, 0), (4, 7, 1, 0, 0, 0)]])
+                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0), (4, 5, 0, 1, 0, 0)]])
         self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=15),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=1), [])

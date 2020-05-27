@@ -62,9 +62,9 @@ class DatabasesTestCase(unittest.TestCase):
                             to_test_result("connectivity", "k_graphs.sqlite"))
 
         db.cursor.execute("SELECT * FROM substructures")
-        first_row = db.cursor.fetchone()[0:19]
-        self.assertEqual(first_row, ('*:c(:*)CCN', 4, 10, 56, 56.1, 56.05, 56.05, 56.05, 56.05002399999998,
-                                     0, 3, 6, 1, 0, 0, 0, 2, '{3: 2}', 1))
+        first_row = db.cursor.fetchone()[0:17]
+        self.assertEqual(first_row, ('*:c(:*)CCN', 4, 10, 56, 56.05, 56.05002399999998, 3, 6, 1, 0, 0, 0, 2, '{3: 2}',
+                                     1, '{3: [1.5, 1.5]}', '[4, 5]'))
 
         self.assertTrue(Chem.MolFromSmiles(first_row[0], False))
         self.assertEqual(len(db.cursor.fetchall()), 1235)
@@ -76,8 +76,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.cursor.execute("SELECT * FROM compounds")
         first_row = db.cursor.fetchone()
-        self.assertEqual(first_row, ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1',
-                                     'NCCc1ccc(O)c(O)c1', 'NCCC1:C:C:C(O):C(O):C:1'))
+        self.assertEqual(first_row, ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1'))
         self.assertEqual(len(db.cursor.fetchall()), 3)
 
         db.cursor.execute("SELECT * FROM graphs.subgraphs")
@@ -124,7 +123,7 @@ class DatabasesTestCase(unittest.TestCase):
             self.assertTrue(hmdb[0] in parent.nodes)
             edge_count.append(len(parent.edges(hmdb[0])))
 
-        db.cursor.execute("select distinct smiles_rdkit from filtered_hmdbid_substructures")
+        db.cursor.execute("select distinct smiles from filtered_hmdbid_substructures")
         self.assertEqual(len(db.cursor.fetchall()), 57)
         self.assertEqual(std.number_of_nodes(), 57)
         self.assertEqual(extended.number_of_nodes(), 57)
@@ -186,10 +185,10 @@ class DatabasesTestCase(unittest.TestCase):
         self.assertEqual(db.select_ecs(107, "substructures", "0_0001", ppm=None), [])
         self.assertEqual(db.select_ecs(107.0735, "substructures", "1", ppm=None), [])
         self.assertEqual(db.select_ecs(107, "substructures", "1", ppm=None),
-                         [(7, 7, 0, 1, 0, 0), (7, 9, 1, 0, 0, 0)])
+                         [(7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0)])
         self.assertEqual(db.select_ecs(107, "substructures", "1", ppm=10000),
-                         [(3, 6, 0, 4, 0, 0), (7, 6, 0, 1, 0, 0), (7, 7, 0, 1, 0, 0), (7, 8, 0, 1, 0, 0),
-                          (7, 8, 1, 0, 0, 0), (7, 9, 1, 0, 0, 0)])
+                         [(7, 8, 1, 0, 0, 0), (7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0), (7, 8, 0, 1, 0, 0),
+                          (7, 6, 0, 1, 0, 0), (3, 6, 0, 4, 0, 0)])
 
         self.assertRaises(sqlite3.OperationalError,
                           lambda: db.select_ecs(107.0735, "substrusctures", "0_0001", ppm=None))
@@ -216,14 +215,14 @@ class DatabasesTestCase(unittest.TestCase):
 
         substructures = list(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
-                         ['*Cc(:*)cc:*', {1: [1.0], 2: [1.5], 5: [1.5]}, {1: 1, 2: 1, 5: 1}, 3, 3, [0, 3, 4]])
+                         ['*C(*)Cc(:*)c:*', {1: [1.0, 1.0], 3: [1.5], 6: [1.5]}, {1: 2, 3: 1, 6: 1}, 4, 3, [0, 4, 5, 7]])
 
         self.assertEqual(len(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0]), 3)
         self.assertEqual(list(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].keys()),
                          ['smiles', 'mol', 'bond_types', 'degree_atoms', 'valence', 'atoms_available', 'dummies'])
         substructures = list(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
-                         ['*CCc1c:*:c(*)cc1', {1: [1.0], 4: [1.5], 6: [1.5, 1.0]}, {1: 1, 4: 1, 6: 2}, 4, 3, [0, 5, 7]])
+                         ['*C(*)Cc1cc:*:cc1', {1: [1.0, 1.0], 5: [1.5], 7: [1.5]}, {1: 2, 5: 1, 7: 1}, 4, 3, [0, 6, 9]])
 
         self.assertRaises(sqlite3.OperationalError,
                           lambda: db.select_sub_structures([[2, 5, 0, 0, 0, 0]], "substrusctures"))
