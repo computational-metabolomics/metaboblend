@@ -1,4 +1,4 @@
-name: metaboverse
+name: metaboblend
 channels:
   - conda-forge
   - bioconda

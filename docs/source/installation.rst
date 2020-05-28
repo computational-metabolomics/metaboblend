@@ -1,6 +1,6 @@
 Installation
 ============
-TODO: Metaboverse is not yet released on conda/pypi
+TODO: MetaboBlend is not yet released on conda/pypi
 TODO: change package name
 
 Conda (recommended)
@@ -13,10 +13,10 @@ Start the ``conda prompt``
 * Windows: Open the ``Anaconda Prompt`` via the Start menu
 * macOS or Linux: Open a ``Terminal``
 
-Create a metaboverse specific ``conda`` environment.
-This will install a the dependencies required to run ``metaboverse``::
+Create a metaboblend specific ``conda`` environment.
+This will install a the dependencies required to run ``metaboblend``::
 
-    $ conda create --yes --name metaboverse -c conda-forge -c bioconda -c computational-metabolomics
+    $ conda create --yes --name metaboblend -c conda-forge -c bioconda -c computational-metabolomics
 
 .. note::
 
@@ -25,24 +25,24 @@ This will install a the dependencies required to run ``metaboverse``::
 
     You can use the following command to remove a conda environment::
 
-        $ conda env remove -y --name metaboverse
+        $ conda env remove -y --name metaboblend
 
     This is only required if something has gone wrong in the previous step.
 
-Activate the ``metaboverse`` environment::
+Activate the ``metaboblend`` environment::
 
-    $ conda activate metaboverse
+    $ conda activate metaboblend
 
-To test your ``metaboverse`` installation, in your Conda Prompt, run the command::
+To test your ``metaboblend`` installation, in your Conda Prompt, run the command::
 
-    $ metaboverse --help
+    $ metaboblend --help
 
 or::
 
     $ python
-    import metaboverse
+    import metaboblend
 
-Close and deactivate the ``metaboverse`` environment when you’re done::
+Close and deactivate the ``metaboblend`` environment when you’re done::
 
     $ conda deactivate
 
@@ -50,9 +50,9 @@ Close and deactivate the ``metaboverse`` environment when you’re done::
 PyPi
 ----
 
-Install the current release of ``metaboverse`` with ``pip``::
+Install the current release of ``metaboblend`` with ``pip``::
 
-    $ pip install metaboverse
+    $ pip install metaboblend
 
 .. note::
 
@@ -60,16 +60,16 @@ Install the current release of ``metaboverse`` with ``pip``::
 
 To upgrade to a newer release use the ``--upgrade`` flag::
 
-    $ pip install --upgrade metaboverse
+    $ pip install --upgrade metaboblend
 
 If you do not have permission to install software systemwide, you can
 install into your user directory using the ``--user`` flag::
 
-    $ pip install --user metaboverse
+    $ pip install --user metaboblend
 
-Alternatively, you can manually download ``metaboverse`` from
-`GitHub <https://github.com/computational-metabolomics/metaboverse/releases>`_  or
-`PyPI <https://pypi.python.org/pypi/metaboverse>`_.
+Alternatively, you can manually download ``metaboblend`` from
+`GitHub <https://github.com/computational-metabolomics/metaboblend/releases>`_  or
+`PyPI <https://pypi.python.org/pypi/metaboblend>`_.
 To install one of these versions, unpack it and run the following from the
 top-level source directory using the Terminal::
 
@@ -77,4 +77,4 @@ top-level source directory using the Terminal::
 
 Testing
 -------
-*Metaboverse* uses the Python ``unittest`` testing package.
+*MetaboBlend* uses the Python ``unittest`` testing package.

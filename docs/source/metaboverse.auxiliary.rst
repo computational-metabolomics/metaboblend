@@ -1,7 +1,7 @@
 Auxiliary
 =========
 
-.. automodule:: metaboverse.auxiliary
+.. automodule:: metaboblend.auxiliary
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,6 +1,6 @@
 Citation
 ========
 TODO: change package name
-To cite *Metaboverse* please use the following publication.
+To cite *MetaboBlend* please use the following publication.
 
     Manuscript in preparation

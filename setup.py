@@ -3,37 +3,37 @@
 #
 # Copyright © 2017-2019 Ralf Weber.
 #
-# This file is part of MetaboVerse.
+# This file is part of MetaboBlend.
 #
-# MetaboVerse is free software: you can redistribute it and/or modify
+# MetaboBlend is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# MetaboVerse is distributed in the hope that it will be useful,
+# MetaboBlend is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with MetaboVerse.  If not, see <https://www.gnu.org/licenses/>.
+# along with MetaboBlend.  If not, see <https://www.gnu.org/licenses/>.
 #
 
 
 import setuptools
 import sys
-import metaboverse
+import metaboblend
 
 
 def main():
 
-    setuptools.setup(name="metaboverse",
-        version=metaboverse.__version__,
+    setuptools.setup(name="metaboblend",
+        version=metaboblend.__version__,
         description="",
         long_description=open('README.rst').read(),
         author="Ralf Weber",
         author_email="r.j.weber@bham.ac.uk",
-        url="https://github.com/computational-metabolomics/metaboverse",
+        url="https://github.com/computational-metabolomics/metaboblend",
         license="GPLv3",
         platforms=['Windows, UNIX'],
         keywords=['Metabolomics', 'Lipidomics', 'Mass spectrometry', 'Metabolite Identification'],
@@ -53,7 +53,7 @@ def main():
         ],
         entry_points={
          'console_scripts': [
-             'metaboverse = metaboverse.__main__:main'
+             'metaboblend = metaboblend.__main__:main'
          ]
         }
     )
