@@ -142,7 +142,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
     def test_gen_subs_table(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), "")
-        table_name = gen_subs_table(db, range(5, 7), 4, 2)
+        table_name = gen_subs_table(db, range(5, 7), 4, 2, 500)
 
         i = 0
         db.cursor.execute("SELECT heavy_atoms, valence, atoms_available FROM %s" % table_name)
@@ -157,28 +157,17 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_subset_sum(self):
-        mass_1 = 5
-        mass_0_0001 = 5.005
-        masses = [1, 2, 3, 4]
+        self.assertEqual([s_sum for s_sum in subset_sum([1, 2, 3, 4], 5)], [[2, 3], [1, 4]])
 
-        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_1)], [[2, 3], [1, 4]])
-        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [])
-
-        masses = [1.005, 2, 3, 4]
-        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [[1.005, 4]])
-
-        masses = [1.004, 2, 3, 4]
-        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [[1.004, 4]])
-
-        masses = [1.003, 2, 3, 4]
-        self.assertEqual([s_sum for s_sum in subset_sum(masses, mass_0_0001)], [])
+        self.assertEqual(len(list(subset_sum(list(range(60)), 70, 3))), 378)
+        self.assertEqual(len(list(subset_sum(list(range(60)), 70, 1000))), 29884)
 
     def test_combine_ecs(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), "")
         self.assertEqual(combine_ecs([54.0106, 69.0578], db, "substructures", "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 5, 0, 1, 0, 0), (4, 7, 1, 0, 0, 0)]])
+                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0), (4, 5, 0, 1, 0, 0)]])
         self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=15),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=1), [])

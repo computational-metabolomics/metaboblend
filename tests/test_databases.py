@@ -191,10 +191,9 @@ class DatabasesTestCase(unittest.TestCase):
 
         ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
         ref_db_cursor = ref_db.cursor()
-        ref_db_cursor.execute("SELECT exact_mass__0_0001, lib FROM substructures")
+        ref_db_cursor.execute("SELECT exact_mass__0_0001, mol FROM substructures")
         for row in ref_db_cursor.fetchall():
-            lib = pickle.loads(row[1])
-            self.assertEqual(round(calculate_exact_mass(lib["mol"]), 4), row[0])
+            self.assertEqual(round(calculate_exact_mass(Chem.Mol(row[1])), 4), row[0])
 
         ref_db.close()
 
@@ -215,12 +214,8 @@ class DatabasesTestCase(unittest.TestCase):
                                          heavy_atoms,
                                          length,
                                          exact_mass__1,
-                                         exact_mass__0_1,
-                                         exact_mass__0_01,
-                                         exact_mass__0_001,
                                          exact_mass__0_0001,
                                          exact_mass,
-                                         count,
                                          C,
                                          H,
                                          N,
@@ -229,12 +224,15 @@ class DatabasesTestCase(unittest.TestCase):
                                          S,
                                          valence,
                                          valence_atoms,
-                                         atoms_available 
+                                         atoms_available,
+                                         bond_types,
+                                         dummies
                                          FROM substructures WHERE valence <= 4""")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
-                self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.1, 56.05, 56.05, 56.05, 56.05002399999998,
-                                       0, 3, 6, 1, 0, 0, 0, 2, '{3: 2}', 1))
+                self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.05, 56.05002399999998, 3, 6, 1, 0, 0, 0, 2, '{3: 2}',
+                                       1, '{3: [1.5, 1.5]}', '[4, 5]')
+)
 
             total_rows = i
 
@@ -251,8 +249,8 @@ class DatabasesTestCase(unittest.TestCase):
         test_db_cursor.execute("SELECT * FROM compounds")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
-                self.assertEqual(row, ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1',
-                                       'NCCc1ccc(O)c(O)c1', 'NCCC1:C:C:C(O):C(O):C:1'))
+                self.assertEqual(row,
+                                 ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1'))
             total_rows = i
 
         self.assertEqual(total_rows, 3)

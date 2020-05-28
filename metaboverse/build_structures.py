@@ -32,36 +32,86 @@ from rdkit import Chem
 from .databases import SubstructureDb
 
 
-def subset_sum(l, mass, toll=0.001):
+def find_path(l, dp, n, mass, max_subset_length, path=[]):
     """
-    Recursive subset sum algorithm for identifying sets of substructures that make up a given mass; the first step
-    of building molecules from substructures.
+    Recursive solution for backtracking through the dynamic programming boolean matrix. All possible subsets are found
 
     :param l: A list of masses from which to identify subsets.
 
     :param mass: The target mass of the sum of the substructures.
 
-    :param toll: The allowable deviation of the sum of subsets from the target mass.
+    :param dp: The dynamic programming boolean matrix.
+
+    :param n: The size of l.
+
+    :param max_subset_length: The maximum length of subsets to return. Allows the recursive backtracking algorithm to
+        terminate early in many cases, significantly improving runtime.
+
+    :param path: List for keeping track of the current subset.
 
     :return: Generates of lists containing the masses of valid subsets.
     """
 
-    if mass < -toll:
+    # base case - the path has generated a correct solution
+    if mass == 0:
+        yield sorted(path)
         return
 
-    elif len(l) == 0:
-        if -toll <= mass <= toll:
-            yield []
+    # stop running when we overshoot the mass
+    elif mass < 0:
         return
 
-    elif abs(sum(l) - mass) <= toll:
-        yield l
-        return
+    # can we sum up to the target value using the remaining masses? recursive call
+    elif dp[n][mass]:
+        yield from find_path(l, dp, n-1, mass, max_subset_length, path)
 
-    for subset in subset_sum(l[1:], mass):
-        yield subset
-    for subset in subset_sum(l[1:], mass - l[0]):
-        yield [l[0]] + subset
+        if len(path) < max_subset_length:
+            path.append(l[n-1])
+
+            yield from find_path(l, dp, n-1, mass - l[n-1], max_subset_length, path)
+            path.pop()
+
+
+def subset_sum(l, mass, max_subset_length=3):
+    """
+    Dynamic programming implementation of subset sum. Note that, whilst this algorithm is pseudo-polynomial, the
+    backtracking algorithm for obtaining all possible subsets has exponential complexity and so remains unsuitable
+    for large input values.  This does, however, tend to perform a lot better than non-dp implementations, as we're
+    no longer doing sums multiple times and we've cut down the operations performed during the exponential portion of
+    the method.
+
+    :param l: A list of masses from which to identify subsets.
+
+    :param mass: The target mass of the sum of the substructures.
+
+    :param max_subset_length: The maximum length of subsets to return. Allows the recursive backtracking algorithm to
+        terminate early in many cases, significantly improving runtime.
+
+    :return: Generates of lists containing the masses of valid subsets.
+    """
+    n = len(l)
+
+    # initialise dynamic programming array
+    dp = numpy.ndarray([n+1, mass+1], bool)
+
+    # subsets can always equal 0
+    for i in range(n+1):
+        dp[i][0] = True
+
+    # empty subsets do not have non-zero sums
+    for i in range(mass):
+        dp[0][i+1] = False
+
+    # fill in the remaining boolean matrix
+    for i in range(n):
+        for j in range(mass+1):
+            if j >= l[i]:
+                dp[i+1][j] = dp[i][j] or dp[i][j-l[i]]
+            else:
+                dp[i+1][j] = dp[i][j]
+
+    # backtrack through the matrix recursively to obtain all solutions
+    return find_path(l, dp, n, mass, max_subset_length)
 
 
 def combine_ecs(ss2_grp, db, table_name, accuracy, ppm=None):
@@ -79,13 +129,6 @@ def combine_ecs(ss2_grp, db, table_name, accuracy, ppm=None):
     :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
-
-            * **0_1** One decimal place
-
-            * **0_01** Two decimal places
-
-            * **0_001** Three decimal places
-
             * **0_0001** Four decimal places
 
     :param ppm: The allowable error of the query (in parts per million). If unspecified, only exact matches are
@@ -283,13 +326,6 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         intial subset_sum pass; in the second stage, the maximum accuracy (d.p.) is always used.
 
             * **1** Integer level
-
-            * **0_1** One decimal place
-
-            * **0_01** Two decimal places
-
-            * **0_001** Three decimal places
-
             * **0_0001** Four decimal places
 
     :param max_n_substructures: The maximum number of substructures to be used for building molecules.
@@ -328,7 +364,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
 
     if table_name is None:  # generate "temp" table containing only substructures in parameter space
-        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available)
+        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(exact_mass))
 
     if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
@@ -353,14 +389,11 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
         multiprocessing.freeze_support()
 
     # select groups of masses at low mass resolution
-    mass_values = db.select_mass_values(str(accuracy), [], table_name)
-
-    try:
-        subsets = list(subset_sum(mass_values, exact_mass__1))
-    except RecursionError:  # TODO: Handle subset_sum recursion issue
-        if debug:
-            print("Building mol failed due to subset_sum recursion error")
-        return
+    mass_values = [m for m in db.select_mass_values("1", [], table_name) if m <= exact_mass__1]
+    if len(mass_values) == 0:
+        subsets = []
+    else:
+        subsets = list(subset_sum(mass_values, exact_mass__1, max_n_substructures))
 
     configs_iso = db.k_configs()
     out = open(fn_out, out_mode)
@@ -372,16 +405,23 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
     lls = []
     for ss_grp in subsets:
-        if len(ss_grp) > max_n_substructures:
+        if len(ss_grp) > max_n_substructures or len(ss_grp) == 0:
             continue
 
         # refine groups of masses to 4dp mass resolution
         mass_values_r2 = db.select_mass_values("0_0001", ss_grp, table_name)
-        subsets_r2 = list(subset_sum(mass_values_r2, exact_mass__0_0001, tolerance))
+        subsets_r2 = []
+
+        # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
+        for mass_combo in itertools.product(*mass_values_r2):
+            if abs(sum(mass_combo) - exact_mass__0_0001) <= tolerance:
+                subsets_r2.append(mass_combo)
+
+        if len(subsets_r2) == 0:
+            continue
 
         if fragment_mass is not None:  # add fragments mass to to loss group
-            for i, subset in enumerate(subsets_r2):
-                subsets_r2[i] = [round(exact_mass - loss, 4)] + subset
+            subsets_r2 = [subset + (round(exact_mass - loss, 4),) for subset in subsets_r2]
 
         if debug:
             print("""Second round (mass: {}) - Values: {} - Correct Sums: {}
@@ -401,11 +441,14 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db.close()
 
 
-def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="subset_substructures"):
+def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures"):
     """
     Generate a temporary secondary substructure table restricted by a set of parameters. Generated as an initial step
     in :py:meth:`metaboverse.build_structures.build` in order to limit the processing overhead as a result of
     repeatedly querying the SQLite substructure database.
+
+    :param max_mass: The maximum allowed mass of substructures in the temporary table; there is no point considering
+        substructures with greater mass than the target mol.
 
     :param db: Connection to a :py:meth:`metaboverse.databases.SubstructureDb` from which to extract substructures.
 
@@ -428,11 +471,13 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name
                              SELECT * FROM substructures WHERE
                                  heavy_atoms IN ({}) AND
                                  atoms_available <= {} AND
-                                 valence <= {}
+                                 valence <= {} AND
+                                 exact_mass__1 < {}
                       """.format(table_name,
                                  ",".join(map(str, heavy_atoms)),
                                  max_atoms_available,
-                                 max_valence,))
+                                 max_valence,
+                                 max_mass,))
 
     db.create_indexes(table=table_name, selection="gen_subs_table")
 

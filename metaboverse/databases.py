@@ -186,8 +186,7 @@ class SubstructureDb:
         else:
             sql = ""
 
-        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles,
-                               smiles_rdkit, smiles_rdkit_kek FROM compounds%s""" % sql)
+        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles FROM compounds%s""" % sql)
 
         return self.cursor.fetchall()
 
@@ -207,8 +206,8 @@ class SubstructureDb:
         self.cursor.execute("CREATE TABLE unique_hmdbid AS SELECT DISTINCT hmdbid FROM compounds")
 
         self.cursor.execute("""CREATE TABLE filtered_hmdbid_substructures AS
-                                   SELECT smiles_rdkit, COUNT(*) FROM hmdbid_substructures
-                                   GROUP BY smiles_rdkit HAVING COUNT(*) >=%s""" % min_node_weight)
+                                   SELECT smiles, COUNT(*) FROM hmdbid_substructures
+                                   GROUP BY smiles HAVING COUNT(*) >=%s""" % min_node_weight)
 
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
         """
@@ -295,8 +294,8 @@ class SubstructureDb:
             substructure_graph.add_node(unique_hmdb_id[0])
 
         # add edge for each linked parent structure and substructure
-        self.cursor.execute("""SELECT * FROM hmdbid_substructures WHERE smiles_rdkit IN 
-                                   (SELECT smiles_rdkit FROM filtered_hmdbid_substructures)""")
+        self.cursor.execute("""SELECT * FROM hmdbid_substructures WHERE smiles IN 
+                                   (SELECT smiles FROM filtered_hmdbid_substructures)""")
         for hmdbid_substructures in self.cursor.fetchall():
             substructure_graph.add_edge(hmdbid_substructures[0], hmdbid_substructures[1])
 
@@ -332,7 +331,7 @@ class SubstructureDb:
         # add edges by walking through hmdbid_substructures
         for unique_hmdb_id in unique_hmdb_ids:
             self.cursor.execute("""SELECT * FROM hmdbid_substructures 
-                                       WHERE smiles_rdkit IN (SELECT smiles_rdkit FROM filtered_hmdbid_substructures) 
+                                       WHERE smiles IN (SELECT smiles FROM filtered_hmdbid_substructures) 
                                        AND hmdbid = '%s'""" % unique_hmdb_id)
             nodes = []
             for substructure in self.cursor.fetchall():
@@ -354,29 +353,35 @@ class SubstructureDb:
         :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
-            * **0_1** One decimal place
-            * **0_01** Two decimal places
-            * **0_001** Three decimal places
             * **0_0001** Four decimal places
 
-        :param masses: A list of integers to limit the query by.
+        :param masses: A list of integers to limit the query by. If a non-empty list of masses is given, the query
+            is returned as a list of lists for each mass query, as opposed to a single list of masses.
 
         :param table_name: Name of the substructure table to be queried.
 
         :return: Sorted list of mass values from the substructure database, filtered by the supplied parameters.
         """
 
-        mass_values = []
-        filter_mass = ""
         if type(masses) == list:
             if len(masses) > 0:
-                filter_mass = " WHERE exact_mass__1 IN ({})".format(",".join(map(str, masses)))
+                mass_values = []
 
-        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}{}".format(accuracy, table_name, filter_mass))
+                for m in masses:
+                    self.cursor.execute("""SELECT DISTINCT exact_mass__{} 
+                                           FROM {}
+                                           WHERE exact_mass__1 = {}
+                                        """.format(accuracy, table_name, m))
 
-        records = self.cursor.fetchall()
-        for record in records:
-            mass_values.append(record[0])
+                    m_values = [record[0] for record in self.cursor.fetchall()]
+                    m_values.sort()
+
+                    mass_values.append(m_values)
+
+                return mass_values
+
+        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}".format(accuracy, table_name))
+        mass_values = [record[0] for record in self.cursor.fetchall()]
         mass_values.sort()
 
         return mass_values
@@ -392,9 +397,6 @@ class SubstructureDb:
         :param accuracy: To which decimal places of accuracy results are to be limited to.
 
             * **1** Integer level
-            * **0_1** One decimal place
-            * **0_01** Two decimal places
-            * **0_001** Three decimal places
             * **0_0001** Four decimal places
 
         :param ppm: The allowable error of the query (in parts per million).
@@ -457,7 +459,14 @@ class SubstructureDb:
         subsets = []
         for i in range(len(l_atoms)):
 
-            self.cursor.execute("""SELECT DISTINCT lib 
+            self.cursor.execute("""SELECT DISTINCT 
+                                   smiles,
+                                   mol, 
+                                   bond_types, 
+                                   valence_atoms,  
+                                   valence, 
+                                   atoms_available,
+                                   dummies 
                                        FROM {}
                                        WHERE C = {} 
                                        AND H = {} 
@@ -470,7 +479,19 @@ class SubstructureDb:
             records = self.cursor.fetchall()
             if len(records) == 0:
                 return []
-            ss = [pickle.loads(record[0]) for record in records]
+
+            ss = []
+            for record in records:
+                ss.append({
+                    "smiles": record[0],
+                    "mol": Chem.Mol(record[1]),
+                    "bond_types": eval(record[2]),
+                    "degree_atoms": eval(record[3]),
+                    "valence": record[4],
+                    "atoms_available": record[5],
+                    "dummies": eval(record[6])
+                })
+
             subsets.append(ss)
 
         return subsets
@@ -495,21 +516,15 @@ class SubstructureDb:
                                    O INTEGER,
                                    P INTEGER,
                                    S INTEGER,
-                                   smiles TEXT,
-                                   smiles_rdkit TEXT,
-                                   smiles_rdkit_kek TEXT)""")
+                                   smiles TEXT)""")
 
         self.cursor.execute("""CREATE TABLE substructures (
                                    smiles TEXT PRIMARY KEY, 
                                    heavy_atoms INTEGER,
                                    length INTEGER,
                                    exact_mass__1 INTEGER,
-                                   exact_mass__0_1 REAL,
-                                   exact_mass__0_01 REAL,
-                                   exact_mass__0_001 REAL,
                                    exact_mass__0_0001 REAL,
                                    exact_mass REAL,
-                                   count INTEGER,
                                    C INTEGER,
                                    H INTEGER,
                                    N INTEGER,
@@ -519,43 +534,35 @@ class SubstructureDb:
                                    valence INTEGER,
                                    valence_atoms TEXT,
                                    atoms_available INTEGER,
-                                lib PICKLE)""")
+                                   bond_types TEXT,
+                                   dummies TEXT,
+                                   mol BLOB)""")
 
         self.cursor.execute("""CREATE TABLE hmdbid_substructures (
                                    hmdbid TEXT,
-                                   smiles_rdkit,
-                                   PRIMARY KEY (hmdbid, smiles_rdkit))""")
+                                   smiles,
+                                   PRIMARY KEY (hmdbid, smiles))""")
 
     def create_indexes(self, table="substructures", selection="all"):
         """Creates indexes for the `substructures` table for use by the build method."""
 
         self.cursor.execute("DROP INDEX IF EXISTS mass__1")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_1")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_01")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_001")
         self.cursor.execute("DROP INDEX IF EXISTS mass__0_0001")
         self.cursor.execute("DROP INDEX IF EXISTS atoms")
 
         if selection != "gen_subs_table":
-            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available")
+            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
 
         self.cursor.execute("""CREATE INDEX mass__1
                                ON %s (exact_mass__1)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_1
-                               ON %s (exact_mass__0_1)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_01
-                               ON %s (exact_mass__0_01)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_001 
-                               ON %s (exact_mass__0_001)""" % table)
         self.cursor.execute("""CREATE INDEX mass__0_0001
                                ON %s (exact_mass__0_0001)""" % table)
         self.cursor.execute("""CREATE INDEX atoms 
                                ON %s (C, H, N, O, P, S);""" % table)
 
         if selection != "gen_subs_table":
-            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available 
-                                   ON %s (heavy_atoms, atoms_available, valence);""" % table)
+            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
+                                   ON %s (heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
     def close(self):
         if self.clean:
@@ -934,10 +941,15 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
         return subset_sgs_sizes([sgs], n_min, n_max)
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive"):
+def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive",
+                                 max_atoms_available=None, max_valence=None, substructures_only=False):
     """
     Add entries to the substructure database by fragmenting a set of molecules. Combinations of substructures in this
     database are used to build new molecules.
+
+    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures.
+
+    :param max_valence: Maximum valence of valid substructures.
 
     :param fn_hmdb: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
         `records` if provided.
@@ -963,6 +975,8 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
 
         * **BRICS** Generates substructures by breaking retrosynthetically interesting chemical substructures; fragments
             are identified that are likely to be useful for drug synthesis.. See :py:meth:`rdkit.Chem.BRICS`.
+
+    :param substructures_only: Whether to generate all tables or only the substructures table.
     """
 
     conn = sqlite3.connect(fn_db)
@@ -972,23 +986,19 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
         records = parse_xml(fn_hmdb, reformat=False)
 
     for record_dict in filter_records(records):
-
-        cursor.execute("""INSERT OR IGNORE INTO compounds (
-                               hmdbid, 
-                               exact_mass, 
-                               formula, 
-                               C, H, N, O, P, S, 
-                               smiles, 
-                               smiles_rdkit, 
-                               smiles_rdkit_kek)
-                           VALUES (
-                               :HMDB_ID, 
-                               :exact_mass,
-                               :formula, 
-                               :C, :H, :N, :O, :P, :S, 
-                               :smiles, 
-                               :smiles_rdkit, 
-                               :smiles_rdkit_kek)""", record_dict)
+        if not substructures_only:
+            cursor.execute("""INSERT OR IGNORE INTO compounds (
+                                   hmdbid, 
+                                   exact_mass, 
+                                   formula, 
+                                   C, H, N, O, P, S, 
+                                   smiles)
+                               VALUES (
+                                   :HMDB_ID, 
+                                   :exact_mass,
+                                   :formula, 
+                                   :C, :H, :N, :O, :P, :S, 
+                                   :smiles)""", record_dict)
 
         # Returns a tuple of 2-tuples with bond IDs
         for sgs in get_sgs(record_dict, n_min, n_max, method=method):
@@ -998,25 +1008,30 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                 if lib is None:
                     continue
 
+                if max_atoms_available is not None:
+                    if lib["atoms_available"] > max_atoms_available:
+                        continue
+
+                if max_valence is not None:
+                    if lib["valence"] > max_valence:
+                        continue
+
                 smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
 
                 exact_mass = calculate_exact_mass(lib["mol"])
                 els = get_elements(lib["mol"])
 
-                pkl_lib = pickle.dumps(lib)
                 sub_smi_dict = {'smiles': smiles_rdkit,
                                 'exact_mass': exact_mass,
-                                'count': 0,
                                 'length': sum([els[atom] for atom in els if atom != "*"]),
                                 "valence": lib["valence"],
                                 "valence_atoms": str(lib["degree_atoms"]),
                                 "atoms_available": lib["atoms_available"],
-                                "lib": pkl_lib}
+                                "mol": lib["mol"].ToBinary(),
+                                "bond_types": str(lib["bond_types"]),
+                                "dummies": str(lib["dummies"])}
 
                 sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-                sub_smi_dict["exact_mass__0_1"] = round(sub_smi_dict["exact_mass"], 1)
-                sub_smi_dict["exact_mass__0_01"] = round(sub_smi_dict["exact_mass"], 2)
-                sub_smi_dict["exact_mass__0_001"] = round(sub_smi_dict["exact_mass"], 3)
                 sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
 
                 sub_smi_dict.update(els)
@@ -1027,11 +1042,8 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       heavy_atoms, 
                                       length, 
                                       exact_mass__1, 
-                                      exact_mass__0_1, 
-                                      exact_mass__0_01, 
-                                      exact_mass__0_001, 
                                       exact_mass__0_0001, 
-                                      exact_mass, count, 
+                                      exact_mass, 
                                       C, 
                                       H, 
                                       N, 
@@ -1041,18 +1053,16 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       valence, 
                                       valence_atoms, 
                                       atoms_available, 
-                                      lib)
+                                      bond_types,
+                                      dummies,
+                                      mol)
                                   values (
                                       :smiles,
                                       :heavy_atoms,
                                       :length,
                                       :exact_mass__1,
-                                      :exact_mass__0_1,
-                                      :exact_mass__0_01,
-                                      :exact_mass__0_001,
                                       :exact_mass__0_0001,
                                       :exact_mass,
-                                      :count,
                                       :C,
                                       :H,
                                       :N,
@@ -1061,12 +1071,16 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                       :S,
                                       :valence,
                                       :valence_atoms,
-                                      :atoms_available,:lib)""", sub_smi_dict)
+                                      :atoms_available,
+                                      :bond_types,
+                                      :dummies,
+                                      :mol)""", sub_smi_dict)
 
-                cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
-                                      hmdbid, 
-                                      smiles_rdkit) 
-                                  VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+                if not substructures_only:
+                    cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
+                                          hmdbid, 
+                                          smiles) 
+                                      VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
 
     conn.commit()
     conn.close()

@@ -108,6 +108,7 @@ ENV/
 
 # ignore changes to scripts for testing
 scripts/*
+scripts/results/*
 
 # ignore lib files for testing
 */libgcc_s_dw2-1.dll

@@ -1,7 +1,3 @@
-import os
-import subprocess
-import sys
-import tempfile
 from metaboverse.databases import *
 from metaboverse.build_structures import *
 
@@ -73,8 +69,7 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
     # Select all HMDB compounds in database
     records = db.select_compounds()
     for record in records:
-        print(record[0], str(record[11]))
-        print(record[3:9], record[1])
+        print(record)
         print("----------------------------------")
 
         fn_out = os.path.join(path_out, "{}.smi".format(record[0]))
@@ -99,6 +94,6 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
 
 
 if __name__ == "__main__":
-    build_graph_isomorphism_database()
+    # build_graph_isomorphism_database()
     build_substructure_database(["HMDB0000001", "HMDB0000005", "HMDB0000008", "HMDB0000122"], "input")
     build_structures()
