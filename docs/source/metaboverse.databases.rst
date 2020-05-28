@@ -1,7 +1,7 @@
 Databases
 =========
 
-.. automodule:: metaboverse.databases
+.. automodule:: metaboblend.databases
     :members:
     :undoc-members:
     :show-inheritance:

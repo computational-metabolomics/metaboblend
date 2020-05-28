@@ -1,5 +1,5 @@
-from metaboverse.databases import *
-from metaboverse.build_structures import *
+from metaboblend.databases import *
+from metaboblend.build_structures import *
 
 
 def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,

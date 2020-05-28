@@ -15,11 +15,11 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../..'))
-sys.path.insert(0, os.path.abspath('../../metaboverse'))
+sys.path.insert(0, os.path.abspath('../../metaboblend'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Metaboverse'
+project = 'MetaboBlend'
 copyright = '2020, Ralf Weber'
 author = 'Jack Gisby, Ralf Weber'
 

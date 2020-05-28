@@ -1,7 +1,7 @@
 Build Structures
 ================
 
-.. automodule:: metaboverse.build_structures
+.. automodule:: metaboblend.build_structures
     :members:
     :undoc-members:
     :show-inheritance:
