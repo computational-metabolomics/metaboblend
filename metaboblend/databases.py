@@ -22,8 +22,6 @@
 import io
 import sys
 import subprocess
-import pickle
-import jsonpickle
 import sqlite3
 import tempfile
 from collections import OrderedDict
@@ -33,8 +31,6 @@ from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
 from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs, draw_subgraph
-
-sqlite3.register_converter("PICKLE", pickle.loads)
 
 
 def reformat_xml(source, encoding="utf8"):

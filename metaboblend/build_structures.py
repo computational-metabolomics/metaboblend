@@ -27,7 +27,6 @@ from functools import partial
 import networkx as nx
 import numpy
 from operator import itemgetter
-import pickle
 from rdkit import Chem
 from .databases import SubstructureDb
 
