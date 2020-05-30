@@ -20,10 +20,10 @@
 #
 
 import io
-import os
 import sys
 import subprocess
 import pickle
+import jsonpickle
 import sqlite3
 import tempfile
 from collections import OrderedDict
@@ -430,14 +430,14 @@ class SubstructureDb:
         :return: Dictionary containing the valences as keys and PKL IDs as values.
         """
 
-        self.cursor.execute("""SELECT id_pkl, nodes_valences 
+        self.cursor.execute("""SELECT root, nodes_valences
                                    FROM subgraphs""")
 
         records = self.cursor.fetchall()
         configs = {}
 
         for record in records:
-            configs[str(record[1])] = record[0]
+            configs[str(record[1])] = eval(record[0])
 
         return configs
 
@@ -1086,16 +1086,13 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
     conn.close()
 
 
-def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms_available, path_RI=None, debug=False):
+def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available, path_RI=None, debug=False):
     """
     Generates a connectivity database containing sets of possible combinations of substructures; also generates PKL
     files containing the graphs required for building molecules from substructures. The connectivity database is
     required to build moelcules from substructures.
 
     :param db_out: The path of the SQLite 3 database to be generated.
-
-    :param pkls_out: The directory in which to dump the PKL files containing teh graphs required for building
-        molecules from substructures.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
         available for bonding for a graph to be created.
@@ -1127,6 +1124,7 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                           nodes_valences TEXT,
                           n_nodes INTEGER,
                           n_edges INTEGER,
+                          root TEXT,
                           PRIMARY KEY (graph6, k_partite, nodes_valences)
                    );""")
     conn.commit()
@@ -1215,8 +1213,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           k_partite,
                                           k_valences,
                                           nodes_valences,
-                                          n_nodes, n_edges)
-                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                                          n_nodes, n_edges,
+                                          root)
+                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
                                           id_pkl,
                                           len(subgraphs[vn]),
                                           line_geng,
@@ -1225,10 +1224,8 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           str(vt),
                                           str(vn),
                                           sG.number_of_nodes(),
-                                          sG.number_of_edges()))
-
-                    with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
-                        pickle.dump(root, fn_pkls)  # pickled graph for generating structures from substructures
+                                          sG.number_of_edges(),
+                                          str(root)))
 
             conn.commit()
     conn.close()

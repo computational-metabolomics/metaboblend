@@ -20,6 +20,7 @@
 #
 
 
+import os
 import unittest
 import zipfile
 from shutil import copyfile
@@ -81,7 +82,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.cursor.execute("SELECT * FROM graphs.subgraphs")
         first_row = db.cursor.fetchone()
-        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1))
+        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1, '{(0, 1): {}}'))
         self.assertEqual(len(db.cursor.fetchall()), 107)
 
         db.close()
@@ -201,8 +202,12 @@ class DatabasesTestCase(unittest.TestCase):
 
         k_configs = db.k_configs()
         self.assertEqual(len(k_configs), 67)
-        self.assertEqual(k_configs['((1,), (1,))'], 1)
-        self.assertEqual(k_configs['((2, 2), (2, 2), (2, 2))'], 108)
+        self.assertEqual(k_configs['((1,), (1,))'], {(0, 1): {}})
+        self.assertEqual(k_configs['((2, 2), (2, 2), (2, 2))'],
+                         {(0, 2): {(0, 4): {(1, 3): {(1, 5): {(2, 4): {(3, 5): {}}}}},
+                                   (0, 5): {(1, 3): {(1, 4): {(2, 5): {(3, 4): {}}}}}},
+                          (0, 3): {(0, 4): {(1, 2): {(1, 5): {(2, 5): {(3, 4): {}}}}},
+                                   (0, 5): {(1, 2): {(1, 4): {(2, 4): {(3, 5): {}}}}}}})
 
         db.close()
 
@@ -256,7 +261,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.cursor.execute("SELECT * FROM graphs.subgraphs")
         first_row = db.cursor.fetchone()
-        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1))
+        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1, '{(0, 1): {}}'))
         self.assertEqual(len(db.cursor.fetchall()), 107)
 
         db.create_indexes()

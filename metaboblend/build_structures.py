@@ -432,7 +432,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
             build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm, debug=debug, db=db, lls=lls)
 
     with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
-        smi_list = pool.map(partial(lll_build, path_pkls=path_pkls, debug=debug, configs_iso=configs_iso), lls)
+        smi_list = pool.map(partial(lll_build, debug=debug, configs_iso=configs_iso), lls)
 
     if len(smi_list) != 0:
         out.writelines(smi_list)
@@ -581,30 +581,7 @@ def paths(tree, cur=()):
                 yield path
 
 
-def isomorphism_graphs(path_pkls, id_pkl):
-    """
-    Loads a PKL file of a particular ID to build a molecule from a set of substructures. The PKL file contains
-    the set of non-isomorphic graphs for the particular ID, before passing it to
-    `:py:meth:`metaboblend.databases.SubstructureDb.isomorphism_graphs` to be parsed.
-
-    :param path_pkls: The directory containing PKL files.
-
-    :param id_pkl: The ID of the PKL file to be retrieved.
-
-    :return: For each graph in the PKL file, yields a tuple representing bonds to be created between substructures
-        for combining substructures for the generation of molecules.
-    """
-
-    with open(os.path.join(path_pkls, "{}.pkl".format(id_pkl)), 'rb') as pickle_file:
-
-        nGcomplete = pickle.load(pickle_file)
-
-    for p in paths(nGcomplete):
-
-        yield p
-
-
-def lll_build(lll, configs_iso, path_pkls, debug):
+def lll_build(lll, configs_iso, debug):
     """
     Final stage for building molecules; takes a combination of substructures (lll) and builds them according to
     graphs in the substructure database. May be run in parallel.
@@ -619,9 +596,6 @@ def lll_build(lll, configs_iso, path_pkls, debug):
 
     :param configs_iso: Possible substructure combinations extracted from the connectivity database. A tuple containing
         tuples for each substructure; these tuples specify how many bonds each substructure can make.
-
-    :param path_pkls: The path to the connectivity graphs described by the SQLite 3 connectivity database, as generated
-        by :py:meth:`metaboblend.databases.create_isomorphism_database`.
 
     :return: List of smiles representing molecules generated (and the substructures used to generate them).
     """
@@ -662,8 +636,7 @@ def lll_build(lll, configs_iso, path_pkls, debug):
         print("## Type of bonds to form:", bond_types)
 
     iso_n = 0
-
-    for edges in isomorphism_graphs(path_pkls, configs_iso[str(vA)]):  # build mols for each graph in connectivity db
+    for edges in paths(configs_iso[str(vA)]):  # build mols for each graph in connectivity db
 
         iso_n += 1
         if debug:

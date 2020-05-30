@@ -20,6 +20,7 @@
 #
 
 
+import os
 import unittest
 import zipfile
 from metaboblend.databases import *
@@ -60,7 +61,6 @@ class IsomorphDbTestCase(unittest.TestCase):
 
         os.mkdir(to_test_result("pkls"))
         create_isomorphism_database(to_test_result("k_graphs.sqlite"),
-                                    to_test_result("pkls"),
                                     3,  # sizes
                                     [1, 2],  # boxes
                                     cls.path_ri
