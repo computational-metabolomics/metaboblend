@@ -24,6 +24,7 @@ import sys
 import subprocess
 import sqlite3
 import tempfile
+import pickle
 from collections import OrderedDict
 import xml.etree.ElementTree as ElementTree
 import networkx as nx
@@ -433,7 +434,7 @@ class SubstructureDb:
         configs = {}
 
         for record in records:
-            configs[str(record[1])] = eval(record[0])
+            configs[str(record[1])] = pickle.loads(record[0])
 
         return configs
 
@@ -1221,7 +1222,7 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
                                           str(vn),
                                           sG.number_of_nodes(),
                                           sG.number_of_edges(),
-                                          str(root)))
+                                          pickle.dumps(root)))
 
             conn.commit()
     conn.close()

@@ -82,7 +82,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.cursor.execute("SELECT * FROM graphs.subgraphs")
         first_row = db.cursor.fetchone()
-        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1, '{(0, 1): {}}'))
+        self.assertEqual(first_row[0:9], (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1))
         self.assertEqual(len(db.cursor.fetchall()), 107)
 
         db.close()
@@ -261,7 +261,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.cursor.execute("SELECT * FROM graphs.subgraphs")
         first_row = db.cursor.fetchone()
-        self.assertEqual(first_row, (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1, '{(0, 1): {}}'))
+        self.assertEqual(first_row[0:9], (1, 1, b'A_', 2, '(1, 1)', '(1, 1)', '((1,), (1,))', 2, 1))
         self.assertEqual(len(db.cursor.fetchall()), 107)
 
         db.create_indexes()
