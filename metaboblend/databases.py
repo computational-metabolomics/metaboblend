@@ -1086,7 +1086,7 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
     conn.close()
 
 
-def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms_available, path_geng=None, path_RI=None, debug=False):
+def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms_available, path_RI=None, debug=False):
     """
     Generates a connectivity database containing sets of possible combinations of substructures; also generates PKL
     files containing the graphs required for building molecules from substructures. The connectivity database is
@@ -1102,8 +1102,6 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
     :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertice) in each
         substructure for bonding. At least one atom must be available for bonding for a graph to be created.
-
-    :param path_geng: The path of geng, a tool for the generation of small non-isomorphic graphs.
 
     :param path_RI: The path of RI, a tool for verifying subgraph isomorphism.
 
@@ -1139,8 +1137,8 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
         # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
         if debug:
-            print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
-        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+            print(["geng", str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
+        proc = subprocess.Popen(["geng", str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         geng_out, err = proc.communicate()
 
