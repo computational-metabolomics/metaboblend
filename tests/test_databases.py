@@ -23,6 +23,7 @@
 import os
 import unittest
 import zipfile
+import pickle
 from metaboblend.databases import *
 
 
