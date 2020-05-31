@@ -156,63 +156,59 @@ def add_small_substructures(path_subs):
 
         pkl_lib = pickle.dumps(lib)
         sub_smi_dict = {'smiles': smiles_rdkit,
-                        'exact_mass': exact_mass,
-                        'count': 0,
-                        'length': sum([els[atom] for atom in els if atom != "*"]),
-                        "valence": lib["valence"],
-                        "valence_atoms": str(lib["degree_atoms"]),
-                        "atoms_available": lib["atoms_available"],
-                        "lib": pkl_lib}
+                                'exact_mass': exact_mass,
+                                'length': sum([els[atom] for atom in els if atom != "*"]),
+                                "valence": lib["valence"],
+                                "valence_atoms": str(lib["degree_atoms"]),
+                                "atoms_available": lib["atoms_available"],
+                                "mol": lib["mol"].ToBinary(),
+                                "bond_types": str(lib["bond_types"]),
+                                "dummies": str(lib["dummies"])}
 
         sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-        sub_smi_dict["exact_mass__0_1"] = round(sub_smi_dict["exact_mass"], 1)
-        sub_smi_dict["exact_mass__0_01"] = round(sub_smi_dict["exact_mass"], 2)
-        sub_smi_dict["exact_mass__0_001"] = round(sub_smi_dict["exact_mass"], 3)
         sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
 
         sub_smi_dict.update(els)
         sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
 
-        substructures.cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                              smiles, 
-                                              heavy_atoms, 
-                                              length, 
-                                              exact_mass__1, 
-                                              exact_mass__0_1, 
-                                              exact_mass__0_01, 
-                                              exact_mass__0_001, 
-                                              exact_mass__0_0001, 
-                                              exact_mass, count, 
-                                              C, 
-                                              H, 
-                                              N, 
-                                              O, 
-                                              P, 
-                                              S, 
-                                              valence, 
-                                              valence_atoms, 
-                                              atoms_available, 
-                                              lib)
-                                          values (
-                                              :smiles,
-                                              :heavy_atoms,
-                                              :length,
-                                              :exact_mass__1,
-                                              :exact_mass__0_1,
-                                              :exact_mass__0_01,
-                                              :exact_mass__0_001,
-                                              :exact_mass__0_0001,
-                                              :exact_mass,
-                                              :count,
-                                              :C,
-                                              :H,
-                                              :N,
-                                              :O,
-                                              :P,
-                                              :S,
-                                              :valence,
-                                              :valence_atoms,
-                                              :atoms_available,:lib)""", sub_smi_dict)
+        cursor.execute("""INSERT OR IGNORE INTO substructures (
+                                      smiles,
+                                      heavy_atoms,
+                                      length, 
+                                      exact_mass__1, 
+                                      exact_mass__0_0001, 
+                                      exact_mass, 
+                                      C, 
+                                      H, 
+                                      N, 
+                                      O, 
+                                      P, 
+                                      S, 
+                                      valence, 
+                                      valence_atoms, 
+                                      atoms_available, 
+                                      bond_types,
+                                      dummies,
+                                      mol)
+                                  values (
+                                      :smiles,
+                                      :heavy_atoms,
+                                      :length,
+                                      :exact_mass__1,
+                                      :exact_mass__0_0001,
+                                      :exact_mass,
+                                      :C,
+                                      :H,
+                                      :N,
+                                      :O,
+                                      :P,
+                                      :S,
+                                      :valence,
+                                      :valence_atoms,
+                                      :atoms_available,
+                                      :bond_types,
+                                      :dummies,
+                                      :mol)""", sub_smi_dict)
 
     substructures.conn.commit()
     substructures.conn.close()
