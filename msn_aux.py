@@ -171,7 +171,7 @@ def add_small_substructures(path_subs):
         sub_smi_dict.update(els)
         sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
 
-        cursor.execute("""INSERT OR IGNORE INTO substructures (
+        substructures.cursor.execute("""INSERT OR IGNORE INTO substructures (
                                       smiles,
                                       heavy_atoms,
                                       length, 
