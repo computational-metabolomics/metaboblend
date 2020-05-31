@@ -116,7 +116,7 @@ def subset_substructures(hmdb_ids, in_db, out_db, substructures_only=True, subse
         original_substructures.cursor.execute("""create table subset.substructures as 
                                                  select * from substructures 
                                                  where smiles in (
-                                                    select smiles_rdkit from hmdbid_substructures
+                                                    select smiles from hmdbid_substructures
                                                     where hmdbid in ({seq})
                                                  )""".format(seq=','.join(['?']*len(hmdb_ids))), hmdb_ids)
     else:
@@ -125,7 +125,7 @@ def subset_substructures(hmdb_ids, in_db, out_db, substructures_only=True, subse
 
     original_substructures.cursor.execute("""select * from substructures 
                                                  where smiles in (
-                                                    select smiles_rdkit from hmdbid_substructures
+                                                    select smiles from hmdbid_substructures
                                                     where hmdbid in ({seq})
                                                  )""".format(seq=','.join(['?'] * len(hmdb_ids))), hmdb_ids)
 
