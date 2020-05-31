@@ -1121,7 +1121,7 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
                           nodes_valences TEXT,
                           n_nodes INTEGER,
                           n_edges INTEGER,
-                          root TEXT,
+                          root BLOB,
                           PRIMARY KEY (graph6, k_partite, nodes_valences)
                    );""")
     conn.commit()
