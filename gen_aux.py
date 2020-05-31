@@ -8,7 +8,7 @@ from rdkit import Chem
 from shutil import rmtree
 import pickle
 
-sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass, create_isomorphism_database
 from build_structures import build
 
@@ -30,7 +30,7 @@ def get_from_hmdb(name, hmdb, out_dir):
 
 
 def build_substructure_database(records, path_input, path_db="../databases/substructures.sqlite", n_min=2,
-                                n_max=9, method="exhaustive"):
+                                n_max=9, method="exhaustive", max_atoms_available=None, max_valence=None):
     """
     Build a substructure database from a series of compounds.
 
@@ -52,7 +52,8 @@ def build_substructure_database(records, path_input, path_db="../databases/subst
     db.close()
 
     for i, record in enumerate(records):
-        update_substructure_database(os.path.join(path_input, record + ".xml"), path_db, n_min, n_max, method=method)
+        update_substructure_database(os.path.join(path_input, record + ".xml"), path_db, n_min, n_max, method=method,
+                                     max_atoms_available=max_atoms_available, max_valence=max_valence)
 
     db = SubstructureDb(path_db, "", "")
     db.create_indexes()

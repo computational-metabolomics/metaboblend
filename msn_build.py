@@ -9,7 +9,7 @@ from shutil import rmtree
 import pickle
 from rdkit.Chem import Descriptors
 
-sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
 from build_structures import build, gen_subs_table
 

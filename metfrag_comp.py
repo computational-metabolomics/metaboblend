@@ -8,7 +8,7 @@ from rdkit import Chem
 from shutil import rmtree
 import pickle
 
-sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
 from build_structures import build
 
@@ -34,6 +34,7 @@ def hmdb_sdf_to_csv(path_in, path_out):
             "Name",
             "InChIKey"
         ])
+
         for i, mol in enumerate(Chem.SDMolSupplier(path_in)):
             if mol is None:
                 continue

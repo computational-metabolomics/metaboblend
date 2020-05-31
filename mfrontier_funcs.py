@@ -4,7 +4,7 @@ from rdkit import Chem
 import sqlite3
 import pickle
 
-sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from databases import SubstructureDb, get_substructure_bond_idx, get_substructure, calculate_exact_mass, get_elements
 
 

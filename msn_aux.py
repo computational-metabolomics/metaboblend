@@ -12,7 +12,7 @@ from msp2db.db import create_db
 from msp2db.parse import LibraryData
 import sqlite3
 
-sys.path.append(os.path.join("..", "..", "..", "metaboverse", "metaboverse"))
+sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from databases import update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
 from build_structures import build
 
@@ -258,7 +258,7 @@ class MspDatabase:
 
         return LibraryData(msp_pth=path_msp, db_pth=self.path_db, db_type='sqlite', schema=self.schema)
 
-    def get_fragments(self, precursor_type="[M+H]+", ms_level=2, max_mass=400, min_mass=100, snr=2.0):
+    def get_fragments(self, precursor_type="[M+H]+", ms_level=2, max_mass=300, min_mass=100, snr=2.0):
         """
         Get MS data from the SQLite database.
 
@@ -323,7 +323,7 @@ class MspDatabase:
         self.conn.close()
 
 
-def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no_hmdb=False):
+def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, path_full_hmdb, no_hmdb=False):
     """
     See parse_testing_data. Generatesa dictionary for running the MS2 build method on.
 
@@ -339,12 +339,19 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no
         dictionaries, each of which contain relevant meta and MS2 data.
     """
 
-    with open(path_hmdb_ids) as hmdb_ids:
+    with open(path_hmdb_ids, "r") as hmdb_ids:
         hmdb_ids_csv = csv.reader(hmdb_ids)
         
         hmdb_dict = {}
         for row in hmdb_ids_csv:
             hmdb_dict[row[1]] = row[4]
+
+    with open(path_full_hmdb, "r", encoding='utf-8') as full_hmdb:
+        full_hmdb_csv = csv.reader(full_hmdb)
+
+        full_hmdb_dict = {}
+        for row in full_hmdb_csv:
+            full_hmdb_dict[row[9]] = row[0]
             
     seen_hmdbs = set()
     data_categories = {}
@@ -383,10 +390,13 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no
             try:
                 hmdb_id = hmdb_dict[spectra[0]]
             except KeyError:
-                if no_hmdb:
-                    hmdb_id = spectra[0]
-                else:
-                    continue
+                try:
+                    hmdb_id = full_hmdb_dict[spectra[0]]
+                except KeyError:
+                    if no_hmdb:
+                        hmdb_id = spectra[0]
+                    else:
+                        continue
 
             if hmdb_id in seen_hmdbs:
                 continue
@@ -403,11 +413,6 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no
                 if hmdb_id != "":
                     seen_hmdbs.add(hmdb_id)
 
-            data_categories[name_msp][hmdb_id] = {"name": spectra[1], "inchikey_id": spectra[0],
-                                                      "precursor_ion_mass": float(spectra[5]), "peaks": [],
-                                                     "accession": hmdb_id,
-                                                     "actual_accession": spectra[4]}
-
             if hmdb_id + ".xml" not in os.listdir(hmdb_path):
                 if not no_hmdb:
                     get_from_hmdb(hmdb_id, hmdb_id, hmdb_path)
@@ -416,7 +421,20 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, no
                 data_categories[name_msp][hmdb_id]["exact_mass"] = float(spectra[5]) - 1.007276
             else:
                 for record_dict in filter_records(parse_xml(os.path.join(hmdb_path, hmdb_id + ".xml"))):
-                    data_categories[name_msp][hmdb_id]["exact_mass"] = record_dict["exact_mass"]
+                    data_categories[name_msp][hmdb_id] = {"exact_mass": record_dict["exact_mass"]}
+
+                try:
+                    data_categories[name_msp][hmdb_id]["exact_mass"]
+                except KeyError:
+                    print("Could not retrieve exact mass from HMDB record: " + hmdb_id)
+                    continue
+
+            data_categories[name_msp][hmdb_id]["name"] = spectra[1]
+            data_categories[name_msp][hmdb_id]["inchikey_id"] = spectra[0]
+            data_categories[name_msp][hmdb_id]["precursor_ion_mass"] = float(spectra[5])
+            data_categories[name_msp][hmdb_id]["peaks"] = []
+            data_categories[name_msp][hmdb_id]["accession"] = hmdb_id
+            data_categories[name_msp][hmdb_id]["actual_accession"] = spectra[4]
 
             data_categories[name_msp][hmdb_id]["mol"] = mol
             data_categories[name_msp][hmdb_id]["smiles"] = Chem.MolToSmiles(mol)
