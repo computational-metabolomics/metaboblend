@@ -183,7 +183,7 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri, debug=debug)
 
 
-def remove_unique(n, in_db_path, unique_db_path, substructures_only=True):
+def remove_unique(n, in_db_path, unique_db_path, substructures_only=False):
     original_db = SubstructureDb(in_db_path, "")
 
     original_db.cursor.execute("attach database '%s' as subset" % unique_db_path)
