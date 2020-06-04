@@ -183,7 +183,7 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri, debug=debug)
 
 
-def remove_unique(n, in_db_path, unique_db_path):
+def remove_unique(n, in_db_path, unique_db_path, substructures_only=True):
     original_db = SubstructureDb(in_db_path, "")
 
     original_db.cursor.execute("attach database '%s' as subset" % unique_db_path)
@@ -195,9 +195,10 @@ def remove_unique(n, in_db_path, unique_db_path):
     original_db.cursor.execute("""create table subset.substructures as 
                                              select * from substructures 
                                              where smiles in (
-                                                select smiles_rdkit_kek from hmdbid_substructures
-                                                group by smiles_rdkit_kek having COUNT(*) >= %s
+                                                select smiles from hmdbid_substructures
+                                                group by smiles having COUNT(*) >= %s
                                              )""" % n)
 
-    original_db.cursor.execute("create table subset.compounds as select * from compounds")
-    original_db.cursor.execute("create table subset.hmdbid_substructures as select * from hmdbid_substructures")
+    if not substructures_only:
+        original_db.cursor.execute("create table subset.compounds as select * from compounds")
+        original_db.cursor.execute("create table subset.hmdbid_substructures as select * from hmdbid_substructures")
