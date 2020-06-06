@@ -61,6 +61,8 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
 
     mol_smi = Chem.MolToSmiles(mol)
     pre_reccurence = {}
+    
+    fragment_masses.sort(reverse=True)
 
     for fragment_mass in fragment_masses:
         smi_out = os.path.join(out_dir, "{}_".format(hmdb_id) + str(round(fragment_mass, 4)) + ".smi")
