@@ -180,25 +180,4 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     print(pkls_out)
     print(sizes, boxes)
     print("==================================")
-    create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri, debug=debug)
-
-
-def remove_unique(n, in_db_path, unique_db_path, substructures_only=False):
-    original_db = SubstructureDb(in_db_path, "")
-
-    original_db.cursor.execute("attach database '%s' as subset" % unique_db_path)
-
-    original_db.cursor.execute("drop table if exists subset.substructures")
-    original_db.cursor.execute("drop table if exists subset.compounds")
-    original_db.cursor.execute("drop table if exists subset.hmdbid_substructures")
-
-    original_db.cursor.execute("""create table subset.substructures as 
-                                             select * from substructures 
-                                             where smiles in (
-                                                select smiles from hmdbid_substructures
-                                                group by smiles having COUNT(*) >= %s
-                                             )""" % n)
-
-    if not substructures_only:
-        original_db.cursor.execute("create table subset.compounds as select * from compounds")
-        original_db.cursor.execute("create table subset.hmdbid_substructures as select * from hmdbid_substructures")
+    create_isomorphism_database(db_out, boxes, sizes, path_ri, debug=debug)

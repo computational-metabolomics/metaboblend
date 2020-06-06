@@ -70,7 +70,7 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
             hydrogenated_fragment_mass = fragment_mass + (j * 1.007825)
             build(mc, exact_mass, smi_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
                   path_k_graphs, path_pkls, path_subs, hydrogenated_fragment_mass, ppm, out_mode="a",
-                  table_name="msn_subset")
+                  table_name="msn_subset", table_name_freq="msn_subset_freq")
 
         get_uniq_subs(smi_out, ignore_substructures=True)
         with open(smi_out, mode="r") as smis:
@@ -115,14 +115,14 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
     else:
         max_recurrence = str(0)
 
-    print("-------------")
-    for frag in fragment_masses:
-        print(str(frag) + " 1")
-    print(exact_mass)
-    print(mol_smi)
-    print(hmdb_id)
-    print(pre_reccurence[mol_smi])
-    print(len(fragment_masses))
+    # print("-------------")
+    # for frag in fragment_masses:
+    #     print(str(frag) + " 1")
+    # print(exact_mass)
+    # print(mol_smi)
+    # print(hmdb_id)
+    # print(pre_reccurence[mol_smi])
+    # print(len(fragment_masses))
 
     return [
         str(hmdb_id),
@@ -141,7 +141,8 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
     ]
 
 
-def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, test_type="ind_exp", subset=True, max_atoms_available=2):
+def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, test_type="ind_exp",
+             subset=True, max_atoms_available=2, minimum_frequency=None):
     """
     Wrapper for running tests for the MS2 structure generation & ranking method.
 
@@ -201,13 +202,16 @@ def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, pp
                 "ppm"
             ])
 
-        if test_type == "ind_exp":
-            run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, results_csv, db_path, subset=subset, max_atoms_available=max_atoms_available)
-        elif test_type == "ind_exh_exp":
-            run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, results_csv, db_path, subset=subset, max_atoms_available=max_atoms_available)
+        if subset:
+            pass
+        else:
+            if test_type == "ind_exp":
+                C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, results_csv, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
+            elif test_type == "ind_exh_exp":
+                D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, results_csv, db_path, max_atoms_available=max_atoms_available)
 
 
-def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv, db_path, subset=True, max_atoms_available=2):
+def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv, db_path, max_atoms_available=2, minimum_frequency=None):
     """Run a test on MS2 data. See run_test."""
 
     results = []
@@ -223,12 +227,11 @@ def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy,
                                                                         "precursor_ion_mass"] - 1.007276
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
 
-            subset_substructures([hmdb], db_path, "subset.sqlite", subset=subset)
-            add_small_substructures("subset.sqlite")
-
-            db = SubstructureDb("subset.sqlite", "")
+            db = SubstructureDb(db_path, "")
+            add_small_substructures(db_path)
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
-                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset")
+                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
+                           minimum_frequency=minimum_frequency)
             db.close()
 
             results.append([category] + test_build(
@@ -237,7 +240,7 @@ def run_ind_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy,
                 exact_mass=ms_data[category][hmdb]["neutral_precursor_ion_mass"],
                 mol=ms_data[category][hmdb]["mol"],
                 hmdb_id=hmdb,
-                path_subs="subset.sqlite",
+                path_subs=db_path,
                 path_k_graphs="../../Data/databases/k_graphs.sqlite",
                 path_pkls="../../Data/databases/pkls",
                 heavy_atoms=heavy_atoms, max_valence=max_valence, accuracy=accuracy,
@@ -298,45 +301,5 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
                 str(max_valence),
                 str(accuracy)
             ])
-
-    csv.writerows(results)
-
-def run_group_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv):
-    """'take-one-out' test for running validation on groups of compounds. See run_test."""
-    results = []
-    for category in ms_data.keys():
-        if category != "Catecholamines" and category != "Hexose and Pentose saccharides":
-            continue
-
-        group_ids = []
-        for hmdb in ms_data[category].keys():
-            group_ids.append(hmdb)
-
-        os.mkdir(os.path.join(out_dir, category))
-        for hmdb in ms_data[category].keys():
-            os.mkdir(os.path.join(out_dir, category, hmdb))
-
-            ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
-            ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
-
-            removed_group_ids = [id for id in group_ids if id != hmdb]
-            assert len(removed_group_ids) < len(group_ids)
-
-            subset_substructures(removed_group_ids, "../databases/" + test_name + ".sqlite", "../databases/subset.sqlite")
-            add_small_substructures("../databases/subset.sqlite")
-
-            results.append([category] + test_build(
-                out_dir=os.path.join(out_dir, category, hmdb),
-                mc=ms_data[category][hmdb]["mc"],
-                exact_mass=ms_data[category][hmdb]["neutral_precursor_ion_mass"],
-                mol=ms_data[category][hmdb]["mol"],
-                hmdb_id=hmdb,
-                path_subs="../databases/" + test_name + ".sqlite",
-                path_k_graphs="../databases/k_graphs.sqlite",
-                path_pkls="../databases/pkls",
-                heavy_atoms=heavy_atoms, max_valence=max_valence, accuracy=accuracy,
-                fragment_masses=ms_data[category][hmdb]["neutral_peaks"],
-                ppm=ppm
-            ))
 
     csv.writerows(results)
