@@ -254,7 +254,7 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv,
     csv.writerows(results)
 
 
-def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2):
+def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2):
     """Run a test on the standard build method. See run_test."""
     results = []
 
@@ -264,14 +264,18 @@ def run_ind_exh_exp(out_dir, ms_data, test_name, heavy_atoms, max_valence, accur
 
             subset_substructures([hmdb], db_path, "subset.sqlite", subset=subset)
 
-            db = SubstructureDb("subset.sqlite", "")
-            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, table_name="msn_subset")
+            db = SubstructureDb(db_path, "")
+            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
+                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
+                           minimum_frequency=minimum_frequency)
+            add_small_substructures(db_path, "msn_subset_freq")
             db.close()
 
             build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
                   path_db="subset.sqlite", path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
-                  path_pkls="../../Data/databases/pkls",  out_mode="w", table_name="msn_subset")
+                  path_pkls="../../Data/databases/pkls",  out_mode="w", table_name="msn_subset",
+                  table_name_freq="msn_subset_freq")
 
             i = -1
             with open("temp_structures.smi", "r") as smi:
