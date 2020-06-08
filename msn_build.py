@@ -262,8 +262,6 @@ def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_p
         for hmdb in ms_data[category].keys():
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
 
-            subset_substructures([hmdb], db_path, "subset.sqlite", subset=subset)
-
             db = SubstructureDb(db_path, "")
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
                            ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
@@ -272,7 +270,7 @@ def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_p
 
             build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
-                  path_db="subset.sqlite", path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
+                  path_db=db_path, path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
                   path_pkls="../../Data/databases/pkls", out_mode="w", table_name="msn_subset_freq")
 
             i = -1
