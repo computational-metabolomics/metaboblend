@@ -254,7 +254,7 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv,
     csv.writerows(results)
 
 
-def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2):
+def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2, minimum_frequency=2):
     """Run a test on the standard build method. See run_test."""
     results = []
 
@@ -274,7 +274,7 @@ def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_p
             build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
                   path_db="subset.sqlite", path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
-                  path_pkls="../../Data/databases/pkls",  out_mode="w", table_name="msn_subset",
+                  path_pkls="../../Data/databases/pkls", out_mode="w", table_name="msn_subset",
                   table_name_freq="msn_subset_freq")
 
             i = -1
