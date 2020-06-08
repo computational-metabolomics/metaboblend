@@ -66,7 +66,7 @@ def parse_testing_data(csv_path, hmdb_path):
     return data_categories
 
 
-def add_small_substructures(path_subs):
+def add_small_substructures(path_subs, table_name="substructures"):
     """
     Add a curated set of small substructures to a substructure database - useful for improving the number of peaks
     that the MS2 method can annotate.
@@ -171,7 +171,7 @@ def add_small_substructures(path_subs):
         sub_smi_dict.update(els)
         sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
 
-        substructures.cursor.execute("""INSERT OR IGNORE INTO substructures (
+        substructures.cursor.execute("""INSERT OR IGNORE INTO %s (
                                       smiles,
                                       heavy_atoms,
                                       length, 
@@ -208,7 +208,7 @@ def add_small_substructures(path_subs):
                                       :atoms_available,
                                       :bond_types,
                                       :dummies,
-                                      :mol)""", sub_smi_dict)
+                                      :mol)""" % table_name, sub_smi_dict)
 
     substructures.conn.commit()
     substructures.conn.close()

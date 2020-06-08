@@ -230,10 +230,10 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv,
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
 
             db = SubstructureDb(db_path, "")
-            add_small_substructures(db_path)
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
                            ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
                            minimum_frequency=minimum_frequency)
+            add_small_substructures(db_path, "msn_subset_freq")
             db.close()
 
             results.append([category] + test_build(
