@@ -72,7 +72,7 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
             hydrogenated_fragment_mass = fragment_mass + (j * 1.007825)
             build(mc, exact_mass, smi_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
                   path_k_graphs, path_pkls, path_subs, hydrogenated_fragment_mass, ppm, out_mode="a",
-                  table_name="msn_subset", table_name_freq="msn_subset_freq")
+                  table_name="msn_subset")
 
         get_uniq_subs(smi_out, ignore_substructures=True)
         with open(smi_out, mode="r") as smis:
@@ -218,8 +218,8 @@ def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_at
 
             os.mkdir(os.path.join(out_dir, category, hmdb))
 
-            ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb][
-                                                                        "precursor_ion_mass"] - 1.007276
+            ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
+                = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
 
             db = SubstructureDb(db_path, "")
@@ -253,7 +253,8 @@ def D(out_dir, ms_data, heavy_atoms, max_valence, accuracy, db_path, max_atoms_a
 
     for category in ms_data.keys():
         for hmdb in ms_data[category].keys():
-            ms_data[category][hmdb]["neutral_precursor_ion_mass"] = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
+            ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
+                = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
 
             db = SubstructureDb(db_path, "")
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
