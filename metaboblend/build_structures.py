@@ -299,7 +299,7 @@ def add_bonds(mols, edges, atoms_available, bond_types, debug=False):
 def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
           path_db_k_graphs="../databases/k_graphs.sqlite", path_pkls="../databases/pkls",
           path_db="../databases/substructures.sqlite", fragment_mass=None, ppm=None, debug=False, out_mode="w",
-          processes=None, table_name=None):
+          processes=None, table_name=None, minimum_frequency=None):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -363,7 +363,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db = SubstructureDb(path_db, path_pkls, path_db_k_graphs)
 
     if table_name is None:  # generate "temp" table containing only substructures in parameter space
-        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(exact_mass))
+        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(exact_mass),
+                                    minimum_frequency=minimum_frequency)
 
     if fragment_mass is None:  # standard build method
         exact_mass__1 = round(exact_mass)
@@ -440,7 +441,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     db.close()
 
 
-def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures"):
+def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures",
+                   minimum_frequency=None):
     """
     Generate a temporary secondary substructure table restricted by a set of parameters. Generated as an initial step
     in :py:meth:`metaboblend.build_structures.build` in order to limit the processing overhead as a result of
@@ -466,17 +468,29 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, 
 
     db.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
 
+    if minimum_frequency is None:
+        freq_statement = ""
+    else:
+        freq_statement = """
+                            AND smiles IN 
+                                (SELECT smiles 
+                                    FROM hmdbid_substructures 
+                                    GROUP BY smiles 
+                                    HAVING COUNT(*) >= {})
+                            """.format(minimum_frequency,)
+
     db.cursor.execute("""CREATE TABLE {} AS
                              SELECT * FROM substructures WHERE
                                  heavy_atoms IN ({}) AND
                                  atoms_available <= {} AND
                                  valence <= {} AND
-                                 exact_mass__1 < {}
+                                 exact_mass__1 < {}{}
                       """.format(table_name,
                                  ",".join(map(str, heavy_atoms)),
                                  max_atoms_available,
                                  max_valence,
-                                 max_mass,))
+                                 max_mass,
+                                 freq_statement,))
 
     db.create_indexes(table=table_name, selection="gen_subs_table")
 

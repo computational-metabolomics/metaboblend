@@ -549,6 +549,7 @@ class SubstructureDb:
 
         if selection != "gen_subs_table":
             self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
+            self.cursor.execute("DROP INDEX IF EXISTS smiles__heavy_atoms__valence__atoms_available__exact_mass__1")
 
         self.cursor.execute("""CREATE INDEX mass__1
                                ON %s (exact_mass__1)""" % table)
@@ -560,6 +561,8 @@ class SubstructureDb:
         if selection != "gen_subs_table":
             self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
                                    ON %s (heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
+            self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
+                                       ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
     def close(self):
         if self.clean:
