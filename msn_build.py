@@ -204,19 +204,18 @@ def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, pp
                 "ppm"
             ])
 
-        if subset:
-            pass
-        else:
-            if test_type == "ind_exp":
-                C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, results_csv, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
-            elif test_type == "ind_exh_exp":
-                D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, results_csv, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
+    if subset:
+        pass
+    else:
+        if test_type == "ind_exp":
+            C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
+        elif test_type == "ind_exh_exp":
+            D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
 
 
-def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv, db_path, max_atoms_available=2, minimum_frequency=None):
+def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=2, minimum_frequency=None):
     """Run a test on MS2 data. See run_test."""
 
-    results = []
     for category in ms_data.keys():
         os.mkdir(os.path.join(out_dir, category))
         for hmdb in ms_data[category].keys():
@@ -235,28 +234,28 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, csv,
                            minimum_frequency=minimum_frequency)
             add_small_substructures(db_path, "msn_subset_freq")
             db.close()
+            
+            with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
+                rcsv = csv.writer(overall_results)
 
-            results.append([category] + test_build(
-                out_dir=os.path.join(out_dir, category, hmdb),
-                mc=ms_data[category][hmdb]["mc"],
-                exact_mass=ms_data[category][hmdb]["neutral_precursor_ion_mass"],
-                mol=ms_data[category][hmdb]["mol"],
-                hmdb_id=hmdb,
-                path_subs=db_path,
-                path_k_graphs="../../Data/databases/k_graphs.sqlite",
-                path_pkls="../../Data/databases/pkls",
-                heavy_atoms=heavy_atoms, max_valence=max_valence, accuracy=accuracy,
-                fragment_masses=ms_data[category][hmdb]["neutral_peaks"],
-                ppm=ppm,
-                max_atoms_available=max_atoms_available
-            ))
-
-    csv.writerows(results)
+                rcsv.writerow([category] + test_build(
+                    out_dir=os.path.join(out_dir, category, hmdb),
+                    mc=ms_data[category][hmdb]["mc"],
+                    exact_mass=ms_data[category][hmdb]["neutral_precursor_ion_mass"],
+                    mol=ms_data[category][hmdb]["mol"],
+                    hmdb_id=hmdb,
+                    path_subs=db_path,
+                    path_k_graphs="../../Data/databases/k_graphs.sqlite",
+                    path_pkls="../../Data/databases/pkls",
+                    heavy_atoms=heavy_atoms, max_valence=max_valence, accuracy=accuracy,
+                    fragment_masses=ms_data[category][hmdb]["neutral_peaks"],
+                    ppm=ppm,
+                    max_atoms_available=max_atoms_available
+                ))
 
 
-def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_path, subset=True, max_atoms_available=2, minimum_frequency=2):
+def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=2, minimum_frequency=2):
     """Run a test on the standard build method. See run_test."""
-    results = []
 
     for category in ms_data.keys():
         for hmdb in ms_data[category].keys():
@@ -290,18 +289,19 @@ def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, csv, db_p
                         reconstructed = True
 
             uniq_structures = i + 1
-
-            results.append([
-                str(category),
-                str(hmdb),
-                str(mol_smi),
-                str(str(ms_data[category][hmdb]["neutral_precursor_ion_mass"])),
-                str(reconstructed),
-                str(total_structures),
-                str(uniq_structures),
-                str(heavy_atoms),
-                str(max_valence),
-                str(accuracy)
-            ])
-
-    csv.writerows(results)
+            
+            with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
+                rcsv = csv.writer(overall_results)
+                
+                rcsv.writerow([
+                    str(category),
+                    str(hmdb),
+                    str(mol_smi),
+                    str(str(ms_data[category][hmdb]["neutral_precursor_ion_mass"])),
+                    str(reconstructed),
+                    str(total_structures),
+                    str(uniq_structures),
+                    str(heavy_atoms),
+                    str(max_valence),
+                    str(accuracy)
+                ])
