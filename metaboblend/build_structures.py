@@ -664,7 +664,7 @@ def lll_build(lll, configs_iso, debug):
             continue
 
         try:  # append the canonical smiles of the final structure
-            smis += "{}\t{}\n".format(Chem.MolToSmiles(molOut), str([item["smiles"] for item in lll]))
+            smis += "{}\n".format(Chem.MolToSmiles(molOut))
         except RuntimeError:
             if debug:
                 print("Bad bond type violation")
