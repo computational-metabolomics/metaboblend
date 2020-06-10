@@ -117,15 +117,6 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
     else:
         max_recurrence = str(0)
 
-    # print("-------------")
-    # for frag in fragment_masses:
-    #     print(str(frag) + " 1")
-    # print(exact_mass)
-    # print(mol_smi)
-    # print(hmdb_id)
-    # print(pre_reccurence[mol_smi])
-    # print(len(fragment_masses))
-
     return [
         str(hmdb_id),
         str(mol_smi),
@@ -208,12 +199,15 @@ def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, pp
         pass
     else:
         if test_type == "ind_exp":
-            C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
+            C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path,
+              max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
         elif test_type == "ind_exh_exp":
-            D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
+            D(out_dir, ms_data, heavy_atoms, max_valence, accuracy, db_path,
+              max_atoms_available=max_atoms_available, minimum_frequency=minimum_frequency)
 
 
-def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=2, minimum_frequency=None):
+def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=2,
+      minimum_frequency=None):
     """Run a test on MS2 data. See run_test."""
 
     for category in ms_data.keys():
@@ -232,7 +226,7 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_p
             gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
                            ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
                            minimum_frequency=minimum_frequency)
-            add_small_substructures(db_path, "msn_subset_freq")
+            add_small_substructures(db_path, "msn_subset")
             db.close()
             
             with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
@@ -254,7 +248,7 @@ def C(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, ppm, db_p
                 ))
 
 
-def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=2, minimum_frequency=2):
+def D(out_dir, ms_data, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=2, minimum_frequency=None):
     """Run a test on the standard build method. See run_test."""
 
     for category in ms_data.keys():
@@ -270,7 +264,7 @@ def D(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, db_path, 
             build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
                   path_db=db_path, path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
-                  path_pkls="../../Data/databases/pkls", out_mode="w", table_name="msn_subset_freq")
+                  path_pkls="../../Data/databases/pkls", out_mode="w", table_name="msn_subset")
 
             i = -1
             with open("temp_structures.smi", "r") as smi:
