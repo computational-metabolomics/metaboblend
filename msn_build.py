@@ -209,6 +209,13 @@ def run_test(out_dir, ms_data, test_name, heavy_atoms, max_valence, accuracy, pp
 def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_atoms_available=2,
       minimum_frequency=None):
     """Run a test on MS2 data. See run_test."""
+    
+    db = SubstructureDb(db_path, "")
+    gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
+                   300, table_name="msn_subset",
+                   minimum_frequency=minimum_frequency)
+    add_small_substructures(db_path, "msn_subset")
+    db.close()
 
     for category in ms_data.keys():
         os.mkdir(os.path.join(out_dir, category))
@@ -221,13 +228,6 @@ def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_at
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
                 = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
-
-            db = SubstructureDb(db_path, "")
-            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
-                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
-                           minimum_frequency=minimum_frequency)
-            add_small_substructures(db_path, "msn_subset")
-            db.close()
             
             with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
                 rcsv = csv.writer(overall_results)
@@ -250,22 +250,21 @@ def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_at
 
 def D(out_dir, ms_data, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=2, minimum_frequency=None):
     """Run a test on the standard build method. See run_test."""
+    
+    db = SubstructureDb(db_path, "")
+    gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
+                   300, table_name="D_subset", minimum_frequency=minimum_frequency)
+    db.close()
 
     for category in ms_data.keys():
         for hmdb in ms_data[category].keys():
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
                 = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
 
-            db = SubstructureDb(db_path, "")
-            gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available,
-                           ms_data[category][hmdb]["neutral_precursor_ion_mass"], table_name="msn_subset",
-                           minimum_frequency=minimum_frequency)
-            db.close()
-
             build(ms_data[category][hmdb]["mc"], ms_data[category][hmdb]["exact_mass"],
                   "temp_structures.smi", heavy_atoms, max_valence, accuracy, max_atoms_available, 3,
                   path_db=db_path, path_db_k_graphs="../../Data/databases/k_graphs.sqlite",
-                  path_pkls="../../Data/databases/pkls", out_mode="w", table_name="msn_subset")
+                  path_pkls="../../Data/databases/pkls", out_mode="w", table_name="D_subset")
 
             i = -1
             with open("temp_structures.smi", "r") as smi:
