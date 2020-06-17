@@ -89,6 +89,7 @@ def update_mfrontier_database(mol, fn_db, path_sdfs):
         lib = get_substructure(mol, edge_idxs)
         if lib is None:
             continue
+
         smiles_rdkit = Chem.MolToSmiles(lib["mol"])
 
         exact_mass = calculate_exact_mass(lib["mol"])
@@ -113,53 +114,10 @@ def update_mfrontier_database(mol, fn_db, path_sdfs):
         sub_smi_dict.update(els)
         sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
 
-        cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                              smiles, 
-                                              heavy_atoms, 
-                                              length, 
-                                              exact_mass__1, 
-                                              exact_mass__0_1, 
-                                              exact_mass__0_01, 
-                                              exact_mass__0_001, 
-                                              exact_mass__0_0001, 
-                                              exact_mass, count, 
-                                              C, 
-                                              H, 
-                                              N, 
-                                              O, 
-                                              P, 
-                                              S, 
-                                              valence, 
-                                              valence_atoms, 
-                                              atoms_available, 
-                                              lib)
-                                          values (
-                                              :smiles,
-                                              :heavy_atoms,
-                                              :length,
-                                              :exact_mass__1,
-                                              :exact_mass__0_1,
-                                              :exact_mass__0_01,
-                                              :exact_mass__0_001,
-                                              :exact_mass__0_0001,
-                                              :exact_mass,
-                                              :count,
-                                              :C,
-                                              :H,
-                                              :N,
-                                              :O,
-                                              :P,
-                                              :S,
-                                              :valence,
-                                              :valence_atoms,
-                                              :atoms_available,:lib)
-                                       """, sub_smi_dict)
-
-        cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
-                                              hmdbid, 
-                                              smiles_rdkit) 
-                                          VALUES ("%s", "%s")
-                                       """ % (mol.GetProp("HMDB_ID"), smiles_rdkit))
+        cursor.execute("""INSERT OR IGNORE INTO smiles (
+                              hmdbid, 
+                              smiles_rdkit) 
+                          VALUES ("%s", "%s")""" % (mol.GetProp("HMDB_ID"), smiles_rdkit))
 
     conn.commit()
     conn.close()
@@ -176,7 +134,8 @@ def build_mfrontier_database(name, path_db, path_sdf):
     """
 
     db = SubstructureDb(path_db, "", "")
-    db.create_compound_database()
+    db.cursor.execute("DROP TABLE IF EXISTS smiles")
+    db.cursor.execute("CREATE TABLE smiles (hmdbid TEXT, smiles_rdkit TEXT, PRIMARY KEY (hmdbid, smiles_rdkit))")
     db.close()
 
     smi_to_id = {}
@@ -196,10 +155,6 @@ def build_mfrontier_database(name, path_db, path_sdf):
 
         update_mfrontier_database(mol, path_db, os.path.join(path_sdf, name + "_output_" + str(i + 1) + ".sdf"))
 
-    db = SubstructureDb(path_db, "", "")
-    db.create_indexes()
-    db.close()
-
 
 def incorporate_mfrontier_substructures(db_path, mfrontier_db_path):
     """
@@ -212,8 +167,16 @@ def incorporate_mfrontier_substructures(db_path, mfrontier_db_path):
 
     db = SubstructureDb(db_path, "")
     db.cursor.execute("attach database '%s' as mfrontier" % mfrontier_db_path)
+    try:
+        db.cursor.execute("""ALTER TABLE substructures
+                                 ADD mf INTEGER""")
+    except sqlite3.OperationalError:
+        pass
 
-    db.cursor.execute("drop table if exists mfrontier_substructures")
-    db.cursor.execute("""create table mfrontier_substructures as 
-                            select * from mfrontier.substructures""")
+    db.cursor.execute("""UPDATE substructures
+                                 SET mf = 0""")
+    db.cursor.execute("""UPDATE substructures
+                             SET mf = 1
+                             WHERE smiles in (select smiles_rdkit from mfrontier.smiles)""")
+    db.conn.commit()
     db.close()
