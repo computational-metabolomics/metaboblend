@@ -372,6 +372,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
         tolerance = 0.001
 
+        fragment_edges_only = False
+
     else:  # prescribed substructure build method
         loss = exact_mass - fragment_mass
         exact_mass__1 = round(loss)
@@ -385,6 +387,8 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
         max_n_substructures -= 1  # we find sets of mols that add up to the loss, not the precursor mass
 
+        fragment_edges_only = True
+
     if os.name == "nt":  # multiprocessing freeze support on windows
         multiprocessing.freeze_support()
 
@@ -395,7 +399,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
     else:
         subsets = list(subset_sum(mass_values, exact_mass__1, max_n_substructures))
 
-    configs_iso = db.k_configs()
+    configs_iso = db.k_configs(fragment_edges_only)
     out = open(fn_out, out_mode)
 
     if debug:
@@ -628,8 +632,7 @@ def lll_build(lll, configs_iso, debug):
         print("## Type of bonds to form:", bond_types)
 
     iso_n = 0
-    for edges in paths(configs_iso[str(vA)]):  # build mols for each graph in connectivity db
-
+    for edges in configs_iso[str(vA)]:  # build mols for each graph in connectivity db
         iso_n += 1
         if debug:
             print("## ISO {}".format(iso_n))

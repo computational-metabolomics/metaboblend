@@ -94,6 +94,6 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
 
 
 if __name__ == "__main__":
-    # build_graph_isomorphism_database()
+    build_graph_isomorphism_database()
     build_substructure_database(["HMDB0000001", "HMDB0000005", "HMDB0000008", "HMDB0000122"], "input")
     build_structures()

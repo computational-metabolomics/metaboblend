@@ -61,9 +61,9 @@ class BuildStructuresTestCase(unittest.TestCase):
     def test_build(self):
         db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
                             to_test_result("connectivity", "k_graphs.sqlite"))
-        smis = [{'NCCc1cc(O)cc(O)c1', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1'},
+        smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
                 None,
-                {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
+                {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O'},
                 None]
 
         std_lens = [15, 76, 5, 1920]
@@ -91,14 +91,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                         j += 1
                         unique_smis.add(line.split()[0])
 
-                        substructures = eval("".join(line.split()[1:]))
-
-                        for k, substructure in enumerate(substructures):
-                            self.assertLessEqual(k, 2)
-                            mol = Chem.MolFromSmiles(substructure, False)
-                            if mol is not None:
-                                self.assertTrue(mol.GetNumHeavyAtoms() in range(4, 9))
-
                 self.assertEqual(j, std_lens[i])
 
                 if smis[i] is not None:
@@ -122,14 +114,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
-
-                        substructures = eval("".join(line.split()[1:]))
-
-                        for k, substructure in enumerate(substructures):
-                            self.assertLessEqual(k, 2)
-                            mol = Chem.MolFromSmiles(substructure, False)
-                            if mol is not None:
-                                self.assertTrue(mol.GetNumHeavyAtoms() in range(4, 9))
 
                 if i == 0:
                     self.assertEqual(unique_smis, {'NCCc1ccc(O)c(O)c1'})
