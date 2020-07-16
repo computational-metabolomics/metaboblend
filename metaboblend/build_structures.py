@@ -573,27 +573,6 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         lls += itertools.product(*ll)  # get the combinations of retrieved substructures
 
 
-def paths(tree, cur=()):
-    """
-    Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
-    to be used to connect substructures together to generate molecules.
-
-    :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
-
-    :param cur: Tuple for results to be appended to.
-
-    :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
-    """
-
-    if tree == {}:
-        yield cur
-
-    else:
-        for n, s in tree.items():
-            for path in paths(s, cur + (n,)):
-                yield path
-
-
 def lll_build(lll, configs_iso, debug):
     """
     Final stage for building molecules; takes a combination of substructures (lll) and builds them according to

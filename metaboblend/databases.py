@@ -418,11 +418,13 @@ class SubstructureDb:
 
         return self.cursor.fetchall()
 
-    def k_configs(self):
+    def k_configs(self, fragment_edges_only=False):
         """
         Obtains strings detailing the valences for each substructure in a connectivity graph and the ID of the related
         PKL file. Used to match a set of substructures to the correct set of non-isomorphic graphs in the connectivity
         database.
+
+        :param fragment_edges_only: If true, only include sets of edges that connect to the fragment ion.
 
         :return: Dictionary containing the valences as keys and PKL IDs as values.
         """
@@ -434,9 +436,50 @@ class SubstructureDb:
         configs = {}
 
         for record in records:
-            configs[str(record[1])] = pickle.loads(record[0])
+            configs[str(record[1])] = []
+            fragment_atoms = [i for i in range(len(eval(record[1])[0]))]
+
+            for path in self.paths(pickle.loads(record[0])):
+                if fragment_edges_only:
+                    all_bonds_connect_to_fragment = True
+
+                    for edge in path:
+                        if edge[0] not in fragment_atoms and edge[1] not in fragment_atoms:
+                            all_bonds_connect_to_fragment = False
+
+                    # check that all bonds connect to fragment ion
+                    if all_bonds_connect_to_fragment:
+                        configs[str(record[1])].append(path)
+
+                else:
+                    # for normal building, there is no fragment ion
+                    configs[str(record[1])].append(path)
+
+            # delete keys for which there are no valid edge sets
+            if len(configs[str(record[1])]) == 0:
+                del configs[str(record[1])]
 
         return configs
+
+    def paths(self, tree, cur=()):
+        """
+        Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
+        to be used to connect substructures together to generate molecules.
+
+        :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
+
+        :param cur: Tuple for results to be appended to.
+
+        :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
+        """
+
+        if tree == {}:
+            yield cur
+
+        else:
+            for n, s in tree.items():
+                for path in self.paths(s, cur + (n,)):
+                    yield path
 
     def select_sub_structures(self, l_atoms, table_name):
         """
