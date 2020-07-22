@@ -540,7 +540,7 @@ def build_from_subsets(ss2_grp, mc, table_name, db, ppm=None, debug=False,):
     list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
     if len(list_ecs) == 0:
-        return
+        return []
 
     iii = 0
     for l in itertools.product(*list_ecs):
@@ -576,7 +576,6 @@ def build_from_subsets(ss2_grp, mc, table_name, db, ppm=None, debug=False,):
         if debug:
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
-        # ll is list of list of dictionaries
         lls.append(ll)  # get the combinations of retrieved substructures
 
     return lls
@@ -587,7 +586,7 @@ def lll_build(ll, configs_iso, debug):
     Final stage for building molecules; takes a combination of substructures (lll) and builds them according to
     graphs in the substructure database. May be run in parallel.
 
-    :param lll: Combinations of substructures for building mols.
+    :param ll: Combinations of substructures for building mols.
         :param debug: Debug print statements provide further information on how the function is generating the connectivity
         database.
 
