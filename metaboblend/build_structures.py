@@ -433,7 +433,7 @@ def build(mc, exact_mass, fn_out, heavy_atoms, max_valence, accuracy, max_atoms_
 
         lls = []
         for ss_grp2 in subsets_r2:  # refines groups based on ecs and gets substructures from db (appends to lls)
-            build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm, debug=debug, db=db, lls=lls)
+            lls += build_from_subsets(ss_grp2, mc=mc, table_name=table_name, ppm=ppm, debug=debug, db=db)
 
         with multiprocessing.Pool(processes=processes) as pool:  # send sets of substructures for building
             smi_list = pool.map(partial(lll_build, debug=debug, configs_iso=configs_iso), lls)
@@ -501,7 +501,7 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, 
     return table_name
 
 
-def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=False,):
+def build_from_subsets(ss2_grp, mc, table_name, db, ppm=None, debug=False,):
     """
     A stage of the :py:meth:`metaboblend.build_structures.build` workflow for generating molecules to a given mass
     from substructures. At this stage, mass subsets have been identified in the substructure database. Each of these
@@ -534,6 +534,8 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         prefiltered table based on the parameters specified in :py:meth:`metaboblend.build_structures.build`. See
         :py:meth:`metaboblend.build_structures.gen_subs_table`.
     """
+
+    lls = []
 
     list_ecs = combine_ecs(ss2_grp, db, table_name, "0_0001", ppm)
 
@@ -574,10 +576,13 @@ def build_from_subsets(ss2_grp, mc, table_name, db, lls=[], ppm=None, debug=Fals
         if debug:
             print("## {} substructure combinations".format(len(list(itertools.product(*ll)))))
 
-        lls += itertools.product(*ll)  # get the combinations of retrieved substructures
+        # ll is list of list of dictionaries
+        lls.append(ll)  # get the combinations of retrieved substructures
+
+    return lls
 
 
-def lll_build(lll, configs_iso, debug):
+def lll_build(ll, configs_iso, debug):
     """
     Final stage for building molecules; takes a combination of substructures (lll) and builds them according to
     graphs in the substructure database. May be run in parallel.
@@ -598,74 +603,75 @@ def lll_build(lll, configs_iso, debug):
 
     smis = ""
 
-    if debug:
-        for record in lll:
-            print(record)
-        print("---------------")
-
-    lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
-
-    vA = ()
-    for d in lll:
-        vA += (tuple(d["degree_atoms"].values()),)  # obtain valence configuration of the set of substructures
-
-    if str(vA) not in configs_iso:  # check mols "fit" together according to the connectivity database
+    for lll in itertools.product(*ll):
         if debug:
-            print("NO:", str(vA))
-            print("============")
-        return ""
+            for record in lll:
+                print(record)
+            print("---------------")
 
-    else:
-        if debug:
-            print("YES:", str(vA))
-            print("============")
+        lll = sorted(lll, key=itemgetter('atoms_available', 'valence'))
 
-    mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
+        vA = ()
+        for d in lll:
+            vA += (tuple(d["degree_atoms"].values()),)  # obtain valence configuration of the set of substructures
 
-    if bond_mismatch:
-        return ""  # check that bond types are compatible (imperfect check)
-
-    if debug:
-        print("## Mols (in memory):", mol_comb)
-        print("## Atoms Available (indexes):", atoms_available)
-        print("## Atoms to remove (dummies):", atoms_to_remove)
-        print("## Type of bonds to form:", bond_types)
-
-    iso_n = 0
-    for edges in configs_iso[str(vA)]:  # build mols for each graph in connectivity db
-        iso_n += 1
-        if debug:
-            print("## ISO {}".format(iso_n))
-
-        if debug:
-            print("1: Add bonds")
-
-        mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)  # add bonds between substructures
-
-        if mol_e is None:
-            continue
-        if debug:
-            print("2: Add bonds")
-
-        atoms_to_remove.sort(reverse=True)
-        [mol_e.RemoveAtom(a) for a in atoms_to_remove]  # clean up dummy atoms
-
-        molOut = mol_e.GetMol()  # generate the final (non-editable) mol
-
-        try:
-            Chem.SanitizeMol(molOut)  # clean the mol - ensure it is valid & canonical
-        except:
+        if str(vA) not in configs_iso:  # check mols "fit" together according to the connectivity database
             if debug:
-                print("Can't sanitize mol ISO: {}".format(iso_n))
+                print("NO:", str(vA))
+                print("============")
             continue
 
-        try:  # append the canonical smiles of the final structure
-            smis += "{}\n".format(Chem.MolToSmiles(molOut))
-        except RuntimeError:
+        else:
             if debug:
-                print("Bad bond type violation")
+                print("YES:", str(vA))
+                print("============")
+
+        mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
+
+        if bond_mismatch:
+            continue  # check that bond types are compatible (imperfect check)
 
         if debug:
-            print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
+            print("## Mols (in memory):", mol_comb)
+            print("## Atoms Available (indexes):", atoms_available)
+            print("## Atoms to remove (dummies):", atoms_to_remove)
+            print("## Type of bonds to form:", bond_types)
+
+        iso_n = 0
+        for edges in configs_iso[str(vA)]:  # build mols for each graph in connectivity db
+            iso_n += 1
+            if debug:
+                print("## ISO {}".format(iso_n))
+
+            if debug:
+                print("1: Add bonds")
+
+            mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)  # add bonds between substructures
+
+            if mol_e is None:
+                continue
+            if debug:
+                print("2: Add bonds")
+
+            atoms_to_remove.sort(reverse=True)
+            [mol_e.RemoveAtom(a) for a in atoms_to_remove]  # clean up dummy atoms
+
+            molOut = mol_e.GetMol()  # generate the final (non-editable) mol
+
+            try:
+                Chem.SanitizeMol(molOut)  # clean the mol - ensure it is valid & canonical
+            except:
+                if debug:
+                    print("Can't sanitize mol ISO: {}".format(iso_n))
+                continue
+
+            try:  # append the canonical smiles of the final structure
+                smis += "{}\n".format(Chem.MolToSmiles(molOut))
+            except RuntimeError:
+                if debug:
+                    print("Bad bond type violation")
+
+            if debug:
+                print("## smi (result): {}".format(Chem.MolToSmiles(molOut)))
 
     return smis
