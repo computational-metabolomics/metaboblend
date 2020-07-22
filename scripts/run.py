@@ -13,27 +13,21 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     # http://pallini.di.uniroma1.it/
 
     if sys.platform == "win32" or sys.platform == "win64":
-        path_geng = os.path.join(path, "tools", "nauty25r9_win", "geng")
         path_ri = os.path.join(path, "tools", "RI_win", "RI3.6-release", "ri36")
 
     elif sys.platform == "darwin":
-        path_geng = os.path.join(path, "tools", "nauty25r9_mac", "geng")
         path_ri = os.path.join(path, "tools", "RI_mac", "RI3.6-release", "ri36")
 
     elif sys.platform == "linux2":
         if "bb" in "socket.gethostname":
-            path_geng = os.path.join(path, "tools", "nauty25r9_unix", "geng")
             path_ri = os.path.join(path, "tools", "RI_unix", "RI3.6-release", "ri36")
         else:
-            path_geng = os.path.join(path, "tools", "nauty25r9_bb", "geng")
             path_ri = os.path.join(path, "tools", "RI_bb", "RI3.6-release", "ri36")
 
     elif sys.platform == "linux":
-        path_geng = os.path.join(path, "tools", "nauty25r9_unix", "geng")
         path_ri = os.path.join(path, "tools", "RI_unix", "RI3.6-release", "ri36")
 
     else:
-        path_geng = os.path.join(path, "geng")
         path_ri = os.path.join(path, "ri36")
 
     print("==================================")
@@ -41,7 +35,8 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     print(pkls_out)
     print(sizes, boxes)
     print("==================================")
-    create_isomorphism_database(db_out, pkls_out, boxes, sizes, path_geng, path_ri)
+
+    create_isomorphism_database(db_out, boxes, sizes, path_ri)
 
 
 def build_substructure_database(records, path_input, path_db="../databases/substructures.sqlite", n_min=2,
