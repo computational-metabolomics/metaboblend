@@ -3,6 +3,7 @@ import sys
 import urllib.request
 import csv
 import tempfile
+import datetime
 import networkx as nx
 from rdkit import Chem
 from shutil import rmtree
@@ -68,12 +69,14 @@ def test_build(out_dir, mc, exact_mass, mol, hmdb_id, path_subs, path_k_graphs, 
         smi_out = os.path.join(out_dir, "{}_".format(hmdb_id) + str(round(fragment_mass, 4)) + ".smi")
         open(smi_out, "w").close()
 
+        single_build = datetime.datetime.now()
         for j in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
             hydrogenated_fragment_mass = fragment_mass + (j * 1.007825)
             build(mc, exact_mass, smi_out, heavy_atoms, max_valence, accuracy, max_atoms_available, max_n_substructures,
                   path_k_graphs, path_pkls, path_subs, hydrogenated_fragment_mass, ppm, out_mode="a",
                   table_name="msn_subset")
-
+        print("single_build_time = " + str(datetime.datetime.now() - single_build))
+        
         get_uniq_subs(smi_out, ignore_substructures=True)
         with open(smi_out, mode="r") as smis:
             for line in smis:
@@ -229,6 +232,8 @@ def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_at
                 = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
             
+            print(hmdb)
+            test_build_start = datetime.datetime.now()
             with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
                 rcsv = csv.writer(overall_results)
 
@@ -246,6 +251,7 @@ def C(out_dir, ms_data, heavy_atoms, max_valence, accuracy, ppm, db_path, max_at
                     ppm=ppm,
                     max_atoms_available=max_atoms_available
                 ))
+            print("test_build_time = " + str(datetime.datetime.now() - test_build_start))
 
 
 def D(out_dir, ms_data, heavy_atoms, max_valence, accuracy, db_path, max_atoms_available=2, minimum_frequency=None):
