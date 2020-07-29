@@ -436,7 +436,8 @@ def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_s
         subsets = list(subset_sum(mass_values, exact_mass__1, max_n_substructures))
 
     configs_iso = db.k_configs(fragment_edges_only)
-    out = open(fn_out, out_mode)
+    if smi_out is not None:
+        out = open(smi_out, out_mode)
 
     lls = []
     for ss_grp in subsets:
@@ -470,8 +471,16 @@ def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_s
         if len(smis) != 0:
             out.writelines(smis)
 
-    out.close()
+        out.close()
+
     db.close()
+
+    if return_smis:
+        return smis
+    elif smi_out is not None:
+        return smi_out
+    else:
+        return None
 
 
 def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures",
