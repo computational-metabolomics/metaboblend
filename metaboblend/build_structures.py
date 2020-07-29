@@ -291,16 +291,17 @@ def annotate_msn(msn_data, fn_out, heavy_atoms, max_valence, max_atoms_available
 def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_substructures,
                         smi_out=None, path_connectivity_db="../databases/k_graphs.sqlite",
                         path_substructure_db="../databases/substructures.sqlite", prescribed_substructure_mass=None,
-                        processes=None, minimum_frequency=None):
+                        processes=None, minimum_frequency=None, return_smi_list=True):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results. Final structures are returned as a list and/or
     written in text format.
 
     :param mc: List of integers detailing the molecular composition of the target metabolite, in the format
-        [C, H, N, O, P, S].
+        [C, H, N, O, P, S]. Can also be a list of elemental composition lists for generating multiple structures; in
+        this case, exact_mass must also be a list of the same length.
 
-    :param exact_mass: The exact mass of the target metabolite.
+    :param exact_mass: The exact mass of the target metabolite, or list of masses.
 
     :param smi_out: The path of the file to which unique smile strings should be written representing the final
         structures generated. If None, no file is written.
@@ -329,14 +330,38 @@ def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_avai
     :param minimum_frequency: The minimum frequency of substructures in table_name; e.g. substructures have a frequency
         of 1 if they are unique.
 
+    :param return_smi_list: Whether to yield a list of smiles for each input.
+
     :return: Returns a list of unique smiles.
     """
 
-    return build(mc=mc, exact_mass=exact_mass, heavy_atoms=heavy_atoms, max_valence=max_valence,
-                 max_atoms_available=max_atoms_available, max_n_substructures=max_n_substructures, smi_out=smi_out,
-                 path_connectivity_db=path_connectivity_db, path_substructure_db=path_substructure_db,
-                 fragment_mass=prescribed_substructure_mass, ppm=None, out_mode="w", table_name=None,
-                 minimum_frequency=minimum_frequency, return_smis=True, processes=processes)
+    if isinstance(mc[1], list) and isinstance(exact_mass, list):  # single input
+        mc, exact_mass = [mc], [exact_mass]
+        return_not_yield = True
+    elif isinstance(mc[1], int) and isinstance(exact_mass, int):  # multiple input
+        return_not_yield = False
+    else:
+        raise ValueError("either pass a single input to mc and exact_mass, or lists of the same length")
+
+    # prepare temporary table here - will only be generated once in case of multiple input
+    db = SubstructureDb(path_substructure_db, path_connectivity_db)
+    table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(max(exact_mass)),
+                                minimum_frequency=minimum_frequency)
+    db.close()
+
+    for curr_mc, curr_exact_mass in zip(mc, exact_mass):
+        smi_list = build(mc=curr_mc, exact_mass=curr_exact_mass, heavy_atoms=heavy_atoms, max_valence=max_valence,
+                         max_atoms_available=max_atoms_available, max_n_substructures=max_n_substructures,
+                         smi_out=smi_out, path_connectivity_db=path_connectivity_db,
+                         path_substructure_db=path_substructure_db, fragment_mass=prescribed_substructure_mass,
+                         ppm=None, out_mode="w", table_name=table_name, minimum_frequency=minimum_frequency,
+                         return_smis=return_smi_list, processes=processes)
+
+        if return_smi_list and not return_not_yield:
+            yield smi_list
+
+    if return_smi_list and return_not_yield:
+        return smi_list
 
 
 def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_substructures, smi_out,
