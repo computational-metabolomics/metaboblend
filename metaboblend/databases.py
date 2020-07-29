@@ -183,7 +183,8 @@ class SubstructureDb:
         else:
             sql = ""
 
-        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles FROM compounds%s""" % sql)
+        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles 
+                               FROM compounds%s""" % sql)
 
         return self.cursor.fetchall()
 
@@ -616,7 +617,7 @@ class SubstructureDb:
         self.conn.close()
 
 
-def get_substructure(mol, idxs_edges_subgraph, debug=False):
+def get_substructure(mol, idxs_edges_subgraph):
     """
     Generates information for the substructure database from a reference molecule and the bond IDs of a substructure.
 
@@ -649,13 +650,6 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
         * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
             represented by `*`.
-
-        :param debug: Debug print statements provide further information on how the function is generating the connectivity
-            database.
-
-            * **True** Print debug statements.
-
-            * **False** Hide debug print statements.
     """
 
     # convert list of bond indices to list of atom indices
@@ -714,11 +708,6 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     bond_types = {}
 
     for b in mol_out.GetBonds():
-        if debug:
-            print(b.GetBondTypeAsDouble())
-            print(b.GetBondType())
-            print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
-                  mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
         # use bond types to dummy atoms to inform future structure building from compatible substructures
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
@@ -789,9 +778,9 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     exact_mass = 0.0
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
-        atomSymbol = atom.GetSymbol()
-        if atomSymbol != "*":
-            exact_mass += exact_mass_elements[atomSymbol]
+        atom_symbol = atom.GetSymbol()
+        if atom_symbol != "*":
+            exact_mass += exact_mass_elements[atom_symbol]
 
     return exact_mass
 
@@ -984,6 +973,14 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
         return subset_sgs_sizes([sgs], n_min, n_max)
 
 
+def create_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive", max_atoms_available=None,
+                                 max_valence=None, substructures_only=False):
+    """
+    Creates a substructure database before using update_substructure_database to add entries. For parameter explanations, see
+    update_substructure_database. Also creates indexes on the final database.
+    """
+
+
 def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive",
                                  max_atoms_available=None, max_valence=None, substructures_only=False):
     """
@@ -1129,11 +1126,11 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
     conn.close()
 
 
-def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available, path_RI=None, debug=False):
+def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available, path_ri=None):
     """
     Generates a connectivity database containing sets of possible combinations of substructures; also generates PKL
     files containing the graphs required for building molecules from substructures. The connectivity database is
-    required to build moelcules from substructures.
+    required to build molecules from substructures.
 
     :param db_out: The path of the SQLite 3 database to be generated.
 
@@ -1143,14 +1140,7 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
     :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertice) in each
         substructure for bonding. At least one atom must be available for bonding for a graph to be created.
 
-    :param path_RI: The path of RI, a tool for verifying subgraph isomorphism.
-
-    :param debug: Debug print statements provide further information on how the function is generating the connectivity
-        database.
-
-        * **True** Print debug statements.
-
-        * **False** Hide debug print statements.
+    :param path_ri: The path of RI, a tool for verifying subgraph isomorphism.
     """
     
     conn = sqlite3.connect(db_out)
@@ -1174,13 +1164,11 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
 
     id_pkl = 0
 
-    for G, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
+    for g, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
 
         # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
-        if debug:
-            print(["geng", str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
-        proc = subprocess.Popen(["geng", str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+        proc = subprocess.Popen(["geng", str(len(g.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)  # max valence for single atom of 2
         geng_out, err = proc.communicate()
 
         proc.stdout.close()
@@ -1188,23 +1176,20 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
 
         # pipe geng output to RI to generate mappings (complete set of non-isomorphic configurations)
         for i, line_geng in enumerate(geng_out.split()):
-            
-            if debug:
-                print(line_geng)
 
-            sG = nx.read_graph6(io.BytesIO(line_geng))
+            s_g = nx.read_graph6(io.BytesIO(line_geng))
 
             k_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
-            k_gfu.write(graph_to_ri(G, "k_graph"))
+            k_gfu.write(graph_to_ri(g, "k_graph"))
             k_gfu.seek(0)
 
             s_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
-            s_gfu.write(graph_to_ri(sG, "subgraph"))
+            s_gfu.write(graph_to_ri(s_g, "subgraph"))
             s_gfu.seek(0)
 
-            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
+            proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            RI_out, err = proc.communicate()
+            ri_out, err = proc.communicate()
 
             k_gfu.close()
             s_gfu.close()
@@ -1212,12 +1197,12 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
             mappings = []
             subgraphs = {}
 
-            for line in RI_out.decode("utf-8").splitlines():
+            for line in ri_out.decode("utf-8").splitlines():
                 if line[0] == "{":
                     mappings.append(eval(line))
 
             if len(mappings) > 0:
-                gi = graph_info(p, sG, mappings, )  # convert mappings to valence/connectivity specifications
+                gi = graph_info(p, s_g, mappings, )  # convert mappings to valence/connectivity specifications
 
                 for vn in gi:
                     if vn not in subgraphs:
@@ -1233,19 +1218,12 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
                     subgraphs[vn] = sort_subgraphs(subgraphs[vn])  # sort to remove duplicate configurations
                     root = {}  # graph to be pickled
 
-                    if debug:
-                        col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
-                        col_plt.show()
-
                     for fr in subgraphs[vn]:
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    if debug:
-                        print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
-                              sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
                     cursor.execute("""INSERT INTO subgraphs (
@@ -1266,8 +1244,8 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
                                           str(p),
                                           str(vt),
                                           str(vn),
-                                          sG.number_of_nodes(),
-                                          sG.number_of_edges(),
+                                          s_g.number_of_nodes(),
+                                          s_g.number_of_edges(),
                                           pickle.dumps(root)))
 
             conn.commit()
