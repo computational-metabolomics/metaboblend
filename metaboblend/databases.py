@@ -384,7 +384,7 @@ class SubstructureDb:
 
         return mass_values
 
-    def select_ecs(self, exact_mass, table_name, accuracy, ppm=None):
+    def select_ecs(self, exact_mass, table_name, accuracy):
         """
         Select elemental compositions based on an exact mass; allows for inexact mass searches based on error (ppm).
 
@@ -397,25 +397,15 @@ class SubstructureDb:
             * **1** Integer level
             * **0_0001** Four decimal places
 
-        :param ppm: The allowable error of the query (in parts per million).
-
         :return: Returns the elemental compositions associated with the `exact_mass` via
             :py:meth:`sqlite3.connection.cursor.fetchall`; essentially provides a list containing a list for the values
             of each row (C, H, N, O, P, S).
         """
 
-        if ppm is None:
-            mass_statement = "= " + str(exact_mass)
-        else:
-            tolerance = (exact_mass / 1000000) * ppm
-            mass_statement = "< {} AND exact_mass__{} > {}".format(exact_mass + tolerance,
-                                                                   accuracy,
-                                                                   exact_mass - tolerance)
-
         self.cursor.execute("""SELECT DISTINCT C, H, N, O, P, S
                                    FROM {} 
-                                   WHERE exact_mass__{} {}
-                            """.format(table_name, accuracy, mass_statement))
+                                   WHERE exact_mass__{} = {}
+                            """.format(table_name, accuracy, str(exact_mass)))
 
         return self.cursor.fetchall()
 

@@ -71,7 +71,7 @@ def build_structures(accuracy=1, heavy_atoms=range(2, 9), max_valence=4, max_ato
 
         # build & write structures
         build(list(record[3:9]), record[1], fn_out, heavy_atoms, max_valence, accuracy, max_atoms_available,
-              max_n_substructures, debug=debug, path_db_k_graphs=path_db_k_graphs, path_pkls=path_pkls, path_db=path_db)
+              max_n_substructures, debug=debug, path_connectivity_db=path_db_k_graphs, path_pkls=path_pkls, path_substructure_db=path_db)
 
         # write figures to svg files
         with open(fn_out) as smiles:
