@@ -81,8 +81,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
                       fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
                       max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
-                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
+                      path_connectivity_db=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_substructure_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
@@ -105,8 +105,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
                       fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
                       accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
-                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
+                      path_connectivity_db=to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=to_test_result("connectivity", "pkls"), path_substructure_db=to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
