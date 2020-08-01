@@ -23,44 +23,46 @@
 import os
 import unittest
 import zipfile
-from shutil import copyfile
 from metaboblend.databases import *
 
 
-def to_test_result(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
-
-
 class DatabasesTestCase(unittest.TestCase):
+    temp_results_dir = None
+    temp_results_name = None
+
+    @classmethod
+    def to_test_result(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(to_test_result())
+        cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
+        cls.temp_results_name = cls.temp_results_dir.name
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "connectivity.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "test_mols.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "substructures.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
     def test_init(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
+                            self.to_test_result("connectivity", "k_graphs.sqlite"))
 
         db.cursor.execute("SELECT * FROM substructures")
         first_row = db.cursor.fetchone()[0:17]
@@ -88,7 +90,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_select_compounds(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         for i, cpd_entry in enumerate(db.select_compounds(["HMDB0000158", "HMDB0000122"])):
             self.assertLessEqual(i, 2)
             self.assertTrue(cpd_entry[0] == "HMDB0000158" or cpd_entry[0] == "HMDB0000122")
@@ -96,7 +98,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_filter_hmdbid_substructures(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         db.filter_hmdbid_substructures(2)
         db.cursor.execute("SELECT * FROM unique_hmdbid")
         self.assertEqual(db.cursor.fetchall(), [('HMDB0000073',), ('HMDB0000122',), ('HMDB0000158',), ('HMDB0000186',)])
@@ -109,7 +111,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_generate_substructure_network(self):  # also tests close
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         std = db.generate_substructure_network(method="default", min_node_weight=2, remove_isolated=False)
         extended = db.generate_substructure_network(method="extended", min_node_weight=2, remove_isolated=False)
         parent = db.generate_substructure_network(method="parent_structure_linkage", min_node_weight=2,
@@ -147,14 +149,14 @@ class DatabasesTestCase(unittest.TestCase):
 
         self.assertRaises(sqlite3.ProgrammingError, lambda: db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'"))
 
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         self.assertEqual(len(db.cursor.fetchall()), 3)
 
         db.close()
 
     def test_select_mass_values(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         ests = db.select_mass_values("1", [], "substructures")
         exacts = db.select_mass_values("0_0001", [], "substructures")
 
@@ -180,7 +182,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_select_ecs(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         self.assertEqual(db.select_ecs(107.0735, "substructures", "0_0001", ppm=None), [(7, 9, 1, 0, 0, 0)])
         self.assertEqual(db.select_ecs(107.0735, "substructures", "1", ppm=None), [])
         self.assertEqual(db.select_ecs(107, "substructures", "0_0001", ppm=None), [])
@@ -197,8 +199,8 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_k_configs(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
+                            self.to_test_result("connectivity", "k_graphs.sqlite"))
 
         k_configs = db.k_configs()
         self.assertEqual(len(k_configs), 67)
@@ -212,7 +214,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_select_sub_structures(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         self.assertEqual(db.select_sub_structures([[2, 5, 0, 0, 0, 0]], "substructures"), [])
         self.assertEqual(len(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0]), 7)
         self.assertEqual(list(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].keys()),
@@ -234,7 +236,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_create_compound_database(self):  # also tests create_indexes
-        db = SubstructureDb(to_test_result("substructures_new.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures_new.sqlite"), "")
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         self.assertEqual(len(db.cursor.fetchall()), 3)
@@ -242,9 +244,9 @@ class DatabasesTestCase(unittest.TestCase):
         db.create_indexes()
         db.close()
 
-        copyfile(to_test_result("substructures.sqlite"), to_test_result("substructures_copy.sqlite"))
-        db = SubstructureDb(to_test_result("substructures_copy.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
+        shutil.copyfile(self.to_test_result("substructures.sqlite"), self.to_test_result("substructures_copy.sqlite"))
+        db = SubstructureDb(self.to_test_result("substructures_copy.sqlite"), self.to_test_result("connectivity", "pkls"),
+                            self.to_test_result("connectivity", "k_graphs.sqlite"))
         db.create_indexes()
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -269,48 +271,8 @@ class DatabasesTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(to_test_result()):
-            if os.path.isdir(to_test_result("connectivity")):
-                if os.path.isdir(to_test_result("connectivity", "pkls")):
-                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                            os.remove(to_test_result("connectivity", "pkls", pkl))
-
-                    os.rmdir(to_test_result("connectivity", "pkls"))
-
-                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-                os.rmdir(to_test_result("connectivity"))
-
-            if os.path.isdir(to_test_result("test_mols")):
-                if os.path.isfile(to_test_result("test_mols", "test_hmdbs.dictionary")):
-                    os.remove(to_test_result("test_mols", "test_hmdbs.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
-                    os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
-
-                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
-                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
-
-                if os.path.isdir(to_test_result("test_mols", "hmdb")):
-                    for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
-                        os.remove(to_test_result("test_mols", "hmdb", hmdb_xml))
-
-                    os.rmdir(to_test_result("test_mols", "hmdb"))
-
-                os.rmdir(to_test_result("test_mols"))
-
-            if os.path.isfile(to_test_result("substructures.sqlite")):
-                os.remove((to_test_result("substructures.sqlite")))
-
-            if os.path.isfile(to_test_result("substructures_new.sqlite")):
-                os.remove((to_test_result("substructures_new.sqlite")))
-
-            if os.path.isfile(to_test_result("substructures_copy.sqlite")):
-                os.remove((to_test_result("substructures_copy.sqlite")))
-
-            os.rmdir(to_test_result())
+        if cls.temp_results_dir is not None:
+            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

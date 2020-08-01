@@ -27,41 +27,44 @@ import pickle
 from metaboblend.databases import *
 
 
-def to_test_result(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
-
-
 class DatabasesTestCase(unittest.TestCase):
+    temp_results_dir = None
+    temp_results_name = None
+
+    @classmethod
+    def to_test_result(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(to_test_result())
+        cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
+        cls.temp_results_name = cls.temp_results_dir.name
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "connectivity.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "test_mols.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "substructures.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
     def test_reformat_xml(self):
-        reformat_xml(to_test_result("test_mols", "HMDB0000073.xml"))
+        reformat_xml(self.to_test_result("test_mols", "HMDB0000073.xml"))
 
-        with open(to_test_result("test_mols", "HMDB0000073.xml"), "r", encoding="utf-8") as fn_hmdb:
+        with open(self.to_test_result("test_mols", "HMDB0000073.xml"), "r", encoding="utf-8") as fn_hmdb:
             xml_contents = fn_hmdb.readlines()
 
             self.assertTrue("hmdb" in xml_contents[1])
@@ -76,11 +79,11 @@ class DatabasesTestCase(unittest.TestCase):
                 "N[C@@H](CC1=CC=C(O)C=C1)C(O)=O",
                 "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@H]1O"]
 
-        with open(to_test_result("test_mols", "parsed_records.dictionary"), "rb") as parsed:
+        with open(self.to_test_result("test_mols", "parsed_records.dictionary"), "rb") as parsed:
             parsed_records = pickle.load(parsed)
 
-        for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
-            for record_out in parse_xml(to_test_result("test_mols", "hmdb", hmdb_xml)):
+        for hmdb_xml in os.listdir(self.to_test_result("test_mols", "hmdb")):
+            for record_out in parse_xml(self.to_test_result("test_mols", "hmdb", hmdb_xml)):
                 ref = [i for i, hmdb in enumerate(hmdbs) if hmdb == hmdb_xml.replace(".xml", "")][0]
 
                 self.assertEqual(len(record_out), lengths[ref])
@@ -90,10 +93,10 @@ class DatabasesTestCase(unittest.TestCase):
                 self.assertEqual(record_out, parsed_records[hmdb_xml])
 
     def test_filter_records(self):
-        with open(to_test_result("test_mols", "parsed_records.dictionary"), "rb") as p:
+        with open(self.to_test_result("test_mols", "parsed_records.dictionary"), "rb") as p:
             parsed_records = pickle.load(p)
 
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             filtered_records = pickle.load(test_hmdbs)
 
         record_gen = filter_records(parsed_records.values())
@@ -105,7 +108,7 @@ class DatabasesTestCase(unittest.TestCase):
         self.assertEqual(test_filtered_records, filtered_records)
 
     def test_get_substructure_bond_idx(self):
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dict = pickle.load(test_hmdbs)["HMDB0000186"]
             mol = Chem.MolFromSmiles(record_dict["smiles"])
 
@@ -128,7 +131,7 @@ class DatabasesTestCase(unittest.TestCase):
         self.assertEqual(len(subset_sgs_sizes(sgs, 0, 10)), 0)
 
     def test_get_sgs(self):
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dict = pickle.load(test_hmdbs)["HMDB0000186"]
             record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
             mol_ids = [bond.GetIdx() for bond in record_dict["mol"].GetBonds()]
@@ -152,7 +155,7 @@ class DatabasesTestCase(unittest.TestCase):
                 [self.assertTrue(bond in mol_ids) for bond in edge_set]
 
     def test_get_substructure(self):
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dict = pickle.load(test_hmdbs)["HMDB0000186"]
             mol = Chem.MolFromSmiles(record_dict["smiles"])
 
@@ -173,7 +176,7 @@ class DatabasesTestCase(unittest.TestCase):
                         {'C': 9, 'H': 11, 'N': 1, 'O': 3, 'P': 0, 'S': 0, '*': 0},
                         {'C': 12, 'H': 22, 'N': 0, 'O': 11, 'P': 0, 'S': 0, '*': 0}]
 
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
             for i, record_dict in enumerate(record_dicts.values()):
                 mol = Chem.MolFromSmiles(record_dict["smiles"])
@@ -183,14 +186,14 @@ class DatabasesTestCase(unittest.TestCase):
     def test_calculate_exact_mass(self):
         masses = [153.07897899999998, 180.06338999999997, 181.07389399999997, 342.1162150000005]
 
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
             for i, record_dict in enumerate(record_dicts.values()):
                 mol = Chem.MolFromSmiles(record_dict["smiles"])
 
                 self.assertEqual(calculate_exact_mass(mol), masses[i])
 
-        ref_db = sqlite3.connect(to_test_result("substructures.sqlite"))
+        ref_db = sqlite3.connect(self.to_test_result("substructures.sqlite"))
         ref_db_cursor = ref_db.cursor()
         ref_db_cursor.execute("SELECT exact_mass__0_0001, mol FROM substructures")
         for row in ref_db_cursor.fetchall():
@@ -199,16 +202,16 @@ class DatabasesTestCase(unittest.TestCase):
         ref_db.close()
 
     def test_update_substructure_database(self):  # requires create_compound_database from SubstructureDb
-        db = SubstructureDb(to_test_result("test_db.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("test_db.sqlite"), "")
         db.create_compound_database()
         db.close()
 
-        records = os.listdir(to_test_result("test_mols", "hmdb"))
+        records = os.listdir(self.to_test_result("test_mols", "hmdb"))
         for record in records:
-            update_substructure_database(to_test_result("test_mols", "hmdb", record),
-                                         to_test_result("test_db.sqlite"), 3, 7, method="exhaustive")
+            update_substructure_database(self.to_test_result("test_mols", "hmdb", record),
+                                         self.to_test_result("test_db.sqlite"), 3, 7, method="exhaustive")
 
-        test_db = sqlite3.connect(to_test_result("test_db.sqlite"))
+        test_db = sqlite3.connect(self.to_test_result("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
 
         test_db_cursor.execute("""SELECT smiles,
@@ -268,45 +271,8 @@ class DatabasesTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(to_test_result()):
-            if os.path.isdir(to_test_result("connectivity")):
-                if os.path.isdir(to_test_result("connectivity", "pkls")):
-                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                            os.remove(to_test_result("connectivity", "pkls", pkl))
-
-                    os.rmdir(to_test_result("connectivity", "pkls"))
-
-                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-                os.rmdir(to_test_result("connectivity"))
-
-            if os.path.isdir(to_test_result("test_mols")):
-                if os.path.isfile(to_test_result("test_mols", "test_hmdbs.dictionary")):
-                    os.remove(to_test_result("test_mols", "test_hmdbs.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
-                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
-                    os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
-
-                if os.path.isdir(to_test_result("test_mols", "hmdb")):
-                    for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
-                        os.remove(to_test_result("test_mols", "hmdb", hmdb_xml))
-
-                    os.rmdir(to_test_result("test_mols", "hmdb"))
-
-                os.rmdir(to_test_result("test_mols"))
-
-            if os.path.isfile(to_test_result("test_db.sqlite")):
-                os.remove(to_test_result("test_db.sqlite"))
-
-            if os.path.isfile(to_test_result("substructures.sqlite")):
-                os.remove((to_test_result("substructures.sqlite")))
-
-            os.rmdir(to_test_result())
+        if cls.temp_results_dir is not None:
+            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

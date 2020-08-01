@@ -22,45 +22,49 @@
 
 import unittest
 import zipfile
+import shutil
 import pickle
 from metaboblend.build_structures import *
 from metaboblend.databases import *
 
 
-def to_test_result(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
-
-
 class BuildStructuresTestCase(unittest.TestCase):
+    temp_results_dir = None
+    temp_results_name = None
+
+    @classmethod
+    def to_test_result(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(to_test_result())
+        cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
+        cls.temp_results_name = cls.temp_results_dir.name
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "connectivity.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "test_mols.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
         zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                "data",
                                                "substructures.zip"
                                                ), 'r')
-        zip_ref.extractall(to_test_result())
+        zip_ref.extractall(cls.to_test_result())
         zip_ref.close()
 
     def test_build(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
+                            self.to_test_result("connectivity", "k_graphs.sqlite"))
         smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
                 None,
                 {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O'},
@@ -72,21 +76,21 @@ class BuildStructuresTestCase(unittest.TestCase):
 
         exp_lens = [1, 41, 0, 0]
 
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
             for i, record_dict in enumerate(record_dicts.values()):
                 record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
 
                 build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
+                      fn_out=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
                       max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
-                      path_connectivity_db=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_substructure_db=to_test_result("substructures.sqlite"))
+                      path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=self.to_test_result("connectivity", "pkls"), path_substructure_db=self.to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
-                with open(to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
@@ -98,19 +102,19 @@ class BuildStructuresTestCase(unittest.TestCase):
                 else:
                     self.assertTrue(len(unique_smis) == 51 or len(unique_smis) == 1892)
 
-                if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
-                    os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
+                if os.path.isfile(self.to_test_result(record_dict["HMDB_ID"] + ".smi")):
+                    os.remove(self.to_test_result(record_dict["HMDB_ID"] + ".smi"))
 
                 build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
+                      fn_out=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
                       accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
-                      path_connectivity_db=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_substructure_db=to_test_result("substructures.sqlite"))
+                      path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                      path_pkls=self.to_test_result("connectivity", "pkls"), path_substructure_db=self.to_test_result("substructures.sqlite"))
 
                 j = 0
                 unique_smis = set()
-                with open(to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
@@ -120,13 +124,13 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 self.assertEqual(len(unique_smis), exp_lens[i])
 
-                if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
-                    os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
+                if os.path.isfile(self.to_test_result(record_dict["HMDB_ID"] + ".smi")):
+                    os.remove(self.to_test_result(record_dict["HMDB_ID"] + ".smi"))
 
         db.close()
 
     def test_gen_subs_table(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         table_name = gen_subs_table(db, range(5, 7), 4, 2, 500)
 
         i = 0
@@ -148,7 +152,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         self.assertEqual(len(list(subset_sum(list(range(60)), 70, 1000))), 29884)
 
     def test_combine_ecs(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
         self.assertEqual(combine_ecs([54.0106, 69.0578], db, "substructures", "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
@@ -213,57 +217,8 @@ class BuildStructuresTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isdir(to_test_result()):
-            if os.path.isdir(to_test_result("connectivity")):
-                if os.path.isdir(to_test_result("connectivity", "pkls")):
-                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                            os.remove(to_test_result("connectivity", "pkls", pkl))
-
-                    os.rmdir(to_test_result("connectivity", "pkls"))
-
-                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-                os.rmdir(to_test_result("connectivity"))
-
-            if os.path.isdir(to_test_result("test_mols")):
-                if os.path.isfile(to_test_result("test_mols", "test_hmdbs.dictionary")):
-                    os.remove(to_test_result("test_mols", "test_hmdbs.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
-                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
-                    os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
-
-                if os.path.isdir(to_test_result("test_mols", "hmdb")):
-                    for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
-                        os.remove(to_test_result("test_mols", "hmdb", hmdb_xml))
-
-                    os.rmdir(to_test_result("test_mols", "hmdb"))
-
-                os.rmdir(to_test_result("test_mols"))
-
-            if os.path.isfile(to_test_result("test_db.sqlite")):
-                os.remove(to_test_result("test_db.sqlite"))
-
-            if os.path.isfile(to_test_result("substructures.sqlite")):
-                os.remove((to_test_result("substructures.sqlite")))
-
-            if os.path.isfile(to_test_result("HMDB0000073.smi")):
-                os.remove(to_test_result("HMDB0000073.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000122.smi")):
-                os.remove(to_test_result("HMDB0000122.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000158.smi")):
-                os.remove(to_test_result("HMDB0000158.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000186.smi")):
-                os.remove(to_test_result("HMDB0000186.smi"))
-
-            os.rmdir(to_test_result())
+        if cls.temp_results_dir is not None:
+            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':
