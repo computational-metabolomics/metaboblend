@@ -272,8 +272,10 @@ def add_bonds(mols, edges, atoms_available, bond_types):
     return mol_edit
 
 
-def annotate_msn(msn_data, fn_out, heavy_atoms, max_valence, max_atoms_available, max_n_substructures,
-                 path_connectivity_db, path_substructure_db, ppm=None, processes=None):
+def annotate_msn(mc, exact_mass, fragment_masses, smi_out_dir=None, heavy_atoms=range(0, 10), max_valence=6,
+                 max_atoms_available=2, max_n_substructures=3, path_connectivity_db="../databases/k_graphs.sqlite",
+                 path_substructure_db="../databases/substructures.sqlite", ppm=5, processes=None,
+                 write_fragment_smis=False, return_smi_dict=False, minimum_frequency=None, hydrogenation_allowance=2):
     """
     Parses an msp file, before converting it to a graph - or, can take a graph directly. The build function is
     called for each prescribed mass calculated; ie, for each neutral peak, we consider hydrogenation/dehydrogenation
@@ -287,6 +289,50 @@ def annotate_msn(msn_data, fn_out, heavy_atoms, max_valence, max_atoms_available
         by in another. Also returns the same data as a dictionary.
     """
 
+    if isinstance(mc[1], int) and isinstance(exact_mass, int):  # single input
+        mc, exact_mass = [mc], [exact_mass]
+        multi_input = False
+    elif isinstance(mc[1], list) and isinstance(exact_mass, list):  # multiple input
+        multi_input = True
+    else:
+        raise ValueError("either pass a single input to mc and exact_mass, or lists of the same length")
+
+    # prepare temporary table here - will only be generated once in case of multiple input
+    db = SubstructureDb(path_substructure_db, path_connectivity_db)
+    table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(max(exact_mass)),
+                                minimum_frequency=minimum_frequency)
+    db.close()
+
+    for i, curr_mc, curr_exact_mass, curr_fragment_masses in zip(range(len(mc)), mc, exact_mass, fragment_masses):
+        if smi_out_dir is not None and write_fragment_smis:
+            smi_out_subdir = os.path.join(smi_out_dir, str(i) + "_" + str(round(curr_exact_mass)))
+            os.mkdir(smi_out_subdir)
+        else:
+            smi_out_subdir = None
+
+        smi_dict = build_msn(mc=curr_mc, exact_mass=curr_exact_mass, fragment_masses=curr_fragment_masses,
+                             heavy_atoms=heavy_atoms, max_valence=max_valence, max_atoms_available=max_atoms_available,
+                             max_n_substructures=max_n_substructures, smi_out_dir=smi_out_subdir,
+                             path_connectivity_db=path_connectivity_db, path_substructure_db=path_substructure_db,
+                             processes=processes, minimum_frequency=minimum_frequency, return_smi_dict=return_smi_dict,
+                             hydrogenation_allowance=hydrogenation_allowance, ppm=ppm, table_name=table_name,
+                             write_fragment_smis=write_fragment_smis)
+
+        if return_smi_dict and multi_input:
+            yield smi_dict
+
+    if return_smi_dict and not multi_input:
+        return smi_dict
+
+
+def build_msn(mc, exact_mass, fragment_masses, heavy_atoms, max_valence, max_atoms_available, max_n_substructures,
+              smi_out_dir, path_connectivity_db, path_substructure_db, processes, minimum_frequency, return_smi_dict,
+              hydrogenation_allowance, ppm, table_name, write_fragment_smis):
+    """
+    Additional considerations for building from MS/MS data.
+    """
+    structure_frequency = {}  # map smiles to how many separate masses generated them
+    fragment_masses.sort(reverse=True)
 
     if table_name is None:
         db = SubstructureDb(path_substructure_db, path_connectivity_db)
