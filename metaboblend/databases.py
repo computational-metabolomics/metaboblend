@@ -153,18 +153,17 @@ class SubstructureDb:
         be attached as "graphs".
     """
 
-    def __init__(self, db, path_pkls=None, db2=None, clean=True):
+    def __init__(self, path_substructure_db, path_connectivity_db=None, clean=True):
         """Constructor method"""
 
-        self.db = db
-        self.db2 = db2
-        self.path_pkls = path_pkls
+        self.path_substructure_db = path_substructure_db
+        self.path_connectivity_db = path_connectivity_db
 
-        self.conn = sqlite3.connect(self.db)
+        self.conn = sqlite3.connect(self.path_substructure_db)
         self.cursor = self.conn.cursor()
 
-        if self.db2 is not None:
-            self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
+        if self.path_connectivity_db is not None:
+            self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.path_connectivity_db)
 
         self.clean = clean
 
