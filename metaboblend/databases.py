@@ -20,7 +20,6 @@
 #
 
 import io
-import os
 import sys
 import subprocess
 import sqlite3
@@ -32,7 +31,7 @@ import networkx as nx
 from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
-from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs, draw_subgraph
+from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs
 
 
 def reformat_xml(source, encoding="utf8"):
@@ -123,29 +122,14 @@ def parse_xml(source, encoding="utf8", reformat=False):
                 record_out = OrderedDict()
 
 
-class ConnectivityDb:
-    """
-    Object containing a reference to the connectivity database.
-
-    :param db: Path to the connectivity database.
-    """
-
-    def __init__(self, db):
-        """Constructor method"""
-
-        self.db = db
-
-
 class SubstructureDb:
     """
     Methods for interacting with the SQLITE3 substructure and connectivity databases. Provides a connection to the
     substructure database and, if provided, the connectivity database.
 
-    :param db: Path to the substructure database.
+    :param path_substructure_db: Path to the substructure database.
 
-    :param db2: Path to the connectivity database.
-
-    :ivar path_pkls: Path to the directory containing connectivity graph PKLs
+    :param path_connectivity_db: Path to the connectivity database.
 
     :param conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
         as 'graphs'.
