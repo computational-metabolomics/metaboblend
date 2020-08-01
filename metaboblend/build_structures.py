@@ -614,7 +614,7 @@ def build(mc, exact_mass, max_n_substructures, smi_out_path, path_connectivity_d
 
     if smi_out_path is not None:
         if len(smis) != 0:
-            smi_out.writelines(smis)
+            smi_out.writelines("\n".join(smis))
 
         smi_out.close()
 
