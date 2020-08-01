@@ -44,10 +44,13 @@ class AuxiliaryTestCase(unittest.TestCase):
 
         cls.lines_geng = [b'E?oo', b'ECO_', b'ECQ_', b'ECZ?', b'ECX_', b'ECYO', b'EEh_', b'EQhO']
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data", "test_aux.zip"), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "data",
+                                                   compr_data
+                                                   ), 'r')
+            zip_ref.extractall(cls.to_test_result())
+            zip_ref.close()
 
         with open(cls.to_test_result("test_aux", "mappings.pkl"), "rb") as mappings_pkl:
             cls.mappings = pickle.load(mappings_pkl)
@@ -114,11 +117,6 @@ class AuxiliaryTestCase(unittest.TestCase):
 
                     for subgraph in gi[vn]:
                         self.assertTrue(sorted([tuple(sorted(e)) for e in subgraph]) in sorted_subgraphs)
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.temp_results_dir is not None:
-            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

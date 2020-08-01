@@ -40,26 +40,13 @@ class DatabasesTestCase(unittest.TestCase):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
         cls.temp_results_name = cls.temp_results_dir.name
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "test_mols.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "substructures.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "data",
+                                                   compr_data
+                                                   ), 'r')
+            zip_ref.extractall(cls.to_test_result())
+            zip_ref.close()
 
     def test_reformat_xml(self):
         reformat_xml(self.to_test_result("test_mols", "HMDB0000073.xml"))
@@ -201,6 +188,70 @@ class DatabasesTestCase(unittest.TestCase):
 
         ref_db.close()
 
+    def test_create_substructure_database(self):
+        records = [self.to_test_result("test_mols", "hmdb", r) for r in os.listdir(self.to_test_result("test_mols", "hmdb"))]
+        create_substructure_database(records,
+                                     self.to_test_result("test_db.sqlite"), 3, 7, method="exhaustive")
+
+        test_db = sqlite3.connect(self.to_test_result("test_db.sqlite"))
+        test_db_cursor = test_db.cursor()
+
+        test_db_cursor.execute("""SELECT smiles,
+                                         heavy_atoms,
+                                         length,
+                                         exact_mass__1,
+                                         exact_mass__0_0001,
+                                         exact_mass,
+                                         C,
+                                         H,
+                                         N,
+                                         O,
+                                         P,
+                                         S,
+                                         valence,
+                                         valence_atoms,
+                                         atoms_available,
+                                         bond_types,
+                                         dummies
+                                  FROM substructures WHERE valence <= 4""")
+
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.05, 56.05002399999998, 3, 6, 1, 0, 0, 0, 2, '{3: 2}',
+                                       1, '{3: [1.5, 1.5]}', '[4, 5]')
+                                 )
+
+            total_rows = i
+
+        self.assertEqual(total_rows, 585)
+
+        test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row, ('HMDB0000073', '*:c(:*)CCN'))
+            total_rows = i
+
+        self.assertEqual(total_rows, 1292)
+
+        test_db_cursor.execute("SELECT * FROM compounds")
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row,
+                                 ('HMDB0000073', 153.078979, 'C8H11NO2', 8, 11, 1, 2, 0, 0, 'NCCC1=CC(O)=C(O)C=C1'))
+            total_rows = i
+
+        self.assertEqual(total_rows, 3)
+
+        test_db_cursor.execute("SELECT heavy_atoms FROM substructures")
+        unique_ha = set()
+        for ha in test_db_cursor.fetchall():
+            self.assertTrue(4 <= ha[0] <= 8)
+            unique_ha.add(ha[0])
+
+        [self.assertTrue(ha in unique_ha) for ha in [4, 5, 6, 7, 8]]
+
+        test_db.close()
+
     def test_update_substructure_database(self):  # requires create_compound_database from SubstructureDb
         db = SubstructureDb(self.to_test_result("test_db.sqlite"), "")
         db.create_compound_database()
@@ -231,7 +282,7 @@ class DatabasesTestCase(unittest.TestCase):
                                          atoms_available,
                                          bond_types,
                                          dummies
-                                         FROM substructures WHERE valence <= 4""")
+                                  FROM substructures WHERE valence <= 4""")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
                 self.assertEqual(row, ('*:c(:*)CCN', 4, 10, 56, 56.05, 56.05002399999998, 3, 6, 1, 0, 0, 0, 2, '{3: 2}',
@@ -268,11 +319,6 @@ class DatabasesTestCase(unittest.TestCase):
         [self.assertTrue(ha in unique_ha) for ha in [4, 5, 6, 7, 8]]
 
         test_db.close()
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.temp_results_dir is not None:
-            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

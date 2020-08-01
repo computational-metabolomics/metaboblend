@@ -41,26 +41,13 @@ class DatabasesTestCase(unittest.TestCase):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
         cls.temp_results_name = cls.temp_results_dir.name
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "test_mols.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "substructures.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "data",
+                                                   compr_data
+                                                   ), 'r')
+            zip_ref.extractall(cls.to_test_result())
+            zip_ref.close()
 
     def test_init(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"),
@@ -267,11 +254,6 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.create_indexes()
         db.close()
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.temp_results_dir is not None:
-            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

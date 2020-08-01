@@ -22,8 +22,6 @@
 
 import unittest
 import zipfile
-import shutil
-import pickle
 from metaboblend.build_structures import *
 from metaboblend.databases import *
 
@@ -41,26 +39,13 @@ class BuildStructuresTestCase(unittest.TestCase):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
         cls.temp_results_name = cls.temp_results_dir.name
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "test_mols.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
-
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "substructures.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "data",
+                                                   compr_data
+                                                   ), 'r')
+            zip_ref.extractall(cls.to_test_result())
+            zip_ref.close()
 
     def test_build(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
@@ -147,7 +132,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_subset_sum(self):
+    def test_subset_sum(self):  # also tests find_path
         self.assertEqual([s_sum for s_sum in subset_sum([1, 2, 3, 4], 5)], [[2, 3], [1, 4]])
 
         self.assertEqual(len(list(subset_sum(list(range(60)), 70, 3))), 378)
@@ -164,24 +149,28 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_reindex_atoms(self):
-        substructure_combinations = [[{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
-                  'valence': 2, 'atoms_available': 1, 'dummies': [0, 2]},
-                 {'smiles': 'NCCc1c:*:*:cc1', 'mol': None, 'bond_types': {4: [1.5], 6: [1.5], 7: [1.5]},
-                  'degree_atoms': {4: 1, 7: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [5, 6]}],
-                [{'smiles': '*[C@@H](O)[C@@H](*)O', 'mol': None, 'bond_types': {1: [1.0], 3: [1.0]},
-                  'degree_atoms': {1: 1, 3: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [0, 5]},
-                 {'smiles': 'OC1**[C@@H](O)[C@H](O)[C@H]1O', 'mol': None, 'bond_types': {0: [1.0], 3: [1.0], 4: [1.0]},
-                  'degree_atoms': {0: 1, 4: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [2, 3]}],
-                [{'smiles': '*C[C@H](N)C(=O)O', 'mol': None, 'bond_types': {2: [1.0]}, 'degree_atoms': {2: 1},
-                  'valence': 1, 'atoms_available': 1, 'dummies': [3]},
-                 {'smiles': '*c1ccc(O)cc1', 'mol': None, 'bond_types': {1: [1.0]}, 'degree_atoms': {1: 1},
-                  'valence': 1, 'atoms_available': 1, 'dummies': [0]}]]
+        substructure_combinations = [
+            [{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
+              'valence': 2, 'atoms_available': 1, 'dummies': [0, 2]},
+             {'smiles': 'NCCc1c:*:*:cc1', 'mol': None, 'bond_types': {4: [1.5], 6: [1.5], 7: [1.5]},
+              'degree_atoms': {4: 1, 7: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [5, 6]}],
+            [{'smiles': '*[C@@H](O)[C@@H](*)O', 'mol': None, 'bond_types': {1: [1.0], 3: [1.0]},
+              'degree_atoms': {1: 1, 3: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [0, 5]},
+             {'smiles': 'OC1**[C@@H](O)[C@H](O)[C@H]1O', 'mol': None, 'bond_types': {0: [1.0], 3: [1.0], 4: [1.0]},
+              'degree_atoms': {0: 1, 4: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [2, 3]}],
+            [{'smiles': '*C[C@H](N)C(=O)O', 'mol': None, 'bond_types': {2: [1.0]}, 'degree_atoms': {2: 1},
+              'valence': 1, 'atoms_available': 1, 'dummies': [3]},
+             {'smiles': '*c1ccc(O)cc1', 'mol': None, 'bond_types': {1: [1.0]}, 'degree_atoms': {1: 1},
+              'valence': 1, 'atoms_available': 1, 'dummies': [0]}]
+        ]
 
-        reindexed = [["*C(*)C(=O)O.NCCc1c:*:*:cc1", [1, 10, 13], [0, 2, 11, 12],
-                      {1: [1.0, 1.0], 10: [1.5], 12: [1.5], 13: [1.5]}],
-                     ["*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", [1, 3, 6, 10], [0, 5, 8, 9],
-                      {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
-                     ["*C[C@H](N)C(=O)O.*c1ccc(O)cc1", [2, 8], [3, 7], {2: [1.0], 8: [1.0]}]]
+        reindexed = [
+            ["*C(*)C(=O)O.NCCc1c:*:*:cc1", [1, 10, 13], [0, 2, 11, 12],
+             {1: [1.0, 1.0], 10: [1.5], 12: [1.5], 13: [1.5]}],
+            ["*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", [1, 3, 6, 10], [0, 5, 8, 9],
+             {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
+            ["*C[C@H](N)C(=O)O.*c1ccc(O)cc1", [2, 8], [3, 7], {2: [1.0], 8: [1.0]}]
+        ]
 
         for substructure_combination, reindex in zip(substructure_combinations, reindexed):
             substructure_combination[0]["mol"] = Chem.MolFromSmiles(substructure_combination[0]["smiles"], False)
@@ -212,11 +201,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                 self.assertTrue(mol_e is None)
             else:
                 self.assertEqual(Chem.MolToSmiles(mol_e.GetMol(), False), mol_out[i])
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.temp_results_dir is not None:
-            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':

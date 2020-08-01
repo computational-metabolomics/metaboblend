@@ -56,12 +56,13 @@ class IsomorphDbTestCase(unittest.TestCase):
         elif sys.platform == "linux":
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(cls.to_test_result())
-        zip_ref.close()
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "data",
+                                                   compr_data
+                                                   ), 'r')
+            zip_ref.extractall(cls.to_test_result())
+            zip_ref.close()
 
         os.mkdir(cls.to_test_result("pkls"))
         create_isomorphism_database(cls.to_test_result("k_graphs.sqlite"),
@@ -88,18 +89,6 @@ class IsomorphDbTestCase(unittest.TestCase):
 
         ref_db.close()
         test_db.close()
-
-    def test_create_pkls(self):
-        for pkl_path in os.listdir(self.to_test_result("pkls")):
-            with open(self.to_test_result("connectivity", "pkls", pkl_path), "rb") as ref_pkl, \
-                 open(self.to_test_result("pkls", pkl_path), "rb") as test_pkl:
-
-                self.assertEqual(pickle.load(ref_pkl), pickle.load(test_pkl))
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.temp_results_dir is not None:
-            cls.temp_results_dir.cleanup()
 
 
 if __name__ == '__main__':
