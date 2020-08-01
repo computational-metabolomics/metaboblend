@@ -335,11 +335,11 @@ def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_avai
     :return: Returns a list of unique smiles.
     """
 
-    if isinstance(mc[1], list) and isinstance(exact_mass, list):  # single input
+    if isinstance(mc[1], int) and isinstance(exact_mass, int):  # single input
         mc, exact_mass = [mc], [exact_mass]
-        return_not_yield = True
-    elif isinstance(mc[1], int) and isinstance(exact_mass, int):  # multiple input
-        return_not_yield = False
+        multi_input = False
+    elif isinstance(mc[1], list) and isinstance(exact_mass, list):  # multiple input
+        multi_input = True
     else:
         raise ValueError("either pass a single input to mc and exact_mass, or lists of the same length")
 
@@ -355,12 +355,12 @@ def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_avai
                          smi_out=smi_out, path_connectivity_db=path_connectivity_db,
                          path_substructure_db=path_substructure_db, fragment_mass=prescribed_substructure_mass,
                          ppm=None, out_mode="w", table_name=table_name, minimum_frequency=minimum_frequency,
-                         return_smis=return_smi_list, processes=processes)
+                         processes=processes)
 
-        if return_smi_list and not return_not_yield:
+        if return_smi_list and multi_input:
             yield smi_list
 
-    if return_smi_list and return_not_yield:
+    if return_smi_list and not multi_input:
         return smi_list
 
 
@@ -497,12 +497,7 @@ def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_s
 
     db.close()
 
-    if return_smis:
-        return smis
-    elif smi_out is not None:
-        return smi_out
-    else:
-        return None
+    return smis
 
 
 def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, table_name="subset_substructures",
