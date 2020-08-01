@@ -472,7 +472,7 @@ class SubstructureDb:
                 for path in self.paths(s, cur + (n,)):
                     yield path
 
-    def select_sub_structures(self, l_atoms, table_name):
+    def select_substructures(self, l_atoms, table_name):
         """
         Selects specific substructures from a substructure table based on elemental composition. Used to obtain
         sets substructures to be connected.
