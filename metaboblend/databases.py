@@ -963,7 +963,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
         return subset_sgs_sizes([sgs], n_min, n_max)
 
 
-def create_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, records=None, method="exhaustive",
+def create_substructure_database(hmdb_paths, path_substructure_db, n_min, n_max, method="exhaustive",
                                  max_atoms_available=None, max_valence=None, substructures_only=False):
     """
     Creates a substructure database before using update_substructure_database to add entries. For parameter explanations, see
@@ -976,8 +976,7 @@ def create_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, 
 
     :param max_valence: Maximum valence of valid substructures.
 
-    :param hmdb_path: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
-        `records` if provided.
+    :param hmdb_paths: A list of paths for the HMDB XML record(s) detailing molecules to be fragmented.
 
     :param path_substructure_db: The path of the SQLite 3 substructure database to be updated.
 
@@ -1008,9 +1007,10 @@ def create_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, 
     db.create_compound_database()
     db.close()
 
-    update_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, records=records, method=method,
-                                 max_atoms_available=max_atoms_available, max_valence=max_valence,
-                                 substructures_only=substructures_only)
+    for hmdb_path in hmdb_paths:
+        update_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, method=method,
+                                     max_atoms_available=max_atoms_available, max_valence=max_valence,
+                                     substructures_only=substructures_only)
 
     db = SubstructureDb(path_substructure_db, "")
     db.create_indexes()

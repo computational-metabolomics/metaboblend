@@ -65,16 +65,17 @@ class BuildStructuresTestCase(unittest.TestCase):
     def test_build(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
+
         smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
                 None,
                 {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O'},
                 None]
 
-        std_lens = [15, 76, 5, 1920]
+        std_lens = [4, 51, 3, 1892]
 
-        fragments = [58.005, 60.021, 58.005, 58.005]
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
 
-        exp_lens = [1, 41, 0, 0]
+        exp_lens = [1, 41, 2, 0]
 
         with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
@@ -83,10 +84,10 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
-                      max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
+                      smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
                       path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=self.to_test_result("connectivity", "pkls"), path_substructure_db=self.to_test_result("substructures.sqlite"))
+                      path_substructure_db=self.to_test_result("substructures.sqlite"),
+                      prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures")
 
                 j = 0
                 unique_smis = set()
@@ -107,10 +108,11 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
                           record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
-                      accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
+                      smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                      prescribed_mass=fragments[i], ppm=15,
                       path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=self.to_test_result("connectivity", "pkls"), path_substructure_db=self.to_test_result("substructures.sqlite"))
+                      path_substructure_db=self.to_test_result("substructures.sqlite"),
+                      out_mode="w", processes=None, table_name="substructures")
 
                 j = 0
                 unique_smis = set()
@@ -119,8 +121,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                         j += 1
                         unique_smis.add(line.split()[0])
 
-                if i == 0:
-                    self.assertEqual(unique_smis, {'NCCc1ccc(O)c(O)c1'})
+                if i == 2:
+                    self.assertEqual(unique_smis, {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O'})
 
                 self.assertEqual(len(unique_smis), exp_lens[i])
 
@@ -157,15 +159,12 @@ class BuildStructuresTestCase(unittest.TestCase):
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0), (4, 5, 0, 1, 0, 0)]])
-        self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=15),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
-        self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=1), [])
         self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001"), [])
 
         db.close()
 
     def test_reindex_atoms(self):
-        llls = [[{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
+        substructure_combinations = [[{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
                   'valence': 2, 'atoms_available': 1, 'dummies': [0, 2]},
                  {'smiles': 'NCCc1c:*:*:cc1', 'mol': None, 'bond_types': {4: [1.5], 6: [1.5], 7: [1.5]},
                   'degree_atoms': {4: 1, 7: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [5, 6]}],
@@ -184,11 +183,11 @@ class BuildStructuresTestCase(unittest.TestCase):
                       {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
                      ["*C[C@H](N)C(=O)O.*c1ccc(O)cc1", [2, 8], [3, 7], {2: [1.0], 8: [1.0]}]]
 
-        for lll, reindex in zip(llls, reindexed):
-            lll[0]["mol"] = Chem.MolFromSmiles(lll[0]["smiles"], False)
-            lll[1]["mol"] = Chem.MolFromSmiles(lll[1]["smiles"], False)
+        for substructure_combination, reindex in zip(substructure_combinations, reindexed):
+            substructure_combination[0]["mol"] = Chem.MolFromSmiles(substructure_combination[0]["smiles"], False)
+            substructure_combination[1]["mol"] = Chem.MolFromSmiles(substructure_combination[1]["smiles"], False)
 
-            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
+            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(substructure_combination)
             self.assertEqual([Chem.MolToSmiles(mol_comb), atoms_available, atoms_to_remove, bond_types], reindex)
 
     def test_add_bonds(self):
@@ -213,7 +212,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                 self.assertTrue(mol_e is None)
             else:
                 self.assertEqual(Chem.MolToSmiles(mol_e.GetMol(), False), mol_out[i])
-
 
     @classmethod
     def tearDownClass(cls):

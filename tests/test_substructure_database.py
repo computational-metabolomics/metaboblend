@@ -22,6 +22,8 @@
 
 import os
 import unittest
+import tempfile
+import shutil
 import zipfile
 from metaboblend.databases import *
 
@@ -61,7 +63,7 @@ class DatabasesTestCase(unittest.TestCase):
         zip_ref.close()
 
     def test_init(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
 
         db.cursor.execute("SELECT * FROM substructures")
@@ -183,23 +185,20 @@ class DatabasesTestCase(unittest.TestCase):
 
     def test_select_ecs(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "0_0001", ppm=None), [(7, 9, 1, 0, 0, 0)])
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "1", ppm=None), [])
-        self.assertEqual(db.select_ecs(107, "substructures", "0_0001", ppm=None), [])
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "1", ppm=None), [])
-        self.assertEqual(db.select_ecs(107, "substructures", "1", ppm=None),
+        self.assertEqual(db.select_ecs(107.0735, "substructures", "0_0001"), [(7, 9, 1, 0, 0, 0)])
+        self.assertEqual(db.select_ecs(107.0735, "substructures", "1"), [])
+        self.assertEqual(db.select_ecs(107, "substructures", "0_0001"), [])
+        self.assertEqual(db.select_ecs(107.0735, "substructures", "1"), [])
+        self.assertEqual(db.select_ecs(107, "substructures", "1"),
                          [(7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0)])
-        self.assertEqual(db.select_ecs(107, "substructures", "1", ppm=10000),
-                         [(7, 8, 1, 0, 0, 0), (7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0), (7, 8, 0, 1, 0, 0),
-                          (7, 6, 0, 1, 0, 0), (3, 6, 0, 4, 0, 0)])
 
         self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_ecs(107.0735, "substrusctures", "0_0001", ppm=None))
+                          lambda: db.select_ecs(107.0735, "substrusctures", "0_0001"))
 
         db.close()
 
     def test_k_configs(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), self.to_test_result("connectivity", "pkls"),
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
 
         k_configs = db.k_configs()
@@ -213,26 +212,26 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_select_sub_structures(self):
+    def test_select_substructures(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
-        self.assertEqual(db.select_sub_structures([[2, 5, 0, 0, 0, 0]], "substructures"), [])
-        self.assertEqual(len(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0]), 7)
-        self.assertEqual(list(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].keys()),
+        self.assertEqual(db.select_substructures([[2, 5, 0, 0, 0, 0]], "substructures"), [])
+        self.assertEqual(len(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0]), 7)
+        self.assertEqual(list(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].keys()),
                          ['smiles', 'mol', 'bond_types', 'degree_atoms', 'valence', 'atoms_available', 'dummies'])
 
-        substructures = list(db.select_sub_structures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].values())
+        substructures = list(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
                          ['*C(*)Cc(:*)c:*', {1: [1.0, 1.0], 3: [1.5], 6: [1.5]}, {1: 2, 3: 1, 6: 1}, 4, 3, [0, 4, 5, 7]])
 
-        self.assertEqual(len(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0]), 3)
-        self.assertEqual(list(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].keys()),
+        self.assertEqual(len(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0]), 3)
+        self.assertEqual(list(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].keys()),
                          ['smiles', 'mol', 'bond_types', 'degree_atoms', 'valence', 'atoms_available', 'dummies'])
-        substructures = list(db.select_sub_structures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].values())
+        substructures = list(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
                          ['*C(*)Cc1cc:*:cc1', {1: [1.0, 1.0], 5: [1.5], 7: [1.5]}, {1: 2, 5: 1, 7: 1}, 4, 3, [0, 6, 9]])
 
         self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_sub_structures([[2, 5, 0, 0, 0, 0]], "substrusctures"))
+                          lambda: db.select_substructures([[2, 5, 0, 0, 0, 0]], "substrusctures"))
         db.close()
 
     def test_create_compound_database(self):  # also tests create_indexes
@@ -245,7 +244,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
         shutil.copyfile(self.to_test_result("substructures.sqlite"), self.to_test_result("substructures_copy.sqlite"))
-        db = SubstructureDb(self.to_test_result("substructures_copy.sqlite"), self.to_test_result("connectivity", "pkls"),
+        db = SubstructureDb(self.to_test_result("substructures_copy.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
         db.create_indexes()
         db.create_compound_database()
