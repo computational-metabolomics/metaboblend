@@ -288,8 +288,45 @@ def annotate_msn(msn_data, fn_out, heavy_atoms, max_valence, max_atoms_available
     """
 
 
-def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_substructures,
-                        smi_out=None, path_connectivity_db="../databases/k_graphs.sqlite",
+    if table_name is None:
+        db = SubstructureDb(path_substructure_db, path_connectivity_db)
+        table_name = gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, round(max(exact_mass)),
+                                    minimum_frequency=minimum_frequency)
+        db.close()
+
+    for fragment_mass in fragment_masses:
+        if smi_out_dir is not None and write_fragment_smis:
+            smi_out = os.path.join(smi_out_dir, str(round(fragment_mass, 4)) + ".smi")
+            open(smi_out, "w").close()
+        else:
+            smi_out = None
+
+        fragment_smis = set()
+
+        for j in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
+            hydrogenated_fragment_mass = fragment_mass + (j * 1.007825)  # consider re-arrangements
+            fragment_smis.update(build(mc=mc, exact_mass=exact_mass, smi_out=smi_out, heavy_atoms=heavy_atoms,
+                                       max_valence=max_valence, max_atoms_available=max_atoms_available,
+                                       max_n_substructures=max_n_substructures,
+                                       path_connectivity_db=path_connectivity_db,
+                                       path_substructure_db=path_substructure_db,
+                                       fragment_mass=hydrogenated_fragment_mass,
+                                       ppm=ppm, out_mode="a", table_name=table_name,
+                                       processes=processes, minimum_frequency=None))
+
+        for smi in fragment_smis:
+            structure_frequency[smi] = structure_frequency.get(smi, 0) + 1
+
+    if smi_out_dir is not None:
+        with open(os.path.join(smi_out_dir, "structure_frequency.csv"), "w") as freq_out:
+            freq_out.writelines([k + "," + str(i) for k, i in zip(structure_frequency.keys(), structure_frequency.values())])
+
+    if return_smi_dict:
+        return structure_frequency
+
+
+def generate_structures(mc, exact_mass, heavy_atoms=range(2,9), max_valence=6, max_atoms_available=2,
+                        max_n_substructures=3, smi_out=None, path_connectivity_db="../databases/k_graphs.sqlite",
                         path_substructure_db="../databases/substructures.sqlite", prescribed_substructure_mass=None,
                         processes=None, minimum_frequency=None, return_smi_list=True):
     """
@@ -366,7 +403,7 @@ def generate_structures(mc, exact_mass, heavy_atoms, max_valence, max_atoms_avai
 
 def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_substructures, smi_out,
           path_connectivity_db, path_substructure_db, fragment_mass, ppm, out_mode, processes, table_name,
-          minimum_frequency, return_smis):
+          minimum_frequency):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -414,8 +451,6 @@ def build(mc, exact_mass, heavy_atoms, max_valence, max_atoms_available, max_n_s
 
     :param minimum_frequency: The minimum frequency of substructures in table_name; e.g. substructures have a frequency
         of 1 if they are unique.
-
-    :param return_smis: Return a list of smiles
     """
 
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
