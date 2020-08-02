@@ -319,14 +319,16 @@ def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valenc
     :param yield_smi_dict: Whether to return a dict of smiles.
     """
 
+    db = SubstructureDb(path_substructure_db, path_connectivity_db)
+
     # prepare temporary table here - will only be generated once in case of multiple input
     table_name = gen_subs_table(
-        db=SubstructureDb(path_substructure_db, path_connectivity_db),
+        db=db,
         heavy_atoms=heavy_atoms,
         max_valence=max_valence,
         max_atoms_available=max_atoms_available,
         minimum_frequency=minimum_frequency,
-        max_mass=round(max([ms_data[ms_id]["mc"] for ms_id in ms_data.keys()]))
+        max_mass=round(max([ms_data[ms_id]["exact_mass"] for ms_id in ms_data.keys()]))
     )
 
     for i, ms_id in enumerate(ms_data.keys()):
@@ -354,6 +356,8 @@ def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valenc
 
         if yield_smi_dict:
             yield smi_dict
+
+    db.close()
 
 
 def build_msn(mc, exact_mass, prescribed_masses, max_n_substructures, smi_out_dir, path_connectivity_db,
@@ -426,7 +430,8 @@ def build_msn(mc, exact_mass, prescribed_masses, max_n_substructures, smi_out_di
                 ppm=ppm,
                 out_mode="a",
                 table_name=table_name,
-                processes=processes
+                processes=processes,
+                clean=False
             ))
 
         for smi in fragment_smis:
@@ -442,7 +447,7 @@ def build_msn(mc, exact_mass, prescribed_masses, max_n_substructures, smi_out_di
 
 
 def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_atoms_available=2,
-                        max_n_substructures=3, smi_out_path=None, path_connectivity_db="../databases/k_graphs.sqlite",
+                        max_n_substructures=3, smi_out_dir=None, path_connectivity_db="../databases/k_graphs.sqlite",
                         path_substructure_db="../databases/substructures.sqlite", processes=None,
                         minimum_frequency=None, yield_smi_list=True):
     """
@@ -453,8 +458,8 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
     :param ms_data: Dictionary in the form ms_data[id] = 
         {mc: [C, H, N, O, P, S], exact_mass: structure mass, prescribed_masses: substructure mass}.
 
-    :param smi_out_path: The path of the file to which unique smile strings should be written representing the final
-        structures generated. If None, no file is written.
+    :param smi_out_dir: The directory to which unique smile strings should be written representing the final
+        structures generated. If None, no files are written.
 
     :param heavy_atoms: A list of integers containing the heavy atom counts to consider in substructures to be used
         to build final structures.
@@ -482,37 +487,49 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
     :return: Returns a list of unique smiles.
     """
 
+    db = SubstructureDb(path_substructure_db, path_connectivity_db)
+
     # prepare temporary table here - will only be generated once in case of multiple input
     table_name = gen_subs_table(
-        db=SubstructureDb(path_substructure_db, path_connectivity_db),
+        db=db,
         heavy_atoms=heavy_atoms,
         max_valence=max_valence,
         max_atoms_available=max_atoms_available,
         minimum_frequency=minimum_frequency,
-        max_mass=round(max([ms_data[ms_id]["mc"] for ms_id in ms_data.keys()]))
+        max_mass=round(max([ms_data[ms_id]["exact_mass"] for ms_id in ms_data.keys()]))
     )
 
     for ms_id in ms_data.keys():
+        try:
+            ms_data[ms_id]["prescribed_masses"]
+            ppm = 0
+        except KeyError:
+            ms_data[ms_id]["prescribed_masses"] = None
+            ppm = None
+
         smi_list = build(
             mc=ms_data[ms_id]["mc"],
             exact_mass=ms_data[ms_id]["exact_mass"],
             max_n_substructures=max_n_substructures,
-            smi_out_path=smi_out_path,
+            smi_out_path=os.path.join(smi_out_dir, ms_id + ".smi"),
             path_connectivity_db=path_connectivity_db,
             path_substructure_db=path_substructure_db,
             prescribed_mass=ms_data[ms_id]["prescribed_masses"],
-            ppm=None,
+            ppm=ppm,
             out_mode="w",
             table_name=table_name,
-            processes=processes
+            processes=processes,
+            clean=False
         )
 
         if yield_smi_list:
             yield smi_list
 
+    db.close()
+
 
 def build(mc, exact_mass, max_n_substructures, smi_out_path, path_connectivity_db, path_substructure_db,
-          prescribed_mass, ppm, out_mode, processes, table_name):
+          prescribed_mass, ppm, out_mode, processes, table_name, clean):
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -618,7 +635,7 @@ def build(mc, exact_mass, max_n_substructures, smi_out_path, path_connectivity_d
 
         smi_out.close()
 
-    db.close()
+    db.close(clean)
 
     return smis
 

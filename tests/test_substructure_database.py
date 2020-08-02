@@ -184,7 +184,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_k_configs(self):
+    def test_k_configs(self):  # TODO: update tests for bool parameter
         db = SubstructureDb(self.to_test_result("substructures.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
 
