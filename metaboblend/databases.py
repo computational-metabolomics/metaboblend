@@ -580,6 +580,84 @@ class SubstructureDb:
             self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
                                        ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
+    def add_small_substructures(self, table_name):
+        """
+        Adds a curated list of small substructures (single atom). Similar to update_substructure_database but deals
+        with substructures without reference molecules.
+
+        :param table_name: Which table to append the substructure entries to.
+        """
+
+        # list of potential relevant small substructures (smarts)
+        small_smis = ["CCC", "C=C-C", "C=C=C", "ccc", "ccC", "C=N", "CN", "cnc", "CO", "C=O"]
+
+        for smi in small_smis:
+            mol = Chem.MolFromSmarts(smi)
+
+            lib = get_substructure(mol, None)
+
+            smiles_rdkit = Chem.MolToSmiles(lib["mol"])
+
+            exact_mass = calculate_exact_mass(lib["mol"])
+            els = get_elements(lib["mol"])
+
+            sub_smi_dict = {'smiles': smiles_rdkit,
+                            'exact_mass': exact_mass,
+                            'length': sum([els[atom] for atom in els if atom != "*"]),
+                            "valence": lib["valence"],
+                            "valence_atoms": str(lib["degree_atoms"]),
+                            "atoms_available": lib["atoms_available"],
+                            "mol": lib["mol"].ToBinary(),
+                            "bond_types": str(lib["bond_types"]),
+                            "dummies": str(lib["dummies"])}
+
+            sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
+            sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
+
+            sub_smi_dict.update(els)
+            sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
+
+            self.cursor.execute("""INSERT OR IGNORE INTO %s (
+                                       smiles,
+                                       heavy_atoms,
+                                       length, 
+                                       exact_mass__1, 
+                                       exact_mass__0_0001, 
+                                       exact_mass, 
+                                       C, 
+                                       H, 
+                                       N, 
+                                       O, 
+                                       P, 
+                                       S, 
+                                       valence, 
+                                       valence_atoms, 
+                                       atoms_available, 
+                                       bond_types,
+                                       dummies,
+                                       mol
+                                   ) values (
+                                       :smiles,
+                                       :heavy_atoms,
+                                       :length,
+                                       :exact_mass__1,
+                                       :exact_mass__0_0001,
+                                       :exact_mass,
+                                       :C,
+                                       :H,
+                                       :N,
+                                       :O,
+                                       :P,
+                                       :S,
+                                       :valence,
+                                       :valence_atoms,
+                                       :atoms_available,
+                                       :bond_types,
+                                       :dummies,
+                                       :mol)""" % table_name, sub_smi_dict)
+
+        self.conn.commit()
+
     def close(self, clean=True):
         if clean:
             self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
@@ -625,16 +703,19 @@ def get_substructure(mol, idxs_edges_subgraph):
     """
 
     # convert list of bond indices to list of atom indices
-    atom_idxs_subgraph = []
-    for bIdx in idxs_edges_subgraph:
-        b = mol.GetBondWithIdx(bIdx)
-        a1 = b.GetBeginAtomIdx()
-        a2 = b.GetEndAtomIdx()
+    if idxs_edges_subgraph is None:  # small substructure addition
+        atom_idxs_subgraph = [1]
+    else:
+        atom_idxs_subgraph = []
+        for bIdx in idxs_edges_subgraph:
+            b = mol.GetBondWithIdx(bIdx)
+            a1 = b.GetBeginAtomIdx()
+            a2 = b.GetEndAtomIdx()
 
-        if a1 not in atom_idxs_subgraph:
-            atom_idxs_subgraph.append(a1)
-        if a2 not in atom_idxs_subgraph:
-            atom_idxs_subgraph.append(a2)
+            if a1 not in atom_idxs_subgraph:
+                atom_idxs_subgraph.append(a1)
+            if a2 not in atom_idxs_subgraph:
+                atom_idxs_subgraph.append(a2)
 
     # identify atoms which will become dummy elements in the final substructure
     atoms_to_dummy = []
@@ -1042,6 +1123,7 @@ def update_substructure_database(hmdb_path, path_substructure_db, n_min, n_max, 
 
     if records is None:
         records = parse_xml(hmdb_path, reformat=False)
+
 
     for record_dict in filter_records(records):
         if not substructures_only:
