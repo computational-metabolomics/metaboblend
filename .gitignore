@@ -70,8 +70,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-notebooks/notebook_dir
-notebooks/notebook_dir/*
+notebooks/notebook_data
+notebooks/notebook_data/*
 
 # pyenv
 .python-version
