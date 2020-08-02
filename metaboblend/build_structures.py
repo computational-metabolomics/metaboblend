@@ -319,6 +319,9 @@ def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valenc
     :param yield_smi_dict: Whether to return a dict of smiles.
     """
 
+    if ppm is None:
+        ppm = 0
+
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
 
     # prepare temporary table here - will only be generated once in case of multiple input
@@ -500,12 +503,13 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
     )
 
     for ms_id in ms_data.keys():
+
+        ppm = None
         try:
             if ms_data[ms_id]["prescribed_masses"] is not None:
                 ppm = 0
         except KeyError:
             ms_data[ms_id]["prescribed_masses"] = None
-            ppm = None
 
         smi_list = build(
             mc=ms_data[ms_id]["mc"],
