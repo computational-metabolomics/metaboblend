@@ -1,0 +1,14 @@
+name: metaboblend
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+ - python=3.7
+ - numpy
+ - scipy
+ - pandas
+ - networkx
+ - rdkit
+ - biopython
+ - matplotlib
+ - nauty
