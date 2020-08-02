@@ -275,7 +275,7 @@ def add_bonds(mols, edges, atoms_available, bond_types):
 def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valence=6, max_atoms_available=2,
                  max_n_substructures=3, path_connectivity_db="../databases/k_graphs.sqlite",
                  path_substructure_db="../databases/substructures.sqlite", ppm=5, processes=None,
-                 write_fragment_smis=False, yield_smi_dict=False, minimum_frequency=None, hydrogenation_allowance=2,
+                 write_fragment_smis=False, yield_smi_dict=True, minimum_frequency=None, hydrogenation_allowance=2,
                  add_small_substructures=True):
     """
     :param ms_data: Dictionary in the form ms_data[id] =
@@ -498,6 +498,7 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
     """
 
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
+    smi_out_path = None
 
     # prepare temporary table here - will only be generated once in case of multiple input
     table_name = gen_subs_table(
@@ -518,11 +519,14 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
         except KeyError:
             ms_data[ms_id]["prescribed_masses"] = None
 
+        if smi_out_dir is not None:
+            smi_out_path = os.path.join(smi_out_dir, ms_id + ".smi")
+
         smi_list = build(
             mc=ms_data[ms_id]["mc"],
             exact_mass=ms_data[ms_id]["exact_mass"],
             max_n_substructures=max_n_substructures,
-            smi_out_path=os.path.join(smi_out_dir, ms_id + ".smi"),
+            smi_out_path=smi_out_path,
             path_connectivity_db=path_connectivity_db,
             path_substructure_db=path_substructure_db,
             prescribed_mass=ms_data[ms_id]["prescribed_masses"],

@@ -1288,7 +1288,7 @@ def create_isomorphism_database(db_out, max_n_substructures, max_atoms_available
             s_gfu.seek(0)
 
             proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE)  # TODO: add ri as dependency
             ri_out, err = proc.communicate()
 
             k_gfu.close()
