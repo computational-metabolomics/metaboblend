@@ -41,7 +41,7 @@ class IsomorphDbTestCase(unittest.TestCase):
         cls.temp_results_name = cls.temp_results_dir.name
 
         pkg_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        if sys.platform == "win32" or sys.platform == "win64":
+        if sys.platform == "win32" or sys.platform == "win64":  # TODO: add RI as dependency
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_win", "RI3.6-release", "ri36")
 
         elif sys.platform == "darwin":

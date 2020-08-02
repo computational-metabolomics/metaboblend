@@ -122,12 +122,11 @@ class BuildStructuresTestCase(unittest.TestCase):
     def test_substructure_combination_build(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
+
         ec_products = [((4, 5, 0, 0, 0, 0), (4, 6, 1, 2, 0, 0)),
                        ((5, 5, 0, 2, 0, 0), (3, 6, 1, 0, 0, 0)),
                        ((2, 4, 0, 2, 0, 0), (4, 8, 0, 4, 0, 0))]
-
         configs_iso = db.k_configs(True)
-
         lens = [0, 1, 60]
 
         for i, ec_product in enumerate(ec_products):
@@ -289,7 +288,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                 None,
                 {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
                 None]
-
         individual_lens = [4, 41, 2, 0]
         overall_lens = [3, 41, 2, 0]
         freqs = [1, 0, 0, 0]

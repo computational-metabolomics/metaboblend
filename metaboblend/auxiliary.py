@@ -27,13 +27,13 @@ import pylab as plt
 def calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
     """
     Calculates all possible configurations of multipartite graphs up to (inclusive) a given number of atoms available
-    ("sizes") and number of substructures ("boxes"). The possible bonding configurations for these graphs are
+    and number of substructures. The possible bonding configurations for these graphs are
     calculated by geng and RI, before they are used to combine substructures and generate novel metabolites.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
         available for bonding for a graph to be created.
 
-    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertice) in each
+    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertex) in each
         substructure for bonding. At least one atom must be available for bonding for a graph to be created.
 
     :return: A string detailing each possible combination of atoms_available and n_substructures (p) and the

@@ -985,7 +985,7 @@ def create_substructure_database(hmdb_paths, path_substructure_db, n_min, n_max,
     :param substructures_only: Whether to generate all tables or only the substructures table.
     """
 
-    db = SubstructureDb(path_substructure_db, "")
+    db = SubstructureDb(path_substructure_db)
     db.create_compound_database()
     db.close()
 
@@ -994,7 +994,7 @@ def create_substructure_database(hmdb_paths, path_substructure_db, n_min, n_max,
                                      max_atoms_available=max_atoms_available, max_valence=max_valence,
                                      substructures_only=substructures_only)
 
-    db = SubstructureDb(path_substructure_db, "")
+    db = SubstructureDb(path_substructure_db)
     db.create_indexes()
     db.close()
 
