@@ -70,6 +70,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+notebooks/notebook_dir
+notebooks/notebook_dir/*
 
 # pyenv
 .python-version
@@ -105,10 +107,6 @@ ENV/
 # DB Files
 *.pkl
 *.sqlite
-
-# ignore changes to scripts for testing
-scripts/*
-scripts/results/*
 
 # ignore lib files for testing
 */libgcc_s_dw2-1.dll

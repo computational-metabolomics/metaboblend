@@ -22,6 +22,7 @@
 
 import unittest
 import zipfile
+import tempfile
 from metaboblend.build_structures import *
 from metaboblend.databases import *
 
