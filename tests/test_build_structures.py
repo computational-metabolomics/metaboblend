@@ -47,7 +47,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             zip_ref.extractall(cls.to_test_result())
             zip_ref.close()
 
-    def test_build(self):  # all other build functions rely on - if this fails all others will
+    def test_build(self):  # core - all other build functions rely on
         db = SubstructureDb(self.to_test_result("substructures.sqlite"))
 
         # ref data
@@ -182,8 +182,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             for i, record_dict in enumerate(record_dicts.values()):
                 ms_data = {record_dict["HMDB_ID"]: {"mc": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                            record_dict["O"], record_dict["P"], record_dict["S"]],
-                                                    "exact_mass": record_dict["exact_mass"],
-                                                    "prescribed_masses": None}}
+                                                    "exact_mass": record_dict["exact_mass"]}}
 
                 # test standard building
                 returned_smis = list(generate_structures(
@@ -283,10 +282,151 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_build_msn(self):
-        return  # TODO: implement test
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+
+        # ref data
+        smis = [{'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)cc(O)c1'},
+                None,
+                {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
+                None]
+
+        individual_lens = [4, 41, 2, 0]
+        overall_lens = [3, 41, 2, 0]
+        freqs = [1, 0, 0, 0]
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        # hmdb records to build from
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+
+            for i, record_dict in enumerate(record_dicts.values()):
+
+                # test msn building
+                returned_smis = build_msn(
+                    mc=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
+                    write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
+                )
+
+                j = 0
+                individual_smis = set()
+                for prescribed_mass in fragments:
+                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                        for line in smi_out:
+                            j += 1
+                            individual_smis.add(line.split()[0])
+
+                self.assertEqual(individual_lens[i], j)
+
+                j = 0
+                unique_smis = set()
+                with open(self.to_test_result("structure_frequency.csv"), "r") as smi_out:
+                    for line in smi_out:
+                        j += 1
+                        unique_smis.add(line.split()[0].split(',')[0])
+
+                self.assertEqual(j, overall_lens[i])
+
+                self.assertEqual(unique_smis, individual_smis)
+                self.assertEqual(unique_smis, set(returned_smis.keys()))
+
+                self.assertEqual(len([freq for freq in set(returned_smis.values()) if freq > 1]), freqs[i])
+
+                if smis[i] is not None:
+                    self.assertEqual(unique_smis, smis[i])
+
+                if i == 0:
+                    self.assertEqual(returned_smis['NCCc1ccc(O)c(O)c1'], 2)
+
+        db.close()
 
     def test_annotate_msn(self):  # tests vs build_msn
-        return  # TODO: implement test
+        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+            for i, record_dict in enumerate(record_dicts.values()):
+                ms_data = {record_dict["HMDB_ID"]: {"mc": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                    "exact_mass": record_dict["exact_mass"],
+                                                    "prescribed_masses": fragments}}
+
+                # test standard building
+                returned_smis = list(annotate_msn(
+                    ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
+                    smi_out_dir=self.to_test_result("annotate"),
+                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    minimum_frequency=None, yield_smi_dict=True
+                ))
+
+                build_smis = build_msn(
+                    mc=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
+                    write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
+                )
+
+                unique_smis = set()
+                for prescribed_mass in fragments:
+                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                        for line in smi_out:
+                            unique_smis.add(line.split()[0])
+
+                self.assertEqual(unique_smis, set(returned_smis[0].keys()))
+                self.assertEqual(unique_smis, set(build_smis.keys()))
+                self.assertEqual(returned_smis[0], build_smis)
+
+            ms_data = {}
+            for i, record_dict in enumerate(record_dicts.values()):
+                record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+                ms_data[record_dict["HMDB_ID"]] = {"mc": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                          record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                   "exact_mass": record_dict["exact_mass"],
+                                                   "prescribed_masses": fragments}
+            # test building with multiple inputs
+            returned_smi_list = list(annotate_msn(
+                ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
+                smi_out_dir=self.to_test_result(),
+                path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                path_substructure_db=self.to_test_result("substructures.sqlite"),
+                minimum_frequency=None, yield_smi_dict=True
+            ))
+
+            for i, record_dict in enumerate(record_dicts.values()):
+                build_smis = build_msn(
+                    mc=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
+                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
+                    write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
+                )
+
+                unique_smis = set()
+                for prescribed_mass in fragments:
+                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                        for line in smi_out:
+                            unique_smis.add(line.split()[0])
+
+                self.assertEqual(unique_smis, set(returned_smi_list[i].keys()))
+                self.assertEqual(unique_smis, set(build_smis.keys()))
+                self.assertEqual(returned_smi_list[i], build_smis)
+
+        db.close()
 
     def test_gen_subs_table(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")

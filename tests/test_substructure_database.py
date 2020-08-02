@@ -184,7 +184,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_k_configs(self):  # TODO: update tests for bool parameter
+    def test_k_configs(self):
         db = SubstructureDb(self.to_test_result("substructures.sqlite"),
                             self.to_test_result("connectivity", "k_graphs.sqlite"))
 
@@ -196,6 +196,18 @@ class DatabasesTestCase(unittest.TestCase):
                           ((0, 2), (0, 5), (1, 3), (1, 4), (2, 5), (3, 4)),
                           ((0, 3), (0, 5), (1, 2), (1, 4), (2, 4), (3, 5)),
                           ((0, 3), (0, 4), (1, 2), (1, 5), (2, 5), (3, 4))])
+
+        k_configs = db.k_configs(True)
+        self.assertEqual(len(k_configs), 10)
+        self.assertEqual(k_configs['((1,), (1,))'], [((0, 1),)])
+        self.assertTrue('((2, 2), (2, 2), (2, 2))' not in k_configs.keys())
+        self.assertEqual(k_configs['((2, 2), (1, 1), (1, 1))'],
+                         [((0, 2), (0, 4), (1, 3), (1, 5)),
+                          ((0, 2), (0, 3), (1, 4), (1, 5)),
+                          ((0, 2), (0, 5), (1, 3), (1, 4)),
+                          ((0, 4), (0, 5), (1, 2), (1, 3)),
+                          ((0, 3), (0, 5), (1, 2), (1, 4)),
+                          ((0, 3), (0, 4), (1, 2), (1, 5))])
 
         db.close()
 

@@ -440,7 +440,7 @@ def build_msn(mc, exact_mass, prescribed_masses, max_n_substructures, smi_out_di
     # write structure_frequency dict as csv
     if smi_out_dir is not None:
         with open(os.path.join(smi_out_dir, "structure_frequency.csv"), "w") as freq_out:
-            freq_out.writelines([k + "," + str(i) for k, i in zip(structure_frequency.keys(), structure_frequency.values())])
+            freq_out.writelines([k + "," + str(i) + "\n" for k, i in zip(structure_frequency.keys(), structure_frequency.values())])
 
     if return_smi_dict:
         return structure_frequency
@@ -501,8 +501,8 @@ def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_ato
 
     for ms_id in ms_data.keys():
         try:
-            ms_data[ms_id]["prescribed_masses"]
-            ppm = 0
+            if ms_data[ms_id]["prescribed_masses"] is not None:
+                ppm = 0
         except KeyError:
             ms_data[ms_id]["prescribed_masses"] = None
             ppm = None
