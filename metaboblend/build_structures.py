@@ -275,9 +275,10 @@ def add_bonds(mols, edges, atoms_available, bond_types):
 def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valence=6, max_atoms_available=2,
                  max_n_substructures=3, path_connectivity_db="../databases/k_graphs.sqlite",
                  path_substructure_db="../databases/substructures.sqlite", ppm=5, processes=None,
-                 write_fragment_smis=False, yield_smi_dict=False, minimum_frequency=None, hydrogenation_allowance=2):
+                 write_fragment_smis=False, yield_smi_dict=False, minimum_frequency=None, hydrogenation_allowance=2,
+                 add_small_substructures=True):
     """
-    :param ms_data: Dictionary in the form ms_data[id] = 
+    :param ms_data: Dictionary in the form ms_data[id] =
         {mc: [C, H, N, O, P, S], exact_mass: exact_mass, prescribed_masses=[]}. id represents a unique identifier for
         a given test, mc is a list of integers referring to molecular composition of the structure of interest,
         exact_mass is the mass of this structure to >=4d.p. and prescribed_masses are neutral fragment masses generated
@@ -317,6 +318,9 @@ def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valenc
     :param write_fragment_smis: Whether to write smiles to a file for each fragment.
 
     :param yield_smi_dict: Whether to return a dict of smiles.
+
+    :param add_small_substructures: Whether to add a curated list of small substructures (single atom) to the filtered
+        database prior to annotation.
     """
 
     if ppm is None:
@@ -333,6 +337,9 @@ def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valenc
         minimum_frequency=minimum_frequency,
         max_mass=round(max([ms_data[ms_id]["exact_mass"] for ms_id in ms_data.keys()]))
     )
+
+    if add_small_substructures:
+        db.add_small_substructures(table_name)
 
     for i, ms_id in enumerate(ms_data.keys()):
         if smi_out_dir is not None and write_fragment_smis:
