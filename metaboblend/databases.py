@@ -138,7 +138,7 @@ class SubstructureDb:
         be attached as "graphs".
     """
 
-    def __init__(self, path_substructure_db, path_connectivity_db=None, clean=True):
+    def __init__(self, path_substructure_db, path_connectivity_db=None):
         """Constructor method"""
 
         self.path_substructure_db = path_substructure_db
@@ -149,8 +149,6 @@ class SubstructureDb:
 
         if self.path_connectivity_db is not None:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.path_connectivity_db)
-
-        self.clean = clean
 
     def select_compounds(self, cpds=[]):
         """
@@ -582,8 +580,8 @@ class SubstructureDb:
             self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
                                        ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
-    def close(self):
-        if self.clean:
+    def close(self, clean=True):
+        if clean:
             self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
             self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
             self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
