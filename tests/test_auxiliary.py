@@ -44,7 +44,7 @@ class AuxiliaryTestCase(unittest.TestCase):
 
         cls.lines_geng = [b'E?oo', b'ECO_', b'ECQ_', b'ECZ?', b'ECX_', b'ECYO', b'EEh_', b'EQhO']
 
-        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
+        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip", "test_aux.zip"]:
             zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                    "data",
                                                    compr_data
