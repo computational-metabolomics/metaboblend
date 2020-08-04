@@ -1,0 +1,3281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metabolite>
+  <version>4.0</version>
+  <creation_date>2005-11-16 15:48:42 UTC</creation_date>
+  <update_date>2020-02-27 20:28:38 UTC</update_date>
+  <accession>HMDB0000073</accession>
+  <status>quantified</status>
+  <secondary_accessions>
+    <accession>HMDB00073</accession>
+    <accession>HMDB0060277</accession>
+    <accession>HMDB60277</accession>
+  </secondary_accessions>
+  <name>Dopamine</name>
+  <description>Dopamine is a member of the catecholamine family of neurotransmitters in the brain and is a precursor to epinephrine (adrenaline) and norepinephrine (noradrenaline). Dopamine is synthesized in the body (mainly by nervous tissue and adrenal glands) first by the hydration of the amino acid tyrosine to DOPA by tyrosine hydroxylase and then by the decarboxylation of DOPA by aromatic-L-amino-acid decarboxylase. Dopamine is a major transmitter in the extrapyramidal system of the brain, and important in regulating movement. A family of receptors (dopamine receptors) mediates its action, which plays a major role in reward-motivated behaviour. Dopamine has many other functions outside the brain. In blood vessels, dopamine inhibits norepinephrine release and acts as a vasodilator (at normal concentrations); in the kidneys, it increases sodium excretion and urine output; in the pancreas, it reduces insulin production; in the digestive system, it reduces gastrointestinal motility and protects intestinal mucosa; and in the immune system, it reduces the activity of lymphocytes. Parkinson's disease, a degenerative condition causing tremor and motor impairment, is caused by a loss of dopamine-secreting neurons in an area of the midbrain called the substantia nigra. There is evidence that schizophrenia involves altered levels of dopamine activity, and most antipsychotic drugs used to treat this are dopamine antagonists, which reduce dopamine activity. Attention deficit hyperactivity disorder, bipolar disorder, and addiction are also characterized by defects in dopamine production or metabolism. It has been suggested that animals derived their dopamine-synthesizing machinery from bacteria via horizontal gene transfer that may have occurred relatively late in evolutionary time. This is perhaps a result of the symbiotic incorporation of bacteria into eukaryotic cells that gave rise to mitochondria. Dopamine is elevated in the urine of people who consume bananas. When present in sufficiently high levels, dopamine can be a neurotoxin and a metabotoxin. A neurotoxin is a compound that disrupts or attacks neural tissue. A metabotoxin is an endogenously produced metabolite that causes adverse health effects at chronically high levels. Chronically high levels of dopamine are associated with neuroblastoma, Costello syndrome, leukemia, phaeochromocytoma, aromatic L-amino acid decarboxylase deficiency, and Menkes disease (MNK). High levels of dopamine can lead to hyperactivity, insomnia, agitation and anxiety, depression, delusions, excessive salivation, nausea, and digestive problems. A study has shown that urinary dopamine is produced by Bacillus and Serratia (PMID: 24621061)</description>
+  <synonyms>
+    <synonym>2-(3,4-Dihydroxyphenyl)ethylamine</synonym>
+    <synonym>3,4-Dihydroxyphenethylamine</synonym>
+    <synonym>3-Hydroxytyramine</synonym>
+    <synonym>4-(2-Aminoethyl)-1,2-benzenediol</synonym>
+    <synonym>4-(2-Aminoethyl)benzene-1,2-diol</synonym>
+    <synonym>4-(2-Aminoethyl)catechol</synonym>
+    <synonym>4-(2-Aminoethyl)pyrocatechol</synonym>
+    <synonym>Deoxyepinephrine</synonym>
+    <synonym>Dopamina</synonym>
+    <synonym>Dopaminum</synonym>
+    <synonym>Hydroxytyramin</synonym>
+    <synonym>Medopa</synonym>
+    <synonym>3,4-Dihydroxyphenylethylamine</synonym>
+    <synonym>4-(2-Aminoethyl)-pyrocatechol</synonym>
+    <synonym>a-(3,4-Dihydroxyphenyl)-b-aminoethane</synonym>
+    <synonym>alpha-(3,4-Dihydroxyphenyl)-beta-aminoethane</synonym>
+    <synonym>Dopamin</synonym>
+    <synonym>Dopastat</synonym>
+    <synonym>Dophamine</synonym>
+    <synonym>Dynatra</synonym>
+    <synonym>Hydroxytyramine</synonym>
+    <synonym>Intropin</synonym>
+    <synonym>Oxytyramine</synonym>
+    <synonym>Revivan</synonym>
+    <synonym>3,4 Dihydroxyphenethylamine</synonym>
+    <synonym>Hydrochloride, dopamine</synonym>
+    <synonym>Dopamine hydrochloride</synonym>
+  </synonyms>
+  <chemical_formula>C8H11NO2</chemical_formula>
+  <average_molecular_weight>153.1784</average_molecular_weight>
+  <monisotopic_molecular_weight>153.078978601</monisotopic_molecular_weight>
+  <iupac_name>4-(2-aminoethyl)benzene-1,2-diol</iupac_name>
+  <traditional_iupac>dopamine</traditional_iupac>
+  <cas_registry_number>62-31-7</cas_registry_number>
+  <smiles>NCCC1=CC(O)=C(O)C=C1</smiles>
+  <inchi>InChI=1S/C8H11NO2/c9-4-3-6-1-2-7(10)8(11)5-6/h1-2,5,10-11H,3-4,9H2</inchi>
+  <inchikey>VYFYYTLLBUKUHU-UHFFFAOYSA-N</inchikey>
+  <taxonomy>
+    <description> belongs to the class of organic compounds known as catecholamines and derivatives. Catecholamines and derivatives are compounds containing 4-(2-Aminoethyl)pyrocatechol [4-(2-aminoethyl)benzene-1,2-diol] or a derivative thereof formed by substitution.</description>
+    <direct_parent>Catecholamines and derivatives</direct_parent>
+    <kingdom>Organic compounds</kingdom>
+    <super_class>Benzenoids</super_class>
+    <class>Phenols</class>
+    <sub_class>Benzenediols</sub_class>
+    <molecular_framework>Aromatic homomonocyclic compounds</molecular_framework>
+    <alternative_parents>
+      <alternative_parent>1-hydroxy-2-unsubstituted benzenoids</alternative_parent>
+      <alternative_parent>1-hydroxy-4-unsubstituted benzenoids</alternative_parent>
+      <alternative_parent>2-arylethylamines</alternative_parent>
+      <alternative_parent>Aralkylamines</alternative_parent>
+      <alternative_parent>Hydrocarbon derivatives</alternative_parent>
+      <alternative_parent>Monoalkylamines</alternative_parent>
+      <alternative_parent>Organooxygen compounds</alternative_parent>
+      <alternative_parent>Organopnictogen compounds</alternative_parent>
+      <alternative_parent>Phenethylamines</alternative_parent>
+    </alternative_parents>
+    <substituents>
+      <substituent>1-hydroxy-2-unsubstituted benzenoid</substituent>
+      <substituent>1-hydroxy-4-unsubstituted benzenoid</substituent>
+      <substituent>2-arylethylamine</substituent>
+      <substituent>Amine</substituent>
+      <substituent>Aralkylamine</substituent>
+      <substituent>Aromatic homomonocyclic compound</substituent>
+      <substituent>Catecholamine</substituent>
+      <substituent>Hydrocarbon derivative</substituent>
+      <substituent>Monocyclic benzene moiety</substituent>
+      <substituent>Organic nitrogen compound</substituent>
+      <substituent>Organic oxygen compound</substituent>
+      <substituent>Organonitrogen compound</substituent>
+      <substituent>Organooxygen compound</substituent>
+      <substituent>Organopnictogen compound</substituent>
+      <substituent>Phenethylamine</substituent>
+      <substituent>Primary aliphatic amine</substituent>
+      <substituent>Primary amine</substituent>
+    </substituents>
+    <external_descriptors>
+      <external_descriptor>Biogenic amines</external_descriptor>
+      <external_descriptor>Dopamine</external_descriptor>
+      <external_descriptor>Tyramine derivatives</external_descriptor>
+      <external_descriptor>catecholamine</external_descriptor>
+    </external_descriptors>
+  </taxonomy>
+  <ontology>
+    <root>
+      <term>Physiological effect</term>
+      <definition>The effect on an organism physiology, resulting from its exposure to a chemical.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Health effect</term>
+          <definition>A health condition or observation associated with a stimuli or with a biological activity of a chemical.</definition>
+          <parent_id>7693</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Health condition</term>
+              <definition>A health effect that consists on short or long-term disease, condition, disorder, syndrome or constant abnormality.</definition>
+              <parent_id>7694</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Schizophrenia</term>
+                  <definition>A psychotic disorder that is characterized by a disintegration of thought processes and of emotional responsiveness. (do).</definition>
+                  <parent_id>7695</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Aromatic l-amino acid decarboxylase deficiency</term>
+                  <definition>An inherited metabolic disorder characterized by reduced production of serotonin and dopamine resulting in hypotonia, hypokinesia, ptosis oculogyric crises, and signs of autonomic dysfunction with onset in infancy or childhood that has material basis in homozygous or compound heterozygous mutation in the ddc gene on chromosome 7p12. (do).</definition>
+                  <parent_id>7695</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Aadc deficiency</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Vitiligo</term>
+                  <definition>A hypersensitivity reaction type ii disease that causes depigmentation of patches of skin resulting from loss of function or death of melanoctyes. (do).</definition>
+                  <parent_id>7695</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Leukoderma</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Endocrine disorders</term>
+                  <definition>Any disorder that affects the endocrine system. it can be neoplastic (carcinoid tumor, neuroendocrine carcinoma, and pheochromocytoma) or non-neoplastic (such as diabetes mellitus, hyperthyroidism, and adrenal gland insufficiency).</definition>
+                  <parent_id>7695</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Hypothyroidism</term>
+                      <definition>A disorder characterized by a decrease in production of thyroid hormone by the thyroid gland. (nci ctcae).</definition>
+                      <parent_id>7704</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Underactive thyroid</synonym>
+                        <synonym>Low thyroid</synonym>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Disposition</term>
+      <definition>A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Route of exposure</term>
+          <definition>A mean by which a chemical agent comes in contact with an organism, either under intended or unintended circumstances.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Enteral</term>
+              <definition>Chemical exposure via the alimentary canal (mouth to anus).</definition>
+              <parent_id>7743</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Ingestion</term>
+                  <definition>Chemical exposure facilitated by entry through the mouth.</definition>
+                  <parent_id>7744</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Digestion</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Source</term>
+          <definition>Natural or synthetic origin of a chemical.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Endogenous</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Food</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Biological</term>
+              <definition>A living organism (species or a higher taxonomy rank), in which a chemical can be found.</definition>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Microbe</term>
+                  <definition>A living organism that is of a microscopic scale, either single-celled or a cluster of cells.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Bacillus</term>
+                      <definition/>
+                      <parent_id>7739</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Serratia</term>
+                      <definition/>
+                      <parent_id>7739</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+                <descendant>
+                  <term>Plant</term>
+                  <definition>A living organism belonging to the kingdom plantea. typically, it grows in a permanent site, absorbs water and inorganic substances through its roots, and synthesizes nutrients in its leaves by photosynthesis using the green pigment chlorophyll. examples incude trees, shrubs, herbs, grasses, ferns, and mosses.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                    <synonym>Flora</synonym>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Poaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Gramineae</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Cucurbitaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Cucurbits</synonym>
+                        <synonym>Gourds</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fabaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Papilionoideae</synonym>
+                        <synonym>Legume</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Theobroma cacao</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Biological location</term>
+          <definition>The physiological origin within an organism, including anatomical compnents, biofluids and excreta.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Organ and components</term>
+              <definition>An anatomical organizational level including multiple tissues or substructures, which enables a common biological function.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Spleen</term>
+                  <definition>An abdominal organ that is part of the hematopoietic and immune systems. it is composed of the white pulp and the red pulp and is surrounded by a capsule. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Bladder</term>
+                  <definition>The distensible sac-like organ that functions as a reservoir of urine, collecting from the kidneys and eliminating via the urethra. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Brain</term>
+                  <definition>An organ composed of grey and white matter that is the center for intelligence and reasoning. it is protected by the bony cranium. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Testicle</term>
+                  <definition>Either of the paired male reproductive glands that produce the male germ cells and the male hormones. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Testes</synonym>
+                    <synonym>Testis</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Kidney</term>
+                  <definition>The organs of the urinary tract located in the retroperitoneal cavity adjacent to the spine and composed of the renal cortex and the renal medulla. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Kidneys</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Pancreas</term>
+                  <definition>A digestive organ in the abdomen that has both endocrine and exocrine functions. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Endocrine gland</term>
+                  <definition/>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Adrenal cortex</term>
+                      <definition>The outer region of the adrenal gland consisting of the zona glomerulosa, the zona fasciculata, and the zona reticularis. The adrenal cortex produces and secretes mineralocorticoids, glucocorticoids, and adrenal androgens. (NCI).</definition>
+                      <parent_id>7728</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Adrenal gland</term>
+                      <definition>The endocrine glands adjacent to the kidneys that consist of the outer adrenal cortex and the inner adrenal medulla in mammals (nci).</definition>
+                      <parent_id>7728</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Tissue and substructures</term>
+              <definition>An anatomical organizational level including multiple cells yet not comprising a complete organ .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Placenta</term>
+                  <definition>An organ present in some vertebrates during embryonic gestation that surrounds the fetus and provides it with nutrients and oxygen, facilitates gas and waste exchange between the fetus and mother, and provides parasitic cloaking from the mother's immune system by excretion of neurokinin b. (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Epidermis</term>
+                  <definition>The epithelial portion of the skin (cutis). it consists of the following layers: stratum corneum (horny layer), stratum granulosum (granular layer), stratum spinosum (prickle cell layer), and stratum basale (basal cell layer). (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Adipose tissue</term>
+                  <definition>A specialized form of connective tissue consisting primarily of adipocytes (fat cells), surrounded by a meshwork of collagen fibers. (NCI)</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fat tissue</synonym>
+                    <synonym>Body fat</synonym>
+                    <synonym>Adipose</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Skeletal muscle</term>
+                  <definition>Striated muscles that are under voluntary control of the organism. they are connected at either or both ends to a bone and are utilized for locomotion and other movements. (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Striated muscle</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Muscle</term>
+                  <definition>A fibrous soft tissue with the ability to contract to produce force and motion. (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Biofluid and excreta</term>
+              <definition>A liquid, semi-solid or solid material originating in the body.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Feces</term>
+                  <definition>The material discharged from the bowel during defecation. It consists of undigested food, intestinal mucus, epithelial cells, and bacteria.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fecal</synonym>
+                    <synonym>Stool</synonym>
+                    <synonym>Faecal</synonym>
+                    <synonym>Faeces</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Urine</term>
+                  <definition>Excretion in liquid state processed by the kidney.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Blood</term>
+                  <definition>A liquid tissue with the primary function of transporting oxygen and carbon dioxide (nci). it supplies the tissues with nutrients, removes waste products, and contains various components of the immune system defending the body against infection.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Cerebrospinal fluid</term>
+                  <definition>The fluid that is contained within the brain ventricles, the subarachnoid space and the central canal of the spinal cord. (nci).</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Csf</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Subcellular</term>
+              <definition>An anatomical organizational level including a component within a biological cell .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Cytoplasm</term>
+                  <definition>The portion of the cell contained within the plasma membrane but excluding the nucleus.</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Cytoplasma</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Myelin sheath</term>
+                  <definition>A layer of phospholipids and protein found on neuronal axons. this structure acts as an electrical insulator that allows nerve impulses to travel faster by increasing the resistance and decreasing the capacitance over that found in unmyelinated nerve fibers. (nci).</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Myelin</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Cell and elements</term>
+              <definition>An anatomical organizational level comprising of a single cell (or a fragment in some exceptions). a cell is defined by its type or function. it is the smallest unit of living structure capable of independent existence, composed of a membrane-enclosed mass of protoplasm and containing a nucleus or nucleoid.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Extracellular</term>
+                  <definition>The space external to the outermost structure of a cell.</definition>
+                  <parent_id>7732</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Extracellular region</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Element</term>
+                  <definition/>
+                  <parent_id>7732</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Platelet</term>
+                      <definition>A fragment of a large bone marrow cell (megakaryocyte) which is present in the blood but is not a blood cell. It is an irregular, disc-shaped element in the blood that assists in blood clotting.</definition>
+                      <parent_id>7733</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Thrombocyte</synonym>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+                <descendant>
+                  <term>Cell</term>
+                  <definition/>
+                  <parent_id>7732</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Fibroblast</term>
+                      <definition>A cell in the connective tissue, that makes and secretes collagen proteins.</definition>
+                      <parent_id>7734</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Nerve cell</term>
+                      <definition>A cell in the nervous system, that is able to conduct weak electric signals between the brain and the body. A typical neuron consists of a cell body, containing the nucleus and the surrounding cytoplasm (perikaryon); several short radiating processes (dendrites); and one long process (the axon), which terminates in twiglike branches (telodendrons) and may have branches (collaterals) projecting along its course. (NCI).</definition>
+                      <parent_id>7734</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Neuron</synonym>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Process</term>
+      <definition>Biological or chemical events, or a series thereof, leading to a known function or end-product.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Naturally occurring process</term>
+          <definition>Naturally-occurring molecular events or a series thereof, leading to a known function or end-product.</definition>
+          <parent_id>7659</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Biological process</term>
+              <definition>Biological or chemical events or a series thereof, leading to a known function or end-product within an organism.</definition>
+              <parent_id>7660</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Biochemical pathway</term>
+                  <definition>A linked series of chemical reactions that occur in a defined order within or between organism cells, and lead to a known function or end product.</definition>
+                  <parent_id>7661</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>3-Methylthiofentanyl Action Pathway</term>
+                      <definition> binding to the opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Alfentanil Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Alvimopan Action Pathway</term>
+                      <definition> it competitively binds to mu-opioid receptor in the gastrointestinal tract. unlike methylnaltrexone (another peripherally acting mu-receptor antagonist) that bears a quaternary amine, alvimopan owes its selectivity for peripheral receptors to its kinetics.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Anileridine Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Benzocaine Action Pathway</term>
+                      <definition> benzocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Bupivacaine Action Pathway</term>
+                      <definition> bupivacaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Buprenorphine Action Pathway</term>
+                      <definition> buprenorphine is also a kappa-opioid receptor antagonist. the partial agonist activity means that opioid receptor antagonists (e.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Carfentanil Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Catecholamine Biosynthesis</term>
+                      <definition> catecholamines are sympathomimetic hormones that are released by the adrenal glands in response to stress. they are part of the sympathetic nervous system.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Chloroprocaine Action Pathway</term>
+                      <definition> chloroprocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Citalopram Action Pathway</term>
+                      <definition> it does so by competing for the same binding site as serotonin on the the sodium-dependent serotonin transporter (slc6a4). this increases the concentrations of serotonin in the synaptic cleft and reverses the state of low concentration seen in depression.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Cocaine Action Pathway</term>
+                      <definition> cocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Codeine Action Pathway</term>
+                      <definition> binding of the opiate stimulates the exchange of gtp for gdp on the g-protein complex. as the effector system is adenylate cyclase and camp located at the inner surface of the plasma membrane, opioids decrease intracellular camp by inhibiting adenylate cyclase.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Desipramine Action Pathway</term>
+                      <definition> it does so by competing for the same binding site as norepinephrine on the sodium-dependent noradraneline transporter (slc6a2) and by competing with serotonin for binding to the sodium-dependent serotonin transporter (slc6a4). this increases the concentrations of both norepinephrine and serotonin in their respective synapses and reverses the state of low concentrations of both neurotransmitters found in depression.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Dezocine Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Dibucaine Action Pathway</term>
+                      <definition> dibucaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Dihydromorphine Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Dimethylthiambutene Action Pathway</term>
+                      <definition> dimethylthiambutene exerts its analgesic by acting on the mu-opioid receptor of sensory neurons. binding to the mu-opioid receptor activates associated g(i) proteins.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Diphenoxylate Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Disulfiram Action Pathway</term>
+                      <definition> with regards to cocaine addiction, cocaine inhibits dopamine reuptake by blocking dopamine transporter 1 (dat1). this increases dopamine concentrations in the synapse and dopamine binding to its receptors induces euphoria.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Dopamine Activation of Neurological Reward System</term>
+                      <definition> the mesolimbic pathway is the main pathway associated with reward, and the dopaminergic neurons of this pathway are found in the substantia nigra (snc) and  ventral tegmental area (vta) of the midbrain. dopamine acts on different g protein-coupled receptor subtyes.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Escitalopram Action Pathway</term>
+                      <definition> it does so by competing for the same binding site as serotonin on the the sodium-dependent serotonin transporter (slc6a4). this increases the concentrations of serotonin in the synaptic cleft and reverses the state of low concentration seen in depression.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Ethylmorphine Action Pathway</term>
+                      <definition> the precise mechanism of the analgesic action of morphine is unknown. however, specific cns opiate receptors have been identified and likely play a role in the expression of analgesic effects.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fentanyl Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fluoxetine Action Pathway</term>
+                      <definition> it does so by competing for the same binding site as serotonin on the the sodium-dependent serotonin transporter (slc6a4). this increases the concentrations of serotonin in the synaptic cleft and reverses the state of low concentration seen in depression.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Heroin Action Pathway</term>
+                      <definition> it acts on endogenous mu-opioid receptors that are spread in discrete packets throughout the brain, spinal cord and gut in almost all mammals. heroin, along with other opioids, are agonists to four endogenous neurotransmitters.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Hydrocodone Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Hydromorphone Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Imipramine Action Pathway</term>
+                      <definition> it does so by competing for the same binding site as norepinephrine on the sodium-dependent noradraneline transporter (slc6a2) and by competing with serotonin for binding to the sodium-dependent serotonin transporter (slc6a4). this increases the concentrations of both norepinephrine and serotonin in their respective synapses and reverses the state of low concentrations of both neurotransmitters found in depression.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Ketobemidone  Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Levallorphan Action Pathway</term>
+                      <definition> levallorphan antagonizes opioid effects by competing for the same receptor sites. it binds to the opioid mu receptor.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Levobupivacaine Action Pathway</term>
+                      <definition> levobupivacaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Levomethadyl Acetate Action Action Pathway</term>
+                      <definition> however, levomethadyl acetate is more active and more toxic than morphine. opiate receptors (mu, kappa, delta) are coupled with g-protein receptors and function as both positive and negative regulators of synaptic transmission via g-proteins that activate effector proteins.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Levorphanol Action Pathway</term>
+                      <definition> levorphanol is similar to morphine in its actions, however it is up to 8 times more potent than morphine. levorphanol exerts its analgesic by acting on the mu-opioid receptor of sensory neurons.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Lidocaine (Local Anaesthetic) Action Pathway</term>
+                      <definition> lidocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Mepivacaine Action Pathway</term>
+                      <definition> mepivacaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Methadone Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Methadyl Acetate Action Pathway</term>
+                      <definition> it functions similarily to methadone. methadyl acetate exerts its analgesic by acting on the mu-opioid receptor of sensory neurons.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Morphine Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Nalbuphine Action Pathway</term>
+                      <definition> nalbuphine's analgesic potency is essentially equivalent to that of morphine on a milligram basis. it  is believed to interact with an opiate receptor site in the cns (probably in or associated with the limbic system).</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Naloxone Action Pathway</term>
+                      <definition> it is a competitive antagonist at mu, delta, and kappa opioid receptors. the preponderance of evidence suggests that naloxone antagonizes the opioid effects by competing for the same receptor sites, especially the opioid mu receptor.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Naltrexone Action Pathway</term>
+                      <definition> naltrexone competitively binds to such receptors and may block the effects of endogenous opioids. this leads to the antagonization of most of the subjective and objective effects of opiates, including respiratory depression, miosis, euphoria, and drug craving.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Nicotine Action Pathway</term>
+                      <definition> these are ionotropic receptors composed of five homomeric or heteromeric subunits. in the brain, nicotine binds to nicotinic acetylcholine receptors on dopaminergic neurons in the cortico-limbic pathways.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Oxybuprocaine Action Pathway</term>
+                      <definition> oxybuprocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Oxycodone Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Oxymorphone Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Pentazocine Action Pathway</term>
+                      <definition> pentazocine is also a kappa-opioid receptor antagonist. the partial agonist activity means that opioid receptor antagonists (e.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Prilocaine Action Pathway</term>
+                      <definition> prilocaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Procaine Action Pathway</term>
+                      <definition> procaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Proparacaine Action Pathway</term>
+                      <definition> proparacaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Propoxyphene Action Pathway</term>
+                      <definition> it primarily affects op3 receptors, which are coupled with g-protein receptors and function as modulators, both positive and negative, of synaptic transmission via g-proteins that activate effector proteins. binding of the opiate stimulates the exchange of gtp for gdp on the g-protein complex.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Remifentanil Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Ropivacaine Action Pathway</term>
+                      <definition> ropivacaine diffuses across the neuronal plasma membrane in its uncharged base form. once inside the cytoplasm, it is protonated and this protonated form enters and blocks the pore of the voltage-gated sodium channel from the cytoplasmic side.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Sufentanil Action Pathway</term>
+                      <definition> binding to the mu-opioid receptor activates associated g(i) proteins. these subsequently act to inhibit adenylate cyclase, reducing the level of intracellular camp.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Tramadol Action Action Pathway</term>
+                      <definition> opiate receptors are coupled with g-protein receptors and function as both positive and negative regulators of synaptic transmission via g-proteins that activate effector proteins. as the effector system is adenylate cyclase and camp located at the inner surface of the plasma membrane, opioids decrease intracellular camp by inhibiting adenylate cyclase.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Tyrosine Metabolism</term>
+                      <definition> half of the phenylalanine required goes into the production of tyrosine; if the diet is rich in tyrosine itself, the requirements for phenylalanine are reduced by about 50%. phenylalanine hydroxylase is a mixed-function oxygenase: one atom of oxygen is incorporated into water and the other into the hydroxyl of tyrosine.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Role</term>
+      <definition>The purpose or function assumed by a chemical, either naturally or as intended by humans .</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Industrial application</term>
+          <definition>The assumed function of a chemical utilized by human.</definition>
+          <parent_id>7671</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Pharmaceutical industry</term>
+              <definition>A pharmacologic activity for which a chemical substance is utilized owing to its biological role.</definition>
+              <parent_id>7678</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Pharmaceutical</term>
+                  <definition/>
+                  <parent_id>7679</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Indirect biological role</term>
+          <definition>An indirect function of a chemical which affect the physiological state of any organism (apart from the source organism, if of biological source).</definition>
+          <parent_id>7671</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Neurotoxin</term>
+              <definition>A chemical substance that interferes with the normal functioning of the nervous system.</definition>
+              <parent_id>7691</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+                <synonym>Neurotoxic</synonym>
+                <synonym>Neurotoxic agent</synonym>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Metabotoxin</term>
+              <definition>An endogenous metabolite that causes adverse health effects at chronically high levels.</definition>
+              <parent_id>7691</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+  </ontology>
+  <state>Solid</state>
+  <experimental_properties>
+    <property>
+      <kind>water_solubility</kind>
+      <value>535 mg/mL</value>
+      <source></source>
+    </property>
+    <property>
+      <kind>logp</kind>
+      <value>-0.98</value>
+      <source>HANSCH,C ET AL. (1995)</source>
+    </property>
+    <property>
+      <kind>melting_point</kind>
+      <value>128 °C</value>
+      <source></source>
+    </property>
+  </experimental_properties>
+  <predicted_properties>
+    <property>
+      <kind>logp</kind>
+      <value>-0.40</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logs</kind>
+      <value>-1.31</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>solubility</kind>
+      <value>7.43 g/L</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logp</kind>
+      <value>0.03</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_acidic</kind>
+      <value>10.01</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_basic</kind>
+      <value>9.27</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>iupac</kind>
+      <value>4-(2-aminoethyl)benzene-1,2-diol</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>average_mass</kind>
+      <value>153.1784</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mono_mass</kind>
+      <value>153.078978601</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>smiles</kind>
+      <value>NCCC1=CC(O)=C(O)C=C1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formula</kind>
+      <value>C8H11NO2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchi</kind>
+      <value>InChI=1S/C8H11NO2/c9-4-3-6-1-2-7(10)8(11)5-6/h1-2,5,10-11H,3-4,9H2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchikey</kind>
+      <value>VYFYYTLLBUKUHU-UHFFFAOYSA-N</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polar_surface_area</kind>
+      <value>66.48</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>refractivity</kind>
+      <value>43.25</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polarizability</kind>
+      <value>16.21</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rotatable_bond_count</kind>
+      <value>2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>acceptor_count</kind>
+      <value>3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>donor_count</kind>
+      <value>3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>physiological_charge</kind>
+      <value>1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formal_charge</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>number_of_rings</kind>
+      <value>1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>bioavailability</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rule_of_five</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>ghose_filter</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>veber_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mddr_like_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+  </predicted_properties>
+  <spectra>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>1070</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::EiMs</type>
+      <spectrum_id>230</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>314</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>1775</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>5743</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>30527</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>30983</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>37282</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrTwoD</type>
+      <spectrum_id>1128</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>120</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>121</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>122</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2777</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2778</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2779</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2780</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2781</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2782</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2783</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2784</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2785</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2786</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2787</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2788</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2789</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2790</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>2791</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>240376</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>240377</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>240378</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>242431</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>242432</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>242433</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>436587</spectrum_id>
+    </spectrum>
+  </spectra>
+  <biological_properties>
+    <cellular_locations>
+      <cellular>Cytoplasm</cellular>
+      <cellular>Extracellular</cellular>
+    </cellular_locations>
+    <biospecimen_locations>
+      <biospecimen>Blood</biospecimen>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <biospecimen>Feces</biospecimen>
+      <biospecimen>Urine</biospecimen>
+    </biospecimen_locations>
+    <tissue_locations>
+      <tissue>Adipose Tissue</tissue>
+      <tissue>Adrenal Cortex</tissue>
+      <tissue>Adrenal Gland</tissue>
+      <tissue>Adrenal Medulla</tissue>
+      <tissue>Bladder</tissue>
+      <tissue>Brain</tissue>
+      <tissue>Epidermis</tissue>
+      <tissue>Fibroblasts</tissue>
+      <tissue>Kidney</tissue>
+      <tissue>Muscle</tissue>
+      <tissue>Myelin</tissue>
+      <tissue>Nerve Cells</tissue>
+      <tissue>Neuron</tissue>
+      <tissue>Pancreas</tissue>
+      <tissue>Placenta</tissue>
+      <tissue>Platelet</tissue>
+      <tissue>Skeletal Muscle</tissue>
+      <tissue>Spleen</tissue>
+      <tissue>Striatum</tissue>
+      <tissue>Testes</tissue>
+    </tissue_locations>
+    <pathways>
+      <pathway>
+        <name>3-Methylthiofentanyl Action Pathway</name>
+        <smpdb_id>SMP00679</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Alfentanil Action Pathway</name>
+        <smpdb_id>SMP00413</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Alkaptonuria</name>
+        <smpdb_id>SMP00169</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Alvimopan Action Pathway</name>
+        <smpdb_id>SMP00685</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Anileridine Action Pathway</name>
+        <smpdb_id>SMP00674</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Aromatic L-Aminoacid Decarboxylase Deficiency</name>
+        <smpdb_id>SMP00170</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Benzocaine Action Pathway</name>
+        <smpdb_id>SMP00392</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Bupivacaine Action Pathway</name>
+        <smpdb_id>SMP00393</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Buprenorphine Action Pathway</name>
+        <smpdb_id>SMP00684</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Carfentanil Action Pathway</name>
+        <smpdb_id>SMP00414</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Catecholamine Biosynthesis</name>
+        <smpdb_id>SMP00012</smpdb_id>
+        <kegg_map_id>map00350</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Chloroprocaine Action Pathway</name>
+        <smpdb_id>SMP00394</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Citalopram Action Pathway</name>
+        <smpdb_id>SMP00424</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Cocaine Action Pathway</name>
+        <smpdb_id>SMP00395</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Codeine Action Pathway</name>
+        <smpdb_id>SMP00405</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Desipramine Action Pathway</name>
+        <smpdb_id>SMP00423</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dezocine Action Pathway</name>
+        <smpdb_id>SMP00676</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dibucaine Action Pathway</name>
+        <smpdb_id>SMP00396</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dihydromorphine Action Pathway</name>
+        <smpdb_id>SMP00689</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dimethylthiambutene Action Pathway</name>
+        <smpdb_id>SMP00680</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Diphenoxylate Action Pathway</name>
+        <smpdb_id>SMP00675</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Disulfiram Action Pathway</name>
+        <smpdb_id>SMP00429</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dopamine Activation of Neurological Reward System</name>
+        <smpdb_id>SMP00308</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dopamine beta-hydroxylase deficiency</name>
+        <smpdb_id>SMP00498</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Escitalopram Action Pathway</name>
+        <smpdb_id>SMP00425</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Ethylmorphine Action Pathway</name>
+        <smpdb_id>SMP00681</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Fentanyl Action Pathway</name>
+        <smpdb_id>SMP00415</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Fluoxetine Action Pathway</name>
+        <smpdb_id>SMP00426</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Hawkinsinuria</name>
+        <smpdb_id>SMP00190</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Heroin Action Pathway</name>
+        <smpdb_id>SMP00407</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Hydrocodone Action Pathway</name>
+        <smpdb_id>SMP00411</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Hydromorphone Action Pathway</name>
+        <smpdb_id>SMP00410</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Imipramine Action Pathway</name>
+        <smpdb_id>SMP00422</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Ketobemidone  Action Pathway</name>
+        <smpdb_id>SMP00690</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Levallorphan Action Pathway</name>
+        <smpdb_id>SMP00683</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Levobupivacaine Action Pathway</name>
+        <smpdb_id>SMP00397</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Levomethadyl Acetate Action Action Pathway</name>
+        <smpdb_id>SMP00677</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Levorphanol Action Pathway</name>
+        <smpdb_id>SMP00673</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Lidocaine (Local Anaesthetic) Action Pathway</name>
+        <smpdb_id>SMP00398</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Mepivacaine Action Pathway</name>
+        <smpdb_id>SMP00399</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Methadone Action Pathway</name>
+        <smpdb_id>SMP00408</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Methadyl Acetate Action Pathway</name>
+        <smpdb_id>SMP00678</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Monoamine oxidase-a deficiency (MAO-A)</name>
+        <smpdb_id>SMP00533</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Morphine Action Pathway</name>
+        <smpdb_id>SMP00406</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Nalbuphine Action Pathway</name>
+        <smpdb_id>SMP00691</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Naloxone Action Pathway</name>
+        <smpdb_id>SMP00688</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Naltrexone Action Pathway</name>
+        <smpdb_id>SMP00687</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Nicotine Action Pathway</name>
+        <smpdb_id>SMP00431</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Oxybuprocaine Action Pathway</name>
+        <smpdb_id>SMP00400</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Oxycodone Action Pathway</name>
+        <smpdb_id>SMP00409</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Oxymorphone Action Pathway</name>
+        <smpdb_id>SMP00412</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pentazocine Action Pathway</name>
+        <smpdb_id>SMP00686</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Prilocaine Action Pathway</name>
+        <smpdb_id>SMP00401</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Procaine Action Pathway</name>
+        <smpdb_id>SMP00402</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Proparacaine Action Pathway</name>
+        <smpdb_id>SMP00403</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Propoxyphene Action Pathway</name>
+        <smpdb_id>SMP00672</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Remifentanil Action Pathway</name>
+        <smpdb_id>SMP00416</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Ropivacaine Action Pathway</name>
+        <smpdb_id>SMP00404</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Sufentanil Action Pathway</name>
+        <smpdb_id>SMP00417</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Tramadol Action Action Pathway</name>
+        <smpdb_id>SMP00671</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Tyrosine hydroxylase deficiency</name>
+        <smpdb_id>SMP00497</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Tyrosine Metabolism</name>
+        <smpdb_id>SMP00006</smpdb_id>
+        <kegg_map_id>map00350</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Tyrosinemia Type I</name>
+        <smpdb_id>SMP00218</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Tyrosinemia, transient, of the newborn</name>
+        <smpdb_id>SMP00494</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+    </pathways>
+  </biological_properties>
+  <normal_concentrations>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>&lt; 0.00013</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Emedicine: http://emedicine.medscape.com/article/2088959-overview</reference_text>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>0.00000-0.00013</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Emedicine: https://emedicine.medscape.com/article/2088959-overview</reference_text>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.002+/-0.002</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Engelborghs S, Marescau B, De Deyn PP: Amino acids and biogenic amines in cerebrospinal fluid of patients with Parkinson's disease. Neurochem Res. 2003 Aug;28(8):1145-50.</reference_text>
+          <pubmed_id>12834252</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.0059 +/- 0.002</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Elderly (&gt;65 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+          <pubmed_id>10494443</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.0045 +/- 0.0026</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+          <pubmed_id>10494443</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Feces</biospecimen>
+      <concentration_value/>
+      <concentration_units/>
+      <subject_age>Not Specified</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>GC-MS on fecal extract</comment>
+      <references>
+        <reference>
+          <reference_text>Gao X, Pujos-Guillot E, Sebedio JL: Development of a quantitative metabolomic approach to study clinical human fecal water metabolome based on trimethylsilylation derivatization and GC/MS analysis. Anal Chem. 2010 Aug 1;82(15):6447-56. doi: 10.1021/ac1006552.</reference_text>
+          <pubmed_id>20669995</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.5024 +/- 0.2337</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Children (1 - 13 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>By DI-MS</comment>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.107 (0.043-0.172)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Nikolelis DP, Drivelos DA, Simantiraki MG, Koinis S: An optical spot test for the detection of dopamine in human urine using stabilized in air lipid films. Anal Chem. 2004 Apr 15;76(8):2174-80.</reference_text>
+          <pubmed_id>15080725</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.84</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>By HPLC-ECD</comment>
+      <references>
+        <reference>
+          <reference_text>Davidson DF, Hammond PJ, Murphy D, Carachi R: Age-related medical decision limits for urinary free (unconjugated) metadrenalines, catecholamines and metabolites in random urine specimens from children. Ann Clin Biochem. 2011 Jul;48(Pt 4):358-66. doi: 10.1258/acb.2011.011023. Epub 2011 Jun 13.</reference_text>
+          <pubmed_id>21670092</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.22 +/- 0.07</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.44 +/- 0.13</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adolescent (13-18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.86 (0.179-1.541)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Free dopamine levels</comment>
+      <references>
+        <reference>
+          <reference_text>Abdenur JE, Abeling N, Specola N, Jorge L, Schenone AB, van Cruchten AC, Chamoles NA: Aromatic l-aminoacid decarboxylase deficiency: unusual neonatal presentation and additional findings in organic acid analysis. Mol Genet Metab. 2006 Jan;87(1):48-53. Epub 2005 Nov 9.</reference_text>
+          <pubmed_id>16288991</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>2.626 (0.030-5.221)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Total dopamine levels</comment>
+      <references>
+        <reference>
+          <reference_text>Abdenur JE, Abeling N, Specola N, Jorge L, Schenone AB, van Cruchten AC, Chamoles NA: Aromatic l-aminoacid decarboxylase deficiency: unusual neonatal presentation and additional findings in organic acid analysis. Mol Genet Metab. 2006 Jan;87(1):48-53. Epub 2005 Nov 9.</reference_text>
+          <pubmed_id>16288991</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.102 (0.0673-0.163)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Not Specified</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, Volume 1. p.70. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp., Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value></concentration_value>
+      <concentration_units></concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Fryar-Williams S, Strobel JE: Biomarkers of a five-domain translational substrate for schizophrenia and schizoaffective psychosis. Biomark Res. 2015 Feb 6;3:3. doi: 10.1186/s40364-015-0028-1. eCollection 2015.</reference_text>
+          <pubmed_id>25729574</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.4 (0.2-0.7)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>by LC-MS/MS (Biocrates kit)</comment>
+      <references>
+        <reference>
+          <reference_text>Bouatra S, Aziat F, Mandal R, Guo AC, Wilson MR, Knox C, Bjorndahl TC, Krishnamurthy R, Saleem F, Liu P, Dame ZT, Poelzer J, Huynh J, Yallou FS, Psychogios N, Dong E, Bogumil R, Roehring C, Wishart DS: The human urine metabolome. PLoS One. 2013 Sep 4;8(9):e73076. doi: 10.1371/journal.pone.0073076. eCollection  2013.</reference_text>
+          <pubmed_id>24023812</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.13-2.63</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Newborn (0-30 days old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>López Hernández Y and Wishart DS. Healthy and term-neonate’s urinary metabolites concentration values measured by targeted metabolomics (in preparation)</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>1.31 +/- 0.76</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Newborn (0-30 days old)</subject_age>
+      <subject_sex>Female</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>López Hernández Y and Wishart DS. Healthy and term-neonate’s urinary metabolites concentration values measured by targeted metabolomics (in preparation)</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>1.1 +/- 0.7</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Newborn (0-30 days old)</subject_age>
+      <subject_sex>Male</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>López Hernández Y and Wishart DS. Healthy and term-neonate’s urinary metabolites concentration values measured by targeted metabolomics (in preparation)</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.200-5.220</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Children (1-13 years old)</subject_age>
+      <subject_sex>Female</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>In children of 1-2 years old</comment>
+      <references>
+        <reference>
+          <reference_text>Abeling NG, van Gennip AH, Barth PG, van Cruchten A, Westra M, Wijburg FA: Aromatic L-amino acid decarboxylase deficiency: a new case with a mild clinical presentation and unexpected laboratory findings. J Inherit Metab Dis. 1998 Jun;21(3):240-2.</reference_text>
+          <pubmed_id>9686366</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.261-1.697</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adolescent (13-18 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Rilstone JJ, Alkhater RA, Minassian BA: Brain dopamine-serotonin vesicular transport disease and its treatment. N Engl J Med. 2013 Feb 7;368(6):543-50. doi: 10.1056/NEJMoa1207281. Epub 2013 Jan 30.</reference_text>
+          <pubmed_id>23363473</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.10 (0.066-0.16)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, pp. 165-177. Edited by Cornelius Lentner.</reference_text>
+          <pubmed_id/>
+        </reference>
+        <reference>
+          <reference_text>West Cadwell, N.J. : Medical education Div., Ciba-Geigy Corp.</reference_text>
+          <pubmed_id/>
+        </reference>
+        <reference>
+          <reference_text>Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+  </normal_concentrations>
+  <abnormal_concentrations>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>&gt;0.000650</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Dopamine Beta-Hydroxylase Deficiency</patient_information>
+      <references>
+        <reference>
+          <reference_text>GeneReviews: Dopamine Beta-Hydroxylase Deficiency: https://www.ncbi.nlm.nih.gov/books/NBK1474/</reference_text>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>18.0284 +/- 2.4552</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Elderly (&gt;65 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Alzheimer's disease</patient_information>
+      <references>
+        <reference>
+          <reference_text>Fonteh AN, Harrington RJ, Tsai A, Liao P, Harrington MG: Free amino acid and dipeptide changes in the body fluids from Alzheimer's disease subjects. Amino Acids. 2007 Feb;32(2):213-24. Epub 2006 Oct 10.</reference_text>
+          <pubmed_id>17031479</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000268 +/- 0.000124</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Cerebral infarction, headache, paresthesia and ununconfirmed suspicion of leucemic infaction or brain metastasis with normal CSF value</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000300</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Cerebral infarction, headache, paresthesia and ununconfirmed suspicion of leucemic infaction or brain metastasis with normal CSF value but renal insufficiency</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000392</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Haemorrhagic infarction</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000510</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Bacterial meningitis</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000810</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Leucemic meningiosa</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000287</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Encephalitis</patient_information>
+      <references>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.34 +/- 0.10</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Alzheimer's disease</patient_information>
+      <references>
+        <reference>
+          <reference_text>Fonteh AN, Harrington RJ, Tsai A, Liao P, Harrington MG: Free amino acid and dipeptide changes in the body fluids from Alzheimer's disease subjects. Amino Acids. 2007 Feb;32(2):213-24. Epub 2006 Oct 10.</reference_text>
+          <pubmed_id>17031479</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.00002 +/- 0.000006 </concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Hypothyroidism</patient_information>
+      <references>
+        <reference>
+          <reference_text>Sjoberg S, Eriksson M, Nordin C: L-thyroxine treatment and neurotransmitter levels in the cerebrospinal fluid of hypothyroid patients: a pilot study. Eur J Endocrinol. 1998 Nov;139(5):493-7.</reference_text>
+          <pubmed_id>9849813</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000021 (0.000015-0.000027)</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Hypothyroidism</patient_information>
+      <references>
+        <reference>
+          <reference_text>Sjoberg S, Eriksson M, Nordin C: L-thyroxine treatment and neurotransmitter levels in the cerebrospinal fluid of hypothyroid patients: a pilot study. Eur J Endocrinol. 1998 Nov;139(5):493-7.</reference_text>
+          <pubmed_id>9849813</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cerebrospinal Fluid (CSF)</biospecimen>
+      <concentration_value>0.000078 (0.0000065-0.00015)</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Alzheimer's disease</patient_information>
+      <references>
+        <reference>
+          <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+          <pubmed_id>10494443</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.5565 +/- 0.3993</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1 - 13 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Eosinophilic esophagitis</patient_information>
+      <comment>By DI-MS</comment>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.6381 +/- 0.2948</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1 - 13 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Gastroesophageal reflux disease</patient_information>
+      <comment>By DI-MS</comment>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.49 +/- 0.06</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Infant (0-1 year old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Vitiligo</patient_information>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.37 +/- 0.03</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1-13 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Vitiligo</patient_information>
+      <comment>Age group: 1-5 years old
+</comment>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.4 +/- 0.05</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1-13 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Vitiligo</patient_information>
+      <comment>Age group: 6-10 years old
+</comment>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>2426 +/- 0</concentration_value>
+      <concentration_units>nmol/mmol creatinine</concentration_units>
+      <patient_age>Infant (0-1 year old)</patient_age>
+      <patient_sex>Male</patient_sex>
+      <patient_information>Aromatic L-amino acid decarboxylase deficiency</patient_information>
+      <comment>Free dopamine levels
+</comment>
+      <references>
+        <reference>
+          <reference_text>Abdenur JE, Abeling N, Specola N, Jorge L, Schenone AB, van Cruchten AC, Chamoles NA: Aromatic l-aminoacid decarboxylase deficiency: unusual neonatal presentation and additional findings in organic acid analysis. Mol Genet Metab. 2006 Jan;87(1):48-53. Epub 2005 Nov 9.</reference_text>
+          <pubmed_id>16288991</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>3.119 +/- 0</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Infant (0-1 year old)</patient_age>
+      <patient_sex>Male</patient_sex>
+      <patient_information>Aromatic L-amino acid decarboxylase deficiency</patient_information>
+      <comment>Total dopamine levels
+</comment>
+      <references>
+        <reference>
+          <reference_text>Abdenur JE, Abeling N, Specola N, Jorge L, Schenone AB, van Cruchten AC, Chamoles NA: Aromatic l-aminoacid decarboxylase deficiency: unusual neonatal presentation and additional findings in organic acid analysis. Mol Genet Metab. 2006 Jan;87(1):48-53. Epub 2005 Nov 9.</reference_text>
+          <pubmed_id>16288991</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value></concentration_value>
+      <concentration_units></concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Schizophrenia</patient_information>
+      <references>
+        <reference>
+          <reference_text>Fryar-Williams S, Strobel JE: Biomarkers of a five-domain translational substrate for schizophrenia and schizoaffective psychosis. Biomark Res. 2015 Feb 6;3:3. doi: 10.1186/s40364-015-0028-1. eCollection 2015.</reference_text>
+          <pubmed_id>25729574</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>0.124</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Adolescent (13-18 years old)</patient_age>
+      <patient_sex>Female</patient_sex>
+      <patient_information>Dopamine-serotonin Vesicular Transport Defect</patient_information>
+      <references>
+        <reference>
+          <reference_text>Rilstone JJ, Alkhater RA, Minassian BA: Brain dopamine-serotonin vesicular transport disease and its treatment. N Engl J Med. 2013 Feb 7;368(6):543-50. doi: 10.1056/NEJMoa1207281. Epub 2013 Jan 30.</reference_text>
+          <pubmed_id>23363473</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>2.7</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1-13 years old)</patient_age>
+      <patient_sex>Female</patient_sex>
+      <patient_information>Aromatic L-amino acid decarboxylase deficiency</patient_information>
+      <comment>n=1</comment>
+      <references>
+        <reference>
+          <reference_text>Abeling NG, van Gennip AH, Barth PG, van Cruchten A, Westra M, Wijburg FA: Aromatic L-amino acid decarboxylase deficiency: a new case with a mild clinical presentation and unexpected laboratory findings. J Inherit Metab Dis. 1998 Jun;21(3):240-2.</reference_text>
+          <pubmed_id>9686366</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>3.91</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Infant (0-1 year old)</patient_age>
+      <patient_sex>Female</patient_sex>
+      <patient_information>Aromatic L-amino acid decarboxylase deficiency</patient_information>
+      <comment>n=1</comment>
+      <references>
+        <reference>
+          <reference_text>Abeling NG, van Gennip AH, Barth PG, van Cruchten A, Westra M, Wijburg FA: Aromatic L-amino acid decarboxylase deficiency: a new case with a mild clinical presentation and unexpected laboratory findings. J Inherit Metab Dis. 1998 Jun;21(3):240-2.</reference_text>
+          <pubmed_id>9686366</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+  </abnormal_concentrations>
+  <diseases>
+    <disease>
+      <name>Dopamine Beta-Hydroxylase Deficiency</name>
+      <omim_id>223360</omim_id>
+      <references>
+        <reference>
+          <reference_text>GeneReviews: Dopamine Beta-Hydroxylase Deficiency: https://www.ncbi.nlm.nih.gov/books/NBK1474/</reference_text>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Hypothyroidism</name>
+      <omim_id></omim_id>
+      <references>
+        <reference>
+          <reference_text>Sjoberg S, Eriksson M, Nordin C: L-thyroxine treatment and neurotransmitter levels in the cerebrospinal fluid of hypothyroid patients: a pilot study. Eur J Endocrinol. 1998 Nov;139(5):493-7.</reference_text>
+          <pubmed_id>9849813</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Verhelst J, Berwaerts J, Marescau B, Abs R, Neels H, Mahler C, De Deyn PP: Serum creatine, creatinine, and other guanidino compounds in patients with thyroid dysfunction. Metabolism. 1997 Sep;46(9):1063-7.</reference_text>
+          <pubmed_id>9284897</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Chopra IJ, Santini F, Hurd RE, Chua Teco GN: A radioimmunoassay for measurement of thyroxine sulfate. J Clin Endocrinol Metab. 1993 Jan;76(1):145-50.</reference_text>
+          <pubmed_id>8421080</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Hommel E, Faber J, Kirkegaard C, Siersbaek-Nielsen K, Friis T: Urinary excretion of unconjugated and conjugated 3,5-diiodothyronine. Horm Metab Res. 1985 Feb;17(2):90-2.</reference_text>
+          <pubmed_id>3988241</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Yoshida K, Sakurada T, Kaise N, Yamamoto M, Kaise K, Saito S, Yoshinaga K: Measurement of triiodothyronine in urine. Tohoku J Exp Med. 1980 Dec;132(4):389-95.</reference_text>
+          <pubmed_id>7256725</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Alzheimer's disease</name>
+      <omim_id>104300</omim_id>
+      <references>
+        <reference>
+          <reference_text>Fonteh AN, Harrington RJ, Tsai A, Liao P, Harrington MG: Free amino acid and dipeptide changes in the body fluids from Alzheimer's disease subjects. Amino Acids. 2007 Feb;32(2):213-24. Epub 2006 Oct 10.</reference_text>
+          <pubmed_id>17031479</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Selley ML, Close DR, Stern SE: The effect of increased concentrations of homocysteine on the concentration of (E)-4-hydroxy-2-nonenal in the plasma and cerebrospinal fluid of patients with Alzheimer's disease. Neurobiol Aging. 2002 May-Jun;23(3):383-8.</reference_text>
+          <pubmed_id>11959400</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Shetty HU, Holloway HW, Schapiro MB: Cerebrospinal fluid and plasma distribution of myo-inositol and other polyols in Alzheimer disease. Clin Chem. 1996 Feb;42(2):298-302.</reference_text>
+          <pubmed_id>8595727</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Jia JP, Jia JM, Zhou WD, Xu M, Chu CB, Yan X, Sun YX: Differential acetylcholine and choline concentrations in the cerebrospinal fluid of patients with Alzheimer's disease and vascular dementia. Chin Med J (Engl). 2004 Aug;117(8):1161-4.</reference_text>
+          <pubmed_id>15361288</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Redjems-Bennani N, Jeandel C, Lefebvre E, Blain H, Vidailhet M, Gueant JL: Abnormal substrate levels that depend upon mitochondrial function in cerebrospinal fluid from Alzheimer patients. Gerontology. 1998;44(5):300-4.</reference_text>
+          <pubmed_id>9693263</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Walter A, Korth U, Hilgert M, Hartmann J, Weichel O, Hilgert M, Fassbender K, Schmitt A, Klein J: Glycerophosphocholine is elevated in cerebrospinal fluid of Alzheimer patients. Neurobiol Aging. 2004 Nov-Dec;25(10):1299-303.</reference_text>
+          <pubmed_id>15465626</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Leoni V, Masterman T, Mousavi FS, Wretlind B, Wahlund LO, Diczfalusy U, Hillert J, Bjorkhem I: Diagnostic use of cerebral and extracerebral oxysterols. Clin Chem Lab Med. 2004 Feb;42(2):186-91.</reference_text>
+          <pubmed_id>15061359</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+          <pubmed_id>10494443</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Lovell MA, Markesbery WR: Ratio of 8-hydroxyguanine in intact DNA to free 8-hydroxyguanine is increased in Alzheimer disease ventricular cerebrospinal fluid. Arch Neurol. 2001 Mar;58(3):392-6.</reference_text>
+          <pubmed_id>11255442</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bar KJ, Franke S, Wenda B, Muller S, Kientsch-Engel R, Stein G, Sauer H: Pentosidine and N(epsilon)-(carboxymethyl)-lysine in Alzheimer's disease and vascular dementia. Neurobiol Aging. 2003 Mar-Apr;24(2):333-8.</reference_text>
+          <pubmed_id>12498967</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Serot JM, Barbe F, Arning E, Bottiglieri T, Franck P, Montagne P, Nicolas JP: Homocysteine and methylmalonic acid concentrations in cerebrospinal fluid: relation with age and Alzheimer's disease. J Neurol Neurosurg Psychiatry. 2005 Nov;76(11):1585-7.</reference_text>
+          <pubmed_id>16227558</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Molina JA, Jimenez-Jimenez FJ, Aguilar MV, Meseguer I, Mateos-Vega CJ, Gonzalez-Munoz MJ, de Bustos F, Porta J, Orti-Pareja M, Zurdo M, Barrios E, Martinez-Para MC: Cerebrospinal fluid levels of transition metals in patients with Alzheimer's disease. J Neural Transm (Vienna). 1998;105(4-5):479-88.</reference_text>
+          <pubmed_id>9720975</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Molina JA, Jimenez-Jimenez FJ, Hernanz A, Fernandez-Vivancos E, Medina S, de Bustos F, Gomez-Escalonilla C, Sayed Y: Cerebrospinal fluid levels of thiamine in patients with Alzheimer's disease. J Neural Transm (Vienna). 2002 Jul;109(7-8):1035-44.</reference_text>
+          <pubmed_id>12111441</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bocca B, Forte G, Petrucci F, Pino A, Marchione F, Bomboi G, Senofonte O, Giubilei F, Alimonti A: Monitoring of chemical elements and oxidative damage in patients affected by Alzheimer's disease. Ann Ist Super Sanita. 2005;41(2):197-203.</reference_text>
+          <pubmed_id>16244393</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kristensen MO, Gulmann NC, Christensen JE, Ostergaard K, Rasmussen K: Serum cobalamin and methylmalonic acid in Alzheimer dementia. Acta Neurol Scand. 1993 Jun;87(6):475-81.</reference_text>
+          <pubmed_id>8356878</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Abe T, Tohgi H, Isobe C, Murata T, Sato C: Remarkable increase in the concentration of 8-hydroxyguanosine in cerebrospinal fluid from patients with Alzheimer's disease. J Neurosci Res. 2002 Nov 1;70(3):447-50.</reference_text>
+          <pubmed_id>12391605</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Reichman ME, Judd JT, Longcope C, Schatzkin A, Clevidence BA, Nair PP, Campbell WS, Taylor PR: Effects of alcohol consumption on plasma and urinary hormone concentrations in premenopausal women. J Natl Cancer Inst. 1993 May 5;85(9):722-7.</reference_text>
+          <pubmed_id>8478958</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Hozumi I, Hasegawa T, Honda A, Ozawa K, Hayashi Y, Hashimoto K, Yamada M, Koumura A, Sakurai T, Kimura A, Tanaka Y, Satoh M, Inuzuka T: Patterns of levels of biological metals in CSF differ among neurodegenerative diseases. J Neurol Sci. 2011 Apr 15;303(1-2):95-9. doi: 10.1016/j.jns.2011.01.003. Epub 2011 Feb 2.</reference_text>
+          <pubmed_id>21292280</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Motawaj M, Peoc'h K, Callebert J, Arrang JM: CSF levels of the histamine metabolite tele-methylhistamine are only slightly decreased in Alzheimer's disease. J Alzheimers Dis. 2010;22(3):861-71. doi: 10.3233/JAD-2010-100381.</reference_text>
+          <pubmed_id>20858978</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Smach MA, Jacob N, Golmard JL, Charfeddine B, Lammouchi T, Ben Othman L, Dridi H, Bennamou S, Limem K: Folate and homocysteine in the cerebrospinal fluid of patients with Alzheimer's disease or dementia: a case control study. Eur Neurol. 2011;65(5):270-8. doi: 10.1159/000326301. Epub 2011 Apr 8.</reference_text>
+          <pubmed_id>21474939</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Linnebank M, Popp J, Smulders Y, Smith D, Semmler A, Farkas M, Kulic L, Cvetanovska G, Blom H, Stoffel-Wagner B, Kolsch H, Weller M, Jessen F: S-adenosylmethionine is decreased in the cerebrospinal fluid of patients with Alzheimer's disease. Neurodegener Dis. 2010;7(6):373-8. doi: 10.1159/000309657. Epub 2010 Jun 3.</reference_text>
+          <pubmed_id>20523031</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Rosler N, Wichart I, Jellinger KA: Clinical significance of neurobiochemical profiles in the lumbar cerebrospinal fluid of Alzheimer's disease patients. J Neural Transm (Vienna). 2001;108(2):231-46.</reference_text>
+          <pubmed_id>11314776</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Sunderland T, Berrettini WH, Molchan SE, Lawlor BA, Martinez RA, Vitiello B, Tariot PN, Cohen RM: Reduced cerebrospinal fluid dynorphin A1-8 in Alzheimer's disease. Biol Psychiatry. 1991 Jul 1;30(1):81-7.</reference_text>
+          <pubmed_id>1716470</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Cerebral infarction</name>
+      <omim_id></omim_id>
+      <references>
+        <reference>
+          <reference_text>Hayashi K, Kidouchi K, Sumi S, Mizokami M, Orito E, Kumada K, Ueda R, Wada Y: Possible prediction of adverse reactions to pyrimidine chemotherapy from urinary pyrimidine levels and a case of asymptomatic adult dihydropyrimidinuria. Clin Cancer Res. 1996 Dec;2(12):1937-41.</reference_text>
+          <pubmed_id>9816152</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Fagan SC, Castellani D, Gengo FM: Prostanoid concentrations in human CSF following acute ischaemic brain infarction. Clin Exp Pharmacol Physiol. 1986 Aug;13(8):629-32.</reference_text>
+          <pubmed_id>3791712</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Bacterial meningitis</name>
+      <omim_id/>
+      <references>
+        <reference>
+          <reference_text>Peng F, Zhang B, Zhong X, Li J, Xu G, Hu X, Qiu W, Pei Z: Serum uric acid levels of patients with multiple sclerosis and other neurological diseases. Mult Scler. 2008 Mar;14(2):188-96. Epub 2007 Oct 17.</reference_text>
+          <pubmed_id>17942520</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Encephalitis</name>
+      <omim_id/>
+      <references>
+        <reference>
+          <reference_text>Kalita J, Kumar S, Vijaykumar K, Palit G, Misra UK: A study of CSF catecholamine and its metabolites in acute and convalescent period of encephalitis. J Neurol Sci. 2007 Jan 15;252(1):62-6. Epub 2006 Nov 28.</reference_text>
+          <pubmed_id>17134724</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Ratge D, Bauersfeld W, Wisser H: The relationship of free and conjugated catecholamines in plasma and cerebrospinal fluid in cerebral and meningeal disease. J Neural Transm. 1985;62(3-4):267-84.</reference_text>
+          <pubmed_id>4031843</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Vitiligo</name>
+      <omim_id>193200</omim_id>
+      <references>
+        <reference>
+          <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+          <pubmed_id>12622787</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Aromatic L-amino acid decarboxylase deficiency</name>
+      <omim_id>608643</omim_id>
+      <references>
+        <reference>
+          <reference_text>Abdenur JE, Abeling N, Specola N, Jorge L, Schenone AB, van Cruchten AC, Chamoles NA: Aromatic l-aminoacid decarboxylase deficiency: unusual neonatal presentation and additional findings in organic acid analysis. Mol Genet Metab. 2006 Jan;87(1):48-53. Epub 2005 Nov 9.</reference_text>
+          <pubmed_id>16288991</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Hyland K, Clayton PT: Aromatic L-amino acid decarboxylase deficiency: diagnostic methodology. Clin Chem. 1992 Dec;38(12):2405-10.</reference_text>
+          <pubmed_id>1281049</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Abeling NG, van Gennip AH, Barth PG, van Cruchten A, Westra M, Wijburg FA: Aromatic L-amino acid decarboxylase deficiency: a new case with a mild clinical presentation and unexpected laboratory findings. J Inherit Metab Dis. 1998 Jun;21(3):240-2.</reference_text>
+          <pubmed_id>9686366</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Eosinophilic esophagitis</name>
+      <omim_id>610247</omim_id>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Schizophrenia</name>
+      <omim_id>181500</omim_id>
+      <references>
+        <reference>
+          <reference_text>Harnryd C, Bjerkenstedt L, Grimm VE, Sedvall G: Reduction of MOPEG levels in cerebrospinal fluid of psychotic women after electroconvulsive treatment. Psychopharmacology (Berl). 1979 Aug 8;64(2):131-4.</reference_text>
+          <pubmed_id>115032</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kobayashi K, Koide Y, Yoshino K, Shohmori T: [P-hydroxyphenylacetic acid concentrations in cerebrospinal fluid]. No To Shinkei. 1982 Aug;34(8):769-74.</reference_text>
+          <pubmed_id>7126379</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Alfredsson G, Wiesel FA: Monoamine metabolites and amino acids in serum from schizophrenic patients before and during sulpiride treatment. Psychopharmacology (Berl). 1989;99(3):322-7.</reference_text>
+          <pubmed_id>2480613</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Heresco-Levy U, Bar G, Levin R, Ermilov M, Ebstein RP, Javitt DC: High glycine levels are associated with prepulse inhibition deficits in chronic schizophrenia patients. Schizophr Res. 2007 Mar;91(1-3):14-21. Epub 2007 Feb 2.</reference_text>
+          <pubmed_id>17276036</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Walker EF, Bonsall R, Walder DJ: Plasma hormones and catecholamine metabolites in monozygotic twins discordant for psychosis. Neuropsychiatry Neuropsychol Behav Neurol. 2002 Mar;15(1):10-7.</reference_text>
+          <pubmed_id>11877547</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Hashimoto K, Fukushima T, Shimizu E, Komatsu N, Watanabe H, Shinoda N, Nakazato M, Kumakiri C, Okada S, Hasegawa H, Imai K, Iyo M: Decreased serum levels of D-serine in patients with schizophrenia: evidence in support of the N-methyl-D-aspartate receptor hypofunction hypothesis of schizophrenia. Arch Gen Psychiatry. 2003 Jun;60(6):572-6.</reference_text>
+          <pubmed_id>12796220</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Do KQ, Lauer CJ, Schreiber W, Zollinger M, Gutteck-Amsler U, Cuenod M, Holsboer F: gamma-Glutamylglutamine and taurine concentrations are decreased in the cerebrospinal fluid of drug-naive patients with schizophrenic disorders. J Neurochem. 1995 Dec;65(6):2652-62.</reference_text>
+          <pubmed_id>7595563</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Nikisch G, Baumann P, Wiedemann G, Kiessling B, Weisser H, Hertel A, Yoshitake T, Kehr J, Mathe AA: Quetiapine and norquetiapine in plasma and cerebrospinal fluid of schizophrenic patients treated with quetiapine: correlations to clinical outcome and HVA, 5-HIAA, and MHPG in CSF. J Clin Psychopharmacol. 2010 Oct;30(5):496-503. doi: 10.1097/JCP.0b013e3181f2288e.</reference_text>
+          <pubmed_id>20814316</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Fukushima T, Iizuka H, Yokota A, Suzuki T, Ohno C, Kono Y, Nishikiori M, Seki A, Ichiba H, Watanabe Y, Hongo S, Utsunomiya M, Nakatani M, Sadamoto K, Yoshio T: Quantitative analyses of schizophrenia-associated metabolites in serum: serum D-lactate levels are negatively correlated with gamma-glutamylcysteine in medicated schizophrenia patients. PLoS One. 2014 Jul 8;9(7):e101652. doi: 10.1371/journal.pone.0101652. eCollection 2014.</reference_text>
+          <pubmed_id>25004141</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Koike S, Bundo M, Iwamoto K, Suga M, Kuwabara H, Ohashi Y, Shinoda K, Takano Y, Iwashiro N, Satomura Y, Nagai T, Natsubori T, Tada M, Yamasue H, Kasai K: A snapshot of plasma metabolites in first-episode schizophrenia: a capillary electrophoresis time-of-flight mass spectrometry study. Transl Psychiatry. 2014 Apr 8;4:e379. doi: 10.1038/tp.2014.19.</reference_text>
+          <pubmed_id>24713860</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Ballesteros A, Summerfelt A, Du X, Jiang P, Chiappelli J, Tagamets M, O'Donnell P, Kochunov P, Hong LE: Electrophysiological intermediate biomarkers for oxidative stress in schizophrenia. Clin Neurophysiol. 2013 Nov;124(11):2209-15. doi: 10.1016/j.clinph.2013.05.021. Epub 2013 Jun 30.</reference_text>
+          <pubmed_id>23823132</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bjerkenstedt L, Edman G, Hagenfeldt L, Sedvall G, Wiesel FA: Plasma amino acids in relation to cerebrospinal fluid monoamine metabolites in schizophrenic patients and healthy controls. Br J Psychiatry. 1985 Sep;147:276-82.</reference_text>
+          <pubmed_id>2415198</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Pickar D, Breier A, Hsiao JK, Doran AR, Wolkowitz OM, Pato CN, Konicki PE, Potter WZ: Cerebrospinal fluid and plasma monoamine metabolites and their relation to psychosis. Implications for regional brain dysfunction in schizophrenia. Arch Gen Psychiatry. 1990 Jul;47(7):641-8.</reference_text>
+          <pubmed_id>1694425</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Prell GD, Green JP, Kaufmann CA, Khandelwal JK, Morrishow AM, Kirch DG, Linnoila M, Wyatt RJ: Histamine metabolites in cerebrospinal fluid of patients with chronic schizophrenia: their relationships to levels of other aminergic transmitters and ratings of symptoms. Schizophr Res. 1995 Jan;14(2):93-104.</reference_text>
+          <pubmed_id>7711000</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kim YK, Myint AM, Verkerk R, Scharpe S, Steinbusch H, Leonard B: Cytokine changes and tryptophan metabolites in medication-naive and medication-free schizophrenic patients. Neuropsychobiology. 2009;59(2):123-9. doi: 10.1159/000213565. Epub 2009 Apr 22.</reference_text>
+          <pubmed_id>19390223</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Yang J, Chen T, Sun L, Zhao Z, Qi X, Zhou K, Cao Y, Wang X, Qiu Y, Su M, Zhao A, Wang P, Yang P, Wu J, Feng G, He L, Jia W, Wan C: Potential metabolite markers of schizophrenia. Mol Psychiatry. 2013 Jan;18(1):67-78. doi: 10.1038/mp.2011.131. Epub 2011 Oct 25.</reference_text>
+          <pubmed_id>22024767</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Xuan J, Pan G, Qiu Y, Yang L, Su M, Liu Y, Chen J, Feng G, Fang Y, Jia W, Xing Q, He L: Metabolomic profiling to identify potential serum biomarkers for schizophrenia and risperidone action. J Proteome Res. 2011 Dec 2;10(12):5433-43. doi: 10.1021/pr2006796. Epub 2011 Nov  8.</reference_text>
+          <pubmed_id>22007635</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Schwarz E, Guest PC, Rahmoune H, Harris LW, Wang L, Leweke FM, Rothermundt M, Bogerts B, Koethe D, Kranaster L, Ohrmann P, Suslow T, McAllister G, Spain M, Barnes A, van Beveren NJ, Baron-Cohen S, Steiner J, Torrey FE, Yolken RH, Bahn S: Identification of a biological signature for schizophrenia in serum. Mol Psychiatry. 2012 May;17(5):494-502. doi: 10.1038/mp.2011.42. Epub 2011 Apr 12.</reference_text>
+          <pubmed_id>21483431</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Mathe AA, Eberhard G, Saaf J, Wetterberg L: Plasma prostaglandin E2 metabolite--measured as 11-deoxy-15-keto-13,14-dihydro-11 beta,16 xi-cyclo-PGE2--in twins with schizophrenic disorder. Biol Psychiatry. 1986 Sep;21(11):1024-30.</reference_text>
+          <pubmed_id>3741918</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kuloglu M, Ustundag B, Atmaca M, Canatan H, Tezcan AE, Cinkilinc N: Lipid peroxidation and antioxidant enzyme levels in patients with schizophrenia and bipolar disorder. Cell Biochem Funct. 2002 Jun;20(2):171-5.</reference_text>
+          <pubmed_id>11979513</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Zumarraga M, Davila R, Basterreche N, Arrue A, Goienetxea B, Zamalloa MI, Erkoreka L, Bustamante S, Inchausti L, Gonzalez-Torres MA, Guimon J: Catechol O-methyltransferase and monoamine oxidase A genotypes, and plasma catecholamine metabolites in bipolar and schizophrenic patients. Neurochem Int. 2010 May-Jun;56(6-7):774-9. doi: 10.1016/j.neuint.2010.02.015. Epub 2010 Mar 4.</reference_text>
+          <pubmed_id>20206656</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Peters JG: Dopamine, noradrenaline and serotonin spinal fluid metabolites in temporal lobe epileptic patients with schizophrenic symptomatology. Eur Neurol. 1979;18(1):15-8.</reference_text>
+          <pubmed_id>436860</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Yao JK, Dougherty GG Jr, Reddy RD, Keshavan MS, Montrose DM, Matson WR, Rozen S, Krishnan RR, McEvoy J, Kaddurah-Daouk R: Altered interactions of tryptophan metabolites in first-episode neuroleptic-naive patients with schizophrenia. Mol Psychiatry. 2010 Sep;15(9):938-53. doi: 10.1038/mp.2009.33. Epub 2009 Apr 28.</reference_text>
+          <pubmed_id>19401681</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Gattaz WF, Waldmeier P, Beckmann H: CSF monoamine metabolites in schizophrenic patients. Acta Psychiatr Scand. 1982 Nov;66(5):350-60.</reference_text>
+          <pubmed_id>6184954</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Nilsson-Todd LK, Nordin C, Jonsson EG, Skogh E, Erhardt S: Cerebrospinal fluid kynurenic acid in male patients with schizophrenia - correlation with monoamine metabolites. Acta Neuropsychiatr. 2007 Feb;19(1):45-52. doi: 10.1111/j.1601-5215.2006.00170.x.</reference_text>
+          <pubmed_id>26952797</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Cai HL, Li HD, Yan XZ, Sun B, Zhang Q, Yan M, Zhang WY, Jiang P, Zhu RH, Liu YP, Fang PF, Xu P, Yuan HY, Zhang XH, Hu L, Yang W, Ye HS: Metabolomic analysis of biochemical changes in the plasma and urine of first-episode neuroleptic-naive schizophrenia patients after treatment with risperidone. J Proteome Res. 2012 Aug 3;11(8):4338-50. doi: 10.1021/pr300459d. Epub 2012 Jul 26.</reference_text>
+          <pubmed_id>22800120</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Al Awam K, Haussleiter IS, Dudley E, Donev R, Brune M, Juckel G, Thome J: Multiplatform metabolome and proteome profiling identifies serum metabolite and protein signatures as prospective biomarkers for schizophrenia. J Neural Transm (Vienna). 2015 Aug;122 Suppl 1:S111-22. doi: 10.1007/s00702-014-1224-0. Epub 2014 May 1.</reference_text>
+          <pubmed_id>24789758</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bicikova M, Hill M, Ripova D, Mohr P, Hampl R: Determination of steroid metabolome as a possible tool for laboratory diagnosis of schizophrenia. J Steroid Biochem Mol Biol. 2013 Jan;133:77-83. doi: 10.1016/j.jsbmb.2012.08.009. Epub 2012 Aug 24.</reference_text>
+          <pubmed_id>22944140</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>He Y, Yu Z, Giegling I, Xie L, Hartmann AM, Prehn C, Adamski J, Kahn R, Li Y, Illig T, Wang-Sattler R, Rujescu D: Schizophrenia shows a unique metabolomics signature in plasma. Transl Psychiatry. 2012 Aug 14;2:e149. doi: 10.1038/tp.2012.76.</reference_text>
+          <pubmed_id>22892715</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kaddurah-Daouk R, McEvoy J, Baillie RA, Lee D, Yao JK, Doraiswamy PM, Krishnan KR: Metabolomic mapping of atypical antipsychotic effects in schizophrenia. Mol Psychiatry. 2007 Oct;12(10):934-45. Epub 2007 Apr 17.</reference_text>
+          <pubmed_id>17440431</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Fryar-Williams S, Strobel JE: Biomarkers of a five-domain translational substrate for schizophrenia and schizoaffective psychosis. Biomark Res. 2015 Feb 6;3:3. doi: 10.1186/s40364-015-0028-1. eCollection 2015.</reference_text>
+          <pubmed_id>25729574</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Oresic M, Seppanen-Laakso T, Sun D, Tang J, Therman S, Viehman R, Mustonen U, van Erp TG, Hyotylainen T, Thompson P, Toga AW, Huttunen MO, Suvisaari J, Kaprio J, Lonnqvist J, Cannon TD: Phospholipids and insulin resistance in psychosis: a lipidomics study of twin pairs discordant for schizophrenia. Genome Med. 2012 Jan 18;4(1):1. doi: 10.1186/gm300.</reference_text>
+          <pubmed_id>22257447</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Dopamine-serotonin Vesicular Transport Defect</name>
+      <omim_id/>
+      <references>
+        <reference>
+          <reference_text>Rilstone JJ, Alkhater RA, Minassian BA: Brain dopamine-serotonin vesicular transport disease and its treatment. N Engl J Med. 2013 Feb 7;368(6):543-50. doi: 10.1056/NEJMoa1207281. Epub 2013 Jan 30.</reference_text>
+          <pubmed_id>23363473</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+  </diseases>
+  <chemspider_id>661</chemspider_id>
+  <foodb_id>FDB012163</foodb_id>
+  <pubchem_compound_id>681</pubchem_compound_id>
+  <drugbank_id>DB00988</drugbank_id>
+  <phenol_explorer_compound_id/>
+  <knapsack_id>C00001408</knapsack_id>
+  <kegg_id>C03758</kegg_id>
+  <bigg_id>42467</bigg_id>
+  <wikipedia_id>Dopamine</wikipedia_id>
+  <metlin_id>64</metlin_id>
+  <chebi_id>18243</chebi_id>
+  <pdb_id/>
+  <biocyc_id>DOPAMINE</biocyc_id>
+  <synthesis_reference>Klaus Schoellkopf, Rudolf Albrecht, Manfred Lehmann, Gertrud Schroeder, "Novel dopamine derivatives, processes for their preparation, and their use as medicinal agents." U.S. Patent US4958026, issued February, 1972.</synthesis_reference>
+  <general_references>
+    <reference>
+      <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+      <pubmed_id>10494443</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Mannelli M, Ianni L, Lazzeri C, Castellani W, Pupilli C, La Villa G, Barletta G, Serio M, Franchi F: In vivo evidence that endogenous dopamine modulates sympathetic activity in man. Hypertension. 1999 Sep;34(3):398-402.</reference_text>
+      <pubmed_id>10489384</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Jiang H, Betancourt L, Smith RG: Ghrelin amplifies dopamine signaling by cross talk involving formation of growth hormone secretagogue receptor/dopamine receptor subtype 1 heterodimers. Mol Endocrinol. 2006 Aug;20(8):1772-85. Epub 2006 Apr 6.</reference_text>
+      <pubmed_id>16601073</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Brody AL, Mandelkern MA, Olmstead RE, Scheibal D, Hahn E, Shiraga S, Zamora-Paja E, Farahi J, Saxena S, London ED, McCracken JT: Gene variants of brain dopamine pathways and smoking-induced dopamine release in the ventral caudate/nucleus accumbens. Arch Gen Psychiatry. 2006 Jul;63(7):808-16.</reference_text>
+      <pubmed_id>16818870</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Bauman A: Unilateral adrenal catecholamine excess. Pheochromocytoma or possible sporadic medullary hyperplasia. Arch Intern Med. 1982 Feb;142(2):377-8.</reference_text>
+      <pubmed_id>7059264</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Goldstein DS, Eisenhofer G, Kopin IJ: Sources and significance of plasma levels of catechols and their metabolites in humans. J Pharmacol Exp Ther. 2003 Jun;305(3):800-11. Epub 2003 Mar 20.</reference_text>
+      <pubmed_id>12649306</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>King BM: The rise, fall, and resurrection of the ventromedial hypothalamus in the regulation of feeding behavior and body weight. Physiol Behav. 2006 Feb 28;87(2):221-44. Epub 2006 Jan 18.</reference_text>
+      <pubmed_id>16412483</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Cucchi ML, Frattini P, Santagostino G, Preda S, Orecchia G: Catecholamines increase in the urine of non-segmental vitiligo especially during its active phase. Pigment Cell Res. 2003 Apr;16(2):111-6.</reference_text>
+      <pubmed_id>12622787</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Sjoberg S, Eriksson M, Nordin C: L-thyroxine treatment and neurotransmitter levels in the cerebrospinal fluid of hypothyroid patients: a pilot study. Eur J Endocrinol. 1998 Nov;139(5):493-7.</reference_text>
+      <pubmed_id>9849813</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Engelborghs S, Marescau B, De Deyn PP: Amino acids and biogenic amines in cerebrospinal fluid of patients with Parkinson's disease. Neurochem Res. 2003 Aug;28(8):1145-50.</reference_text>
+      <pubmed_id>12834252</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Kobayashi K, Yasuhara T, Agari T, Muraoka K, Kameda M, Ji Yuan W, Hayase H, Matsui T, Miyoshi Y, Shingo T, Date I: Control of dopamine-secretion by Tet-Off system in an in vivo model of parkinsonian rat. Brain Res. 2006 Aug 2;1102(1):1-11. Epub 2006 Jun 27.</reference_text>
+      <pubmed_id>16806124</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Schenarts PJ, Sagraves SG, Bard MR, Toschlog EA, Goettler CE, Newell MA, Rotondo MF: Low-dose dopamine: a physiologically based review. Curr Surg. 2006 May-Jun;63(3):219-25.</reference_text>
+      <pubmed_id>16757377</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Piazza O, Zito G, Valente A, Tufano R: Effects of dopamine infusion on forearm blood flow in critical patients. Med Sci Monit. 2006 Feb;12(2):CR90-3. Epub 2006 Jan 26.</reference_text>
+      <pubmed_id>16449954</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Wang HY, Xiao Y, Han J, Chang XS: Simultaneous determination of dopamine and carvedilol in human serum and urine by first-order derivative fluorometry. Anal Sci. 2005 Nov;21(11):1281-5.</reference_text>
+      <pubmed_id>16317894</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Elchisak MA, Carlson JH: Assay of free and conjugated catecholamines by high-performance liquid chromatography with electrochemical detection. J Chromatogr. 1982 Dec 10;233:79-88.</reference_text>
+      <pubmed_id>7161364</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Eklundh T, Eriksson M, Sjoberg S, Nordin C: Monoamine precursors, transmitters and metabolites in cerebrospinal fluid: a prospective study in healthy male subjects. J Psychiatr Res. 1996 May-Jun;30(3):201-8.</reference_text>
+      <pubmed_id>8884658</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Kopieniak M, Wieczorkiewicz-Plaza A, Maciejewski R: Dopamine activity changes in cerebral cortex in the course of experimental acute pancreatitis. Ann Univ Mariae Curie Sklodowska Med. 2004;59(1):382-6.</reference_text>
+      <pubmed_id>16146016</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Raw I, Schmidt BJ, Merzel J: Catecholamines and congenital pain insensitivity. Braz J Med Biol Res. 1984;17(3-4):271-9.</reference_text>
+      <pubmed_id>6085021</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Nikolelis DP, Drivelos DA, Simantiraki MG, Koinis S: An optical spot test for the detection of dopamine in human urine using stabilized in air lipid films. Anal Chem. 2004 Apr 15;76(8):2174-80.</reference_text>
+      <pubmed_id>15080725</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Eisenhofer G, Aneman A, Friberg P, Hooper D, Fandriks L, Lonroth H, Hunyady B, Mezey E: Substantial production of dopamine in the human gastrointestinal tract. J Clin Endocrinol Metab. 1997 Nov;82(11):3864-71.</reference_text>
+      <pubmed_id>9360553</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Thiele I, Swainston N, Fleming RM, Hoppe A, Sahoo S, Aurich MK, Haraldsdottir H, Mo ML, Rolfsson O, Stobbe MD, Thorleifsson SG, Agren R, Bolling C, Bordel S, Chavali AK, Dobson P, Dunn WB, Endler L, Hala D, Hucka M, Hull D, Jameson D, Jamshidi N, Jonsson JJ, Juty N, Keating S, Nookaew I, Le Novere N, Malys N, Mazein A, Papin JA, Price ND, Selkov E Sr, Sigurdsson MI, Simeonidis E, Sonnenschein N, Smallbone K, Sorokin A, van Beek JH, Weichart D, Goryanin I, Nielsen J, Westerhoff HV, Kell DB, Mendes P, Palsson BO: A community-driven global reconstruction of human metabolism. Nat Biotechnol. 2013 May;31(5):419-25. doi: 10.1038/nbt.2488. Epub 2013 Mar 3.</reference_text>
+      <pubmed_id>23455439</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Berridge KC, Robinson TE: What is the role of dopamine in reward: hedonic impact, reward learning, or incentive salience? Brain Res Brain Res Rev. 1998 Dec;28(3):309-69.</reference_text>
+      <pubmed_id>9858756</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Giuliano F, Allard J: Dopamine and sexual function. Int J Impot Res. 2001 Aug;13 Suppl 3:S18-28.</reference_text>
+      <pubmed_id>11477488</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Giuliano F, Allard J: Dopamine and male sexual function. Eur Urol. 2001 Dec;40(6):601-8.</reference_text>
+      <pubmed_id>11805404</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Pecina S, Cagniard B, Berridge KC, Aldridge JW, Zhuang X: Hyperdopaminergic mutant mice have higher "wanting" but not "liking" for sweet rewards. J Neurosci. 2003 Oct 15;23(28):9395-402.</reference_text>
+      <pubmed_id>14561867</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Barron AB, Maleszka R, Vander Meer RK, Robinson GE: Octopamine modulates honey bee dance behavior. Proc Natl Acad Sci U S A. 2007 Jan 30;104(5):1703-7. Epub 2007 Jan 19.</reference_text>
+      <pubmed_id>17237217</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Mezzelani A, Landini M, Facchiano F, Raggi ME, Villa L, Molteni M, De Santis B, Brera C, Caroli AM, Milanesi L, Marabotti A: Environment, dysbiosis, immunity and sex-specific susceptibility: a translational hypothesis for regressive autism pathogenesis. Nutr Neurosci. 2015 May;18(4):145-61. doi: 10.1179/1476830513Y.0000000108. Epub 2014 Jan 21.</reference_text>
+      <pubmed_id>24621061</pubmed_id>
+    </reference>
+  </general_references>
+  <protein_associations>
+    <protein>
+      <protein_accession>HMDBP00087</protein_accession>
+      <name>Tyrosinase</name>
+      <uniprot_id>P14679</uniprot_id>
+      <gene_name>TYR</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00161</protein_accession>
+      <name>Amine oxidase [flavin-containing] B</name>
+      <uniprot_id>P27338</uniprot_id>
+      <gene_name>MAOB</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00169</protein_accession>
+      <name>Amine oxidase [flavin-containing] A</name>
+      <uniprot_id>P21397</uniprot_id>
+      <gene_name>MAOA</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00253</protein_accession>
+      <name>Dopamine beta-hydroxylase</name>
+      <uniprot_id>P09172</uniprot_id>
+      <gene_name>DBH</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00272</protein_accession>
+      <name>Catechol O-methyltransferase</name>
+      <uniprot_id>P21964</uniprot_id>
+      <gene_name>COMT</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00278</protein_accession>
+      <name>Aromatic-L-amino-acid decarboxylase</name>
+      <uniprot_id>P20711</uniprot_id>
+      <gene_name>DDC</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00390</protein_accession>
+      <name>Amiloride-sensitive amine oxidase [copper-containing]</name>
+      <uniprot_id>P19801</uniprot_id>
+      <gene_name>ABP1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00393</protein_accession>
+      <name>Membrane primary amine oxidase</name>
+      <uniprot_id>Q16853</uniprot_id>
+      <gene_name>AOC3</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00394</protein_accession>
+      <name>Retina-specific copper amine oxidase</name>
+      <uniprot_id>O75106</uniprot_id>
+      <gene_name>AOC2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01036</protein_accession>
+      <name>Cytochrome P450 2C9</name>
+      <uniprot_id>P11712</uniprot_id>
+      <gene_name>CYP2C9</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01038</protein_accession>
+      <name>Cytochrome P450 2C19</name>
+      <uniprot_id>P33261</uniprot_id>
+      <gene_name>CYP2C19</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01548</protein_accession>
+      <name>Cytochrome P450 2D6</name>
+      <uniprot_id>P10635</uniprot_id>
+      <gene_name>CYP2D6</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01560</protein_accession>
+      <name>Cytochrome P450 1A2</name>
+      <uniprot_id>P05177</uniprot_id>
+      <gene_name>CYP1A2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01612</protein_accession>
+      <name>Solute carrier family 22 member 5</name>
+      <uniprot_id>O76082</uniprot_id>
+      <gene_name>SLC22A5</gene_name>
+      <protein_type>Transporter</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01737</protein_accession>
+      <name>D(2) dopamine receptor</name>
+      <uniprot_id>P14416</uniprot_id>
+      <gene_name>DRD2</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP02531</protein_accession>
+      <name>D(4) dopamine receptor</name>
+      <uniprot_id>P21917</uniprot_id>
+      <gene_name>DRD4</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP02547</protein_accession>
+      <name>Sodium-dependent dopamine transporter</name>
+      <uniprot_id>Q01959</uniprot_id>
+      <gene_name>SLC6A3</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP02574</protein_accession>
+      <name>Solute carrier family 22 member 1</name>
+      <uniprot_id>O15245</uniprot_id>
+      <gene_name>SLC22A1</gene_name>
+      <protein_type>Transporter</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP04308</protein_accession>
+      <name>Solute carrier family 22 member 2</name>
+      <uniprot_id>O15244</uniprot_id>
+      <gene_name>SLC22A2</gene_name>
+      <protein_type>Transporter</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP04309</protein_accession>
+      <name>Solute carrier family 22 member 3</name>
+      <uniprot_id>O75751</uniprot_id>
+      <gene_name>SLC22A3</gene_name>
+      <protein_type>Transporter</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07536</protein_accession>
+      <name>Neuron-specific vesicular protein calcyon</name>
+      <uniprot_id>Q9NYX4</uniprot_id>
+      <gene_name>CALY</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07553</protein_accession>
+      <name>Calcium-dependent secretion activator 1</name>
+      <uniprot_id>Q9ULU8</uniprot_id>
+      <gene_name>CADPS</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07554</protein_accession>
+      <name>Calcium-dependent secretion activator 2</name>
+      <uniprot_id>Q86UW7</uniprot_id>
+      <gene_name>CADPS2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP10806</protein_accession>
+      <name>D(3) dopamine receptor</name>
+      <uniprot_id>P35462</uniprot_id>
+      <gene_name>DRD3</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP10808</protein_accession>
+      <name>D(1A) dopamine receptor</name>
+      <uniprot_id>P21728</uniprot_id>
+      <gene_name>DRD1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP10826</protein_accession>
+      <name>D(1B) dopamine receptor</name>
+      <uniprot_id>P21918</uniprot_id>
+      <gene_name>DRD5</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP10827</protein_accession>
+      <name>Dopamine D4 receptor</name>
+      <uniprot_id>Q99586</uniprot_id>
+      <gene_name>dopamine D4 receptor</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP10828</protein_accession>
+      <name>Dopamine D4 receptor</name>
+      <uniprot_id>Q99587</uniprot_id>
+      <gene_name>dopamine D4 receptor</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+  </protein_associations>
+</metabolite>

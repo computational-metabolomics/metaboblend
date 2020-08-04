@@ -21,7 +21,7 @@
 
 
 import unittest
-import zipfile
+import shutil
 import tempfile
 from metaboblend.build_structures import *
 from metaboblend.databases import *
@@ -32,26 +32,23 @@ class BuildStructuresTestCase(unittest.TestCase):
     temp_results_name = None
 
     @classmethod
-    def to_test_result(cls, *args):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
         cls.temp_results_name = cls.temp_results_dir.name
 
-        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
-            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                   "..",
-                                                   "data",
-                                                   "tests",
-                                                   compr_data
-                                                   ), 'r')
-            zip_ref.extractall(cls.to_test_result())
-            zip_ref.close()
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
     def test_build(self):  # core - all other build functions rely on
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         # ref data
         smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
@@ -63,7 +60,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         exp_lens = [1, 41, 2, 0]
 
         # hmdb records to build from
-        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
 
             for i, record_dict in enumerate(record_dicts.values()):
@@ -73,15 +70,15 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"), clean=True,
+                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
                     prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
                 )
 
                 j = 0
                 unique_smis = set()
-                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
@@ -99,16 +96,16 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
                     prescribed_mass=fragments[i], ppm=15, clean=True,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     out_mode="w", processes=None, table_name="substructures"
                 )
 
                 j = 0
                 unique_smis = set()
-                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
@@ -123,8 +120,8 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_substructure_combination_build(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"),
-                            self.to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"),
+                            self.to_test_data("connectivity.sqlite"))
 
         ec_products = [((4, 5, 0, 0, 0, 0), (4, 6, 1, 2, 0, 0)),
                        ((5, 5, 0, 2, 0, 0), (3, 6, 1, 0, 0, 0)),
@@ -144,7 +141,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_build_from_subsets(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         mcs = [[8, 11, 1, 2, 0, 0], [8, 11, 1, 2, 0, 0], [12, 22, 0, 11, 0, 0], [10, 0, 0, 0, 0, 0],
                [9, 11, 1, 3, 0, 0], [9, 11, 1, 3, 0, 0], [8, 11, 1, 2, 0, 0]]
@@ -175,11 +172,11 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_generate_structures(self):  # tests vs build
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
 
-        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
             for i, record_dict in enumerate(record_dicts.values()):
                 ms_data = {record_dict["HMDB_ID"]: {"mc": [record_dict["C"], record_dict["H"], record_dict["N"],
@@ -189,9 +186,9 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(generate_structures(
                     ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_result(),
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results(),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_list=True
                 ))
 
@@ -199,14 +196,14 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + "_build.smi"),
-                    max_n_substructures=3, path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"), clean=True,
+                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
                     prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
                 )
 
                 unique_smis = set()
-                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
@@ -221,9 +218,9 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test prescribed building
                 returned_smis = list(generate_structures(
                     ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_result(),
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results(),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_list=True
                 ))
 
@@ -231,15 +228,15 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
+                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
                     prescribed_mass=fragments[i], ppm=0,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     out_mode="w", processes=None, table_name="substructures", clean=True
                 )
 
                 unique_smis = set()
-                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
@@ -256,9 +253,9 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(generate_structures(
                 ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                smi_out_dir=self.to_test_result(),
-                path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                path_substructure_db=self.to_test_result("substructures.sqlite"),
+                smi_out_dir=self.to_test_results(),
+                path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_list=True
             ))
 
@@ -267,14 +264,14 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_result(record_dict["HMDB_ID"] + "_build.smi"),
-                    max_n_substructures=3, path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"), clean=True,
+                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
                     prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
                 )
 
                 unique_smis = set()
-                with open(self.to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
@@ -284,7 +281,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_build_msn(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         # ref data
         smis = [{'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)cc(O)c1'},
@@ -297,7 +294,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
 
         # hmdb records to build from
-        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
 
             for i, record_dict in enumerate(record_dicts.values()):
@@ -307,9 +304,9 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
                     write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
                 )
@@ -317,7 +314,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 j = 0
                 individual_smis = set()
                 for prescribed_mass in fragments:
-                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                    with open(self.to_test_results(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
                         for line in smi_out:
                             j += 1
                             individual_smis.add(line.split()[0])
@@ -326,7 +323,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 j = 0
                 unique_smis = set()
-                with open(self.to_test_result("structure_frequency.csv"), "r") as smi_out:
+                with open(self.to_test_results("structure_frequency.csv"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0].split(',')[0])
@@ -347,11 +344,11 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_annotate_msn(self):  # tests vs build_msn
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
 
-        with open(self.to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
             for i, record_dict in enumerate(record_dicts.values()):
                 ms_data = {record_dict["HMDB_ID"]: {"mc": [record_dict["C"], record_dict["H"], record_dict["N"],
@@ -362,9 +359,9 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(annotate_msn(
                     ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_result("annotate"),
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results("annotate"),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_dict=True
                 ))
 
@@ -372,16 +369,16 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
                     write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
                 )
 
                 unique_smis = set()
                 for prescribed_mass in fragments:
-                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                    with open(self.to_test_results(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
                         for line in smi_out:
                             unique_smis.add(line.split()[0])
 
@@ -399,9 +396,9 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
                 ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                smi_out_dir=self.to_test_result(),
-                path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                path_substructure_db=self.to_test_result("substructures.sqlite"),
+                smi_out_dir=self.to_test_results(),
+                path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_dict=True
             ))
 
@@ -410,16 +407,16 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mc=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_dir=self.to_test_result(), max_n_substructures=3,
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    smi_out_dir=self.to_test_results(), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     ppm=10, processes=None, table_name="substructures", hydrogenation_allowance=2,
                     write_fragment_smis=True, prescribed_masses=fragments, return_smi_dict=True
                 )
 
                 unique_smis = set()
                 for prescribed_mass in fragments:
-                    with open(self.to_test_result(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                    with open(self.to_test_results(str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
                         for line in smi_out:
                             unique_smis.add(line.split()[0])
 
@@ -430,7 +427,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_gen_subs_table(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
         table_name = gen_subs_table(db, range(5, 7), 4, 2, 500)
 
         i = 0
@@ -452,7 +449,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         self.assertEqual(len(list(subset_sum(list(range(60)), 70, 1000))), 29884)
 
     def test_combine_ecs(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
         self.assertEqual(combine_ecs([54.0106, 69.0578], db, "substructures", "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
