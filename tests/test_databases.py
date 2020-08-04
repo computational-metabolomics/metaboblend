@@ -42,7 +42,9 @@ class DatabasesTestCase(unittest.TestCase):
 
         for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
             zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                   "..",
                                                    "data",
+                                                   "tests",
                                                    compr_data
                                                    ), 'r')
             zip_ref.extractall(cls.to_test_result())
