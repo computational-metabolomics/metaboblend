@@ -1053,16 +1053,18 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
 
     :param hmdb_paths: The paths of the HMDB XML records detailing molecules to be fragmented.
 
-    :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
+    :param path_substructure_db: The path of the SQLite 3 substructure database to be created.
 
     :param n_min: The minimum number of bonds (edges) to be selected to generate valid substructures.
 
     :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures. See
+    :param max_atoms_available: The maximal atoms available of substructures to be considered for building molecules.
+        atoms_available refers to the number of atoms on a substructre involved in bonding. See
         `metaboverse.databases.create_isomorphism_database`.
 
-    :param max_valence: Maximum total valence of valid substructures.
+    :param max_valence: The maximal total bond orders of substructures to be considered to build final structures
+        (ie, the product of `atoms_available` and the degree of their bonds).
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -1104,7 +1106,8 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
     substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
     connected sets bonds in the supplied compound(s).
 
-    :param hmdb_path: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
+    :param hmdb_path: The path of the HMDB XML record(s) detailing molecules to be fragmented. Can take HMDB records for
+        individual metabolites or the entirety of HMDB. Will be overriden by
         `records` parameter, if provided.
 
     :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
@@ -1113,7 +1116,8 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
 
     :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures. See
+    :param max_atoms_available: The maximal atoms available of substructures to be considered for building molecules.
+        atoms_available refers to the number of atoms on a substructre involved in bonding. See
         `metaboverse.databases.create_isomorphism_database`.
 
     :param max_valence: The maximal total bond orders of substructures to be considered to build final structures
