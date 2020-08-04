@@ -27,7 +27,10 @@ from functools import partial
 import networkx as nx
 import numpy
 from operator import itemgetter
+from typing import Sequence, Dict, Union
+
 from rdkit import Chem
+
 from .databases import SubstructureDb
 
 
@@ -272,11 +275,15 @@ def add_bonds(mols, edges, atoms_available, bond_types):
     return mol_edit
 
 
-def annotate_msn(ms_data, smi_out_dir=None, heavy_atoms=range(0, 10), max_valence=6, max_atoms_available=2,
-                 max_n_substructures=3, path_connectivity_db="../databases/k_graphs.sqlite",
-                 path_substructure_db="../databases/substructures.sqlite", ppm=5, processes=None,
-                 write_fragment_smis=False, yield_smi_dict=False, minimum_frequency=None, hydrogenation_allowance=2,
-                 add_small_substructures=True):
+def annotate_msn(ms_data: Dict[str, Dict[str, Union[int, list]]], ppm: int = 5,
+                 heavy_atoms: Union[Sequence[int], None] = None, max_valence: int = 6, max_atoms_available: int = 2,
+                 max_n_substructures: int = 3, add_small_substructures: bool = True,
+                 smi_out_dir: Union[str, bytes, os.PathLike, None] = None,
+                 path_connectivity_db: Union[str, bytes, os.PathLike, None] = "../databases/k_graphs.sqlite",
+                 path_substructure_db: Union[str, bytes, os.PathLike] = "../databases/substructures.sqlite",
+                 processes: Union[int, None] = None, write_fragment_smis: bool = False,
+                 minimum_frequency: Union[int, None] = None, hydrogenation_allowance: int = 2,
+                 yield_smi_dict: bool = True) -> Union[Sequence[Dict[str, str]], None]:
     """
     :param ms_data: Dictionary in the form ms_data[id] =
         {mc: [C, H, N, O, P, S], exact_mass: exact_mass, prescribed_masses=[]}. id represents a unique identifier for
@@ -456,10 +463,13 @@ def build_msn(mc, exact_mass, prescribed_masses, max_n_substructures, smi_out_di
         return structure_frequency
 
 
-def generate_structures(ms_data, heavy_atoms=range(2, 9), max_valence=6, max_atoms_available=2,
-                        max_n_substructures=3, smi_out_dir=None, path_connectivity_db="../databases/k_graphs.sqlite",
-                        path_substructure_db="../databases/substructures.sqlite", processes=None,
-                        minimum_frequency=None, yield_smi_list=True):
+def generate_structures(ms_data: Dict[str, Dict[str, Union[int, list]]], heavy_atoms: Sequence[int] = range(2, 9),
+                        max_valence: int = 6, max_atoms_available: int = 2, max_n_substructures: int = 3,
+                        smi_out_dir: Union[str, bytes, os.PathLike, None] = None, processes: Union[int, None] = None,
+                        path_connectivity_db: Union[str, bytes, os.PathLike, None] = "../databases/k_graphs.sqlite",
+                        path_substructure_db: Union[str, bytes, os.PathLike] = "../databases/substructures.sqlite",
+                        minimum_frequency: Union[int, None] = None, yield_smi_list: bool = True
+                        ) -> Union[Sequence[list], None]:
     """
     Workflow for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results. Final structures are returned as a list and/or
