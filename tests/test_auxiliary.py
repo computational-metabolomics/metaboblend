@@ -31,7 +31,6 @@ from metaboblend.auxiliary import *
 
 class AuxiliaryTestCase(unittest.TestCase):
     temp_results_dir = None
-    temp_results_name = None
 
     @classmethod
     def to_test_results(cls, *args):
@@ -44,7 +43,6 @@ class AuxiliaryTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
-        cls.temp_results_name = cls.temp_results_dir.name
 
         shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
                         cls.to_test_results("test_data"))
