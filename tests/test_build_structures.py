@@ -189,7 +189,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     smi_out_dir=self.to_test_result(),
                     path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
                     path_substructure_db=self.to_test_result("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_list=True
+                    minimum_frequency=None, yield_smi_set=True
                 ))
 
                 build_smis = build(
@@ -221,7 +221,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     smi_out_dir=self.to_test_result(),
                     path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
                     path_substructure_db=self.to_test_result("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_list=True
+                    minimum_frequency=None, yield_smi_set=True
                 ))
 
                 build_smis = build(
@@ -256,7 +256,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 smi_out_dir=self.to_test_result(),
                 path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
                 path_substructure_db=self.to_test_result("substructures.sqlite"),
-                minimum_frequency=None, yield_smi_list=True
+                minimum_frequency=None, yield_smi_set=True
             ))
 
             for i, record_dict in enumerate(record_dicts.values()):

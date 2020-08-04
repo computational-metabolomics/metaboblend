@@ -736,7 +736,7 @@ def gen_subs_table(db, heavy_atoms, max_valence, max_atoms_available, max_mass, 
     if heavy_atoms is None:
         ha_statement = ""
     else:
-        ha_statement = ",".join(map(str, heavy_atoms))
+        ha_statement = "heavy_atoms in (" + ",".join(map(str, heavy_atoms)) + ") AND"
 
     db.cursor.execute("""CREATE TABLE {} AS
                              SELECT * FROM substructures WHERE
