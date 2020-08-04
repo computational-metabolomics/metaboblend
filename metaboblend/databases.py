@@ -1045,20 +1045,24 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
                                  max_valence: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
                                  method: str = "exhaustive", substructures_only: bool = False) -> None:
     """
-    Creates a substructure database by fragmenting one or more input molecules. Combinations of substructures in this
-    database will subsequently be used to build new compounds.
+    Creates a substructure database by fragmenting one or more input molecules. Combinations of
+    substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
+    connected sets bonds in the supplied compound(s). Creates the database before calling
+    'metaboverse.databases.update_substructure_database' to add substructures for each input molecule. Generates
+    indexes on the substructure table.
 
-    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures.
+    :param hmdb_paths: The paths of the HMDB XML records detailing molecules to be fragmented.
 
-    :param max_valence: Maximum valence of valid substructures.
+    :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
 
-    :param hmdb_paths: A list of paths for the HMDB XML record(s) detailing molecules to be fragmented.
+    :param n_min: The minimum number of bonds (edges) to be selected to generate valid substructures.
 
-    :param path_substructure_db: The path of the SQLite 3 substructure database to be updated.
+    :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param n_min: The minimum number of bonds (edges) for a valid substructure.
+    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures. See
+        `metaboverse.databases.create_isomorphism_database`.
 
-    :param n_max: The maximum number of bonds (edges) for a valid substructure.
+    :param max_valence: Maximum total valence of valid substructures.
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -1072,7 +1076,8 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
         * **BRICS** Generates substructures by breaking retrosynthetically interesting chemical substructures; fragments
             are identified that are likely to be useful for drug synthesis.. See :py:meth:`rdkit.Chem.BRICS`.
 
-    :param substructures_only: Whether to generate all tables or only the substructures table.
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
     """
 
     db = SubstructureDb(path_substructure_db)
@@ -1093,27 +1098,26 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
                                  path_substructure_db: Union[str, bytes, os.PathLike], n_min: Union[int, None] = None,
                                  n_max: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
                                  max_valence: Union[int, None] = None, method: str = "exhaustive",
-                                 substructures_only: bool = False, records: Union[Dict, None] = None) -> None:
+                                 substructures_only: bool = False, records: Union[Sequence[Dict], None] = None) -> None:
     """
-    Add entries to the substructure database by fragmenting a set of molecules. Combinations of substructures in this
-    database are used to build new molecules.
-
-    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures.
-
-    :param max_valence: Maximum valence of valid substructures.
+    Add entries to the substructure database by fragmenting a molecule or set of molecules. Combinations of
+    substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
+    connected sets bonds in the supplied compound(s).
 
     :param hmdb_path: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
-        `records` if provided.
+        `records` parameter, if provided.
 
-    :param path_substructure_db: The path of the SQLite 3 substructure database to be updated.
+    :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
 
-    :param n_min: The minimum number of bonds (edges) for a valid substructure.
+    :param n_min: The minimum number of bonds (edges) to be selected to generate valid substructures.
 
-    :param n_max: The maximum number of bonds (edges) for a valid substructure.
+    :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param records: Records of molecules to be fragmented. Must be a list containing dictionaries containing key
-        information about the molecules, as generated by :py:meth:`metaboblend.databases.parse_xml`; if records
-        is not supplied, the records will be obtained from the XML at `hmdb_path`.
+    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures. See
+        `metaboverse.databases.create_isomorphism_database`.
+
+    :param max_valence: The maximal total bond orders of substructures to be considered to build final structures
+        (ie, the product of `atoms_available` and the degree of their bonds).
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -1127,7 +1131,12 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
         * **BRICS** Generates substructures by breaking retrosynthetically interesting chemical substructures; fragments
             are identified that are likely to be useful for drug synthesis.. See :py:meth:`rdkit.Chem.BRICS`.
 
-    :param substructures_only: Whether to generate all tables or only the substructures table.
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
+
+    :param records: Records of molecules to be fragmented. Must be a list containing dictionaries containing key
+        information about the molecules, as generated by :py:meth:`metaboblend.databases.parse_xml`; if records
+        is not supplied, the records will be obtained from the XML at `hmdb_path`.
     """
 
     conn = sqlite3.connect(path_substructure_db)
@@ -1244,19 +1253,19 @@ def create_isomorphism_database(path_connectivity_db: Union[str, bytes, os.PathL
                                 max_atoms_available: int = 2, path_ri: Union[str, bytes, os.PathLike, None] = None
                                 ) -> None:
     """
-    Generates a connectivity database containing sets of possible combinations of substructures; also generates PKL
-    files containing the graphs required for building molecules from substructures. The connectivity database is
-    required to build molecules from substructures.
+    Generates a connectivity database containing sets of possible combinations of substructures; these combinations
+    are represented by graphs whose vertices correspond to substructures and edges to bonds. These graphs are pickled
+    in order to be stored in the final column of the SQLite 3 connectivity database.
 
-    :param path_connectivity_db: The path of the SQLite 3 database to be generated.
+    :param path_connectivity_db: The path at which to generate the SQLite 3 database.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
         available for bonding for a graph to be created.
 
-    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertice) in each
+    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertex) in each
         substructure for bonding. At least one atom must be available for bonding for a graph to be created.
 
-    :param path_ri: The path of RI, a tool for verifying subgraph isomorphism.
+    :param path_ri: The path of RI, a required tool for verifying subgraph isomorphism.
     """
     
     conn = sqlite3.connect(path_connectivity_db)
