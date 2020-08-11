@@ -68,10 +68,10 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
                 )
 
                 j = 0
@@ -94,11 +94,11 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
                     prescribed_mass=fragments[i], ppm=15, clean=True,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    out_mode="w", processes=None, table_name="substructures"
+                    out_mode="w", ncpus=None, table_name="substructures"
                 )
 
                 j = 0
@@ -183,10 +183,10 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test standard building
                 returned_smis = list(generate_structures(
-                    ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_result(),
-                    path_connectivity_db=self.to_test_result("connectivity", "k_graphs.sqlite"),
-                    path_substructure_db=self.to_test_result("substructures.sqlite"),
+                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results(),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_set=True
                 ))
 
@@ -194,10 +194,10 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
                 )
 
                 unique_smis = set()
@@ -215,8 +215,8 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test prescribed building
                 returned_smis = list(generate_structures(
-                    ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_results(),
+                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_set=True
@@ -226,11 +226,11 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
                     prescribed_mass=fragments[i], ppm=0,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    out_mode="w", processes=None, table_name="substructures", clean=True
+                    out_mode="w", ncpus=None, table_name="substructures", clean=True
                 )
 
                 unique_smis = set()
@@ -250,8 +250,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                    "prescribed_masses": None}
             # test building with multiple inputs
             returned_smi_list = list(generate_structures(
-                ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                smi_out_dir=self.to_test_results(),
+                ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                path_smi_out=self.to_test_results(),
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_set=True
@@ -262,10 +262,10 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    smi_out_path=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", processes=None, table_name="substructures"
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
                 )
 
                 unique_smis = set()
@@ -304,8 +304,8 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test standard building
                 returned_smis = list(annotate_msn(
-                    ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                    smi_out_dir=self.to_test_results("annotate"),
+                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results("annotate"),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_dict=True, write_fragment_smis=True
@@ -350,8 +350,8 @@ class BuildStructuresTestCase(unittest.TestCase):
 
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
-                ms_data, heavy_atoms=range(0, 30), max_valence=6, max_atoms_available=2, max_n_substructures=3,
-                smi_out_dir=self.to_test_results("annotate_multi"),
+                ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                path_smi_out=self.to_test_results("annotate_multi"),
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_dict=True

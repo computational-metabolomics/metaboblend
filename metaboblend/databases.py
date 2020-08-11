@@ -1042,7 +1042,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
 def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
                                  path_substructure_db: Union[str, bytes, os.PathLike],
                                  n_min: Union[int, None] = None, n_max: Union[int, None] = None,
-                                 max_valence: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
+                                 max_degree: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
                                  method: str = "exhaustive", substructures_only: bool = False) -> None:
     """
     Creates a substructure database by fragmenting one or more input molecules. Combinations of
@@ -1059,12 +1059,16 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
 
     :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param max_atoms_available: The maximal atoms available of substructures to be considered for building molecules.
-        atoms_available refers to the number of atoms on a substructre involved in bonding. See
-        `metaboverse.databases.create_isomorphism_database`.
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
 
-    :param max_valence: The maximal total bond orders of substructures to be considered to build final structures
-        (ie, the product of `atoms_available` and the degree of their bonds).
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -1089,7 +1093,7 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
     for hmdb_path in hmdb_paths:
         update_substructure_database(hmdb_path=hmdb_path, path_substructure_db=path_substructure_db, n_min=n_min,
                                      n_max=n_max, method=method, max_atoms_available=max_atoms_available,
-                                     max_valence=max_valence, substructures_only=substructures_only)
+                                     max_degree=max_degree, substructures_only=substructures_only)
 
     db = SubstructureDb(path_substructure_db)
     db.create_indexes()
@@ -1099,7 +1103,7 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
 def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
                                  path_substructure_db: Union[str, bytes, os.PathLike], n_min: Union[int, None] = None,
                                  n_max: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
-                                 max_valence: Union[int, None] = None, method: str = "exhaustive",
+                                 max_degree: Union[int, None] = None, method: str = "exhaustive",
                                  substructures_only: bool = False, records: Union[Sequence[Dict], None] = None) -> None:
     """
     Add entries to the substructure database by fragmenting a molecule or set of molecules. Combinations of
@@ -1116,12 +1120,16 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
 
     :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
 
-    :param max_atoms_available: The maximal atoms available of substructures to be considered for building molecules.
-        atoms_available refers to the number of atoms on a substructre involved in bonding. See
-        `metaboverse.databases.create_isomorphism_database`.
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
 
-    :param max_valence: The maximal total bond orders of substructures to be considered to build final structures
-        (ie, the product of `atoms_available` and the degree of their bonds).
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -1179,8 +1187,8 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
                     if lib["atoms_available"] > max_atoms_available:
                         continue
 
-                if max_valence is not None:
-                    if lib["valence"] > max_valence:
+                if max_degree is not None:
+                    if lib["valence"] > max_degree:
                         continue
 
                 smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
@@ -1253,21 +1261,24 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
     conn.close()
 
 
-def create_isomorphism_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,
-                                max_atoms_available: int = 2, path_ri: Union[str, bytes, os.PathLike, None] = None
-                                ) -> None:
+def create_connectivity_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,
+                                 max_atoms_available: int = 2, path_ri: Union[str, bytes, os.PathLike, None] = None
+                                 ) -> None:
     """
-    Generates a connectivity database containing sets of possible combinations of substructures; these combinations
-    are represented by graphs whose vertices correspond to substructures and edges to bonds. These graphs are pickled
-    in order to be stored in the final column of the SQLite 3 connectivity database.
+    Generates a connectivity database containing sets of possible combinations of substructures; these combinations are
+    represented by graphs whose vertices correspond to substructures and edges to bonds. We use geng, part of the nauty
+    package, along with RI3.6 to ensure that the generated graphs are non-isomorphic - i.e. we only generate each
+    combination of substructures once. These graphs are pickled in order to be stored in the final column of the
+    SQLite 3 connectivity database.
 
     :param path_connectivity_db: The path at which to generate the SQLite 3 database.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
         available for bonding for a graph to be created.
 
-    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertex) in each
-        substructure for bonding. At least one atom must be available for bonding for a graph to be created.
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds).
 
     :param path_ri: The path of RI, a required tool for verifying subgraph isomorphism.
     """

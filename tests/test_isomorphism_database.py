@@ -61,13 +61,13 @@ class IsomorphDbTestCase(unittest.TestCase):
         elif sys.platform == "linux":
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
 
-        create_isomorphism_database(cls.to_test_results("connectivity.sqlite"),
+        create_connectivity_database(cls.to_test_results("connectivity.sqlite"),
                                     3,  # sizes
                                     [1, 2],  # boxes
                                     cls.path_ri
                                     )
 
-    def test_create_isomorphism_database(self):
+    def test_create_connectivity_database(self):
         ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
         ref_db_cursor = ref_db.cursor()
         ref_db_cursor.execute("SELECT * FROM subgraphs")
