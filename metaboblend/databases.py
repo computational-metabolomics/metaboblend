@@ -1041,9 +1041,12 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
 
 def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
                                  path_substructure_db: Union[str, bytes, os.PathLike],
-                                 n_min: Union[int, None] = None, n_max: Union[int, None] = None,
-                                 max_degree: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
-                                 method: str = "exhaustive", substructures_only: bool = False) -> None:
+                                 ha_min: Union[int, None] = None,
+                                 ha_max: Union[int, None] = None,
+                                 max_degree: Union[int, None] = None,
+                                 max_atoms_available: Union[int, None] = None,
+                                 method: str = "exhaustive",
+                                 substructures_only: bool = False) -> None:
     """
     Creates a substructure database by fragmenting one or more input molecules. Combinations of
     substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
@@ -1055,9 +1058,11 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
 
     :param path_substructure_db: The path of the SQLite 3 substructure database to be created.
 
-    :param n_min: The minimum number of bonds (edges) to be selected to generate valid substructures.
+    :param ha_min: The minimum size (number of heavy atoms) of substructures to be added to the substructure
+        database. If None, no limit is applied.
 
-    :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
+    :param ha_max: The maximum size (number of heavy atoms) of substructures to be added to the substructure
+        database. None, no limit is applied.
 
     :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
         building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
@@ -1091,8 +1096,8 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
     db.close()
 
     for hmdb_path in hmdb_paths:
-        update_substructure_database(hmdb_path=hmdb_path, path_substructure_db=path_substructure_db, n_min=n_min,
-                                     n_max=n_max, method=method, max_atoms_available=max_atoms_available,
+        update_substructure_database(hmdb_path=hmdb_path, path_substructure_db=path_substructure_db, ha_min=ha_min,
+                                     ha_max=ha_max, method=method, max_atoms_available=max_atoms_available,
                                      max_degree=max_degree, substructures_only=substructures_only)
 
     db = SubstructureDb(path_substructure_db)
@@ -1101,10 +1106,14 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
 
 
 def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
-                                 path_substructure_db: Union[str, bytes, os.PathLike], n_min: Union[int, None] = None,
-                                 n_max: Union[int, None] = None, max_atoms_available: Union[int, None] = None,
-                                 max_degree: Union[int, None] = None, method: str = "exhaustive",
-                                 substructures_only: bool = False, records: Union[Sequence[Dict], None] = None) -> None:
+                                 path_substructure_db: Union[str, bytes, os.PathLike],
+                                 ha_min: Union[int, None] = None,
+                                 ha_max: Union[int, None] = None,
+                                 max_atoms_available: Union[int, None] = None,
+                                 max_degree: Union[int, None] = None,
+                                 method: str = "exhaustive",
+                                 substructures_only: bool = False,
+                                 records: Union[Sequence[Dict], None] = None) -> None:
     """
     Add entries to the substructure database by fragmenting a molecule or set of molecules. Combinations of
     substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
@@ -1116,9 +1125,11 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
 
     :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
 
-    :param n_min: The minimum number of bonds (edges) to be selected to generate valid substructures.
+    :param ha_min: The minimum size (number of heavy atoms) of substructures to be added to the substructure
+        database. If None, no limit is applied.
 
-    :param n_max: The maximum number of bonds (edges) to be generated to be selected to generate valid substructures.
+    :param ha_max: The maximum size (number of heavy atoms) of substructures to be added to the substructure
+        database. None, no limit is applied.
 
     :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
         building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
@@ -1157,8 +1168,8 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
     if records is None:
         records = parse_xml(hmdb_path, reformat=False)
 
-    if n_min is None:
-        n_min = 0
+    if ha_min is None:
+        ha_min = 0
 
     for record_dict in filter_records(records):
         if not substructures_only:
@@ -1176,7 +1187,7 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
                                    :smiles)""", record_dict)
 
         # Returns a tuple of 2-tuples with bond IDs
-        for sgs in get_sgs(record_dict=record_dict, n_min=n_min, n_max=n_max, method=method):
+        for sgs in get_sgs(record_dict=record_dict, n_min=ha_min-1, n_max=ha_max-1, method=method):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)  # convert bond IDs to substructure mol
 

@@ -183,7 +183,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test standard building
                 returned_smis = list(generate_structures(
-                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
                     path_smi_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
@@ -215,7 +215,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test prescribed building
                 returned_smis = list(generate_structures(
-                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
                     path_smi_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
@@ -250,7 +250,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                    "prescribed_masses": None}
             # test building with multiple inputs
             returned_smi_list = list(generate_structures(
-                ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
                 path_smi_out=self.to_test_results(),
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
@@ -304,7 +304,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 # test standard building
                 returned_smis = list(annotate_msn(
-                    ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
                     path_smi_out=self.to_test_results("annotate"),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
@@ -350,7 +350,7 @@ class BuildStructuresTestCase(unittest.TestCase):
 
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
-                ms_data, heavy_atoms=range(0, 30), max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
                 path_smi_out=self.to_test_results("annotate_multi"),
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),

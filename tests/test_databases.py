@@ -189,7 +189,7 @@ class DatabasesTestCase(unittest.TestCase):
         records = [self.to_test_data(r + ".xml") for r in ["HMDB0000073", "HMDB0000122", "HMDB0000158", "HMDB0000186"]]
 
         create_substructure_database(records,
-                                     self.to_test_results("test_db.sqlite"), 3, 7, method="exhaustive")
+                                     self.to_test_results("test_db.sqlite"), 4, 8, method="exhaustive")
 
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
@@ -259,7 +259,7 @@ class DatabasesTestCase(unittest.TestCase):
             record = self.to_test_data(record + ".xml")
 
             update_substructure_database(self.to_test_data(record),
-                                         self.to_test_results("test_db.sqlite"), 3, 7, method="exhaustive")
+                                         self.to_test_results("test_db.sqlite"), 4, 8, method="exhaustive")
 
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
