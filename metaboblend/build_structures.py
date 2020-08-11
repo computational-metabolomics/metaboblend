@@ -734,12 +734,14 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
     if ha_min is None:
         ha_min_statement = ""
     else:
-        ha_min_statement = "heavy_atoms >= %s AND" % str(ha_min)
+        ha_min_statement = """
+                              AND heavy_atoms >= %s""" % str(ha_min)
 
     if ha_max is None:
         ha_max_statement = ""
     else:
-        ha_max_statement = "heavy_atoms <= %s AND" % str(ha_max)
+        ha_max_statement = """
+                              AND heavy_atoms <= %s""" % str(ha_max)
 
     db.cursor.execute("""CREATE TABLE {} AS
                              SELECT * FROM substructures WHERE

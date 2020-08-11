@@ -372,12 +372,13 @@ class BuildStructuresTestCase(unittest.TestCase):
 
     def test_gen_subs_table(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
-        table_name = gen_subs_table(db, range(5, 7), 4, 2, 500)
+        table_name = gen_subs_table(db, 5, 6, 4, 2, 500)
 
         i = 0
         db.cursor.execute("SELECT heavy_atoms, valence, atoms_available FROM %s" % table_name)
         for row in db.cursor.fetchall():
             i += 1
+
             self.assertTrue(row[0] in range(5, 7))
             self.assertTrue(row[1] <= 4)
             self.assertTrue(row[2] <= 2)
