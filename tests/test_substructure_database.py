@@ -24,34 +24,30 @@ import os
 import unittest
 import tempfile
 import shutil
-import zipfile
 from metaboblend.databases import *
 
 
 class DatabasesTestCase(unittest.TestCase):
     temp_results_dir = None
-    temp_results_name = None
 
     @classmethod
-    def to_test_result(cls, *args):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
-        cls.temp_results_name = cls.temp_results_dir.name
 
-        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
-            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                   "data",
-                                                   compr_data
-                                                   ), 'r')
-            zip_ref.extractall(cls.to_test_result())
-            zip_ref.close()
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
     def test_init(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"),
-                            self.to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"),
+                            self.to_test_data("connectivity.sqlite"))
 
         db.cursor.execute("SELECT * FROM substructures")
         first_row = db.cursor.fetchone()[0:17]
@@ -79,7 +75,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_select_compounds(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         for i, cpd_entry in enumerate(db.select_compounds(["HMDB0000158", "HMDB0000122"])):
             self.assertLessEqual(i, 2)
             self.assertTrue(cpd_entry[0] == "HMDB0000158" or cpd_entry[0] == "HMDB0000122")
@@ -87,7 +83,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_filter_hmdbid_substructures(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         db.filter_hmdbid_substructures(2)
         db.cursor.execute("SELECT * FROM unique_hmdbid")
         self.assertEqual(db.cursor.fetchall(), [('HMDB0000073',), ('HMDB0000122',), ('HMDB0000158',), ('HMDB0000186',)])
@@ -100,7 +96,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_generate_substructure_network(self):  # also tests close
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         std = db.generate_substructure_network(method="default", min_node_weight=2, remove_isolated=False)
         extended = db.generate_substructure_network(method="extended", min_node_weight=2, remove_isolated=False)
         parent = db.generate_substructure_network(method="parent_structure_linkage", min_node_weight=2,
@@ -138,14 +134,14 @@ class DatabasesTestCase(unittest.TestCase):
 
         self.assertRaises(sqlite3.ProgrammingError, lambda: db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'"))
 
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         self.assertEqual(len(db.cursor.fetchall()), 3)
 
         db.close()
 
     def test_select_mass_values(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         ests = db.select_mass_values("1", [], "substructures")
         exacts = db.select_mass_values("0_0001", [], "substructures")
 
@@ -170,23 +166,23 @@ class DatabasesTestCase(unittest.TestCase):
                           lambda: db.select_mass_values("0_0001", [63, 63, 63], "substrusctures"))
         db.close()
 
-    def test_select_ecs(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "0_0001"), [(7, 9, 1, 0, 0, 0)])
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "1"), [])
-        self.assertEqual(db.select_ecs(107, "substructures", "0_0001"), [])
-        self.assertEqual(db.select_ecs(107.0735, "substructures", "1"), [])
-        self.assertEqual(db.select_ecs(107, "substructures", "1"),
+    def test_select_mfs(self):
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+        self.assertEqual(db.select_mfs(107.0735, "substructures", "0_0001"), [(7, 9, 1, 0, 0, 0)])
+        self.assertEqual(db.select_mfs(107.0735, "substructures", "1"), [])
+        self.assertEqual(db.select_mfs(107, "substructures", "0_0001"), [])
+        self.assertEqual(db.select_mfs(107.0735, "substructures", "1"), [])
+        self.assertEqual(db.select_mfs(107, "substructures", "1"),
                          [(7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0)])
 
         self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_ecs(107.0735, "substrusctures", "0_0001"))
+                          lambda: db.select_mfs(107.0735, "substrusctures", "0_0001"))
 
         db.close()
 
     def test_k_configs(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"),
-                            self.to_test_result("connectivity", "k_graphs.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"),
+                            self.to_test_data("connectivity.sqlite"))
 
         k_configs = db.k_configs()
         self.assertEqual(len(k_configs), 67)
@@ -212,7 +208,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_select_substructures(self):
-        db = SubstructureDb(self.to_test_result("substructures.sqlite"), "")
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         self.assertEqual(db.select_substructures([[2, 5, 0, 0, 0, 0]], "substructures"), [])
         self.assertEqual(len(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0]), 7)
         self.assertEqual(list(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].keys()),
@@ -234,7 +230,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_create_compound_database(self):  # also tests create_indexes
-        db = SubstructureDb(self.to_test_result("substructures_new.sqlite"), "")
+        db = SubstructureDb(self.to_test_results("substructures_new.sqlite"))
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         self.assertEqual(len(db.cursor.fetchall()), 3)
@@ -242,9 +238,9 @@ class DatabasesTestCase(unittest.TestCase):
         db.create_indexes()
         db.close()
 
-        shutil.copyfile(self.to_test_result("substructures.sqlite"), self.to_test_result("substructures_copy.sqlite"))
-        db = SubstructureDb(self.to_test_result("substructures_copy.sqlite"),
-                            self.to_test_result("connectivity", "k_graphs.sqlite"))
+        shutil.copyfile(self.to_test_data("substructures.sqlite"), self.to_test_results("substructures_copy.sqlite"))
+        db = SubstructureDb(self.to_test_results("substructures_copy.sqlite"),
+                            self.to_test_data("connectivity.sqlite"))
         db.create_indexes()
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -268,7 +264,7 @@ class DatabasesTestCase(unittest.TestCase):
         db.close()
 
     def test_add_small_substructures(self):
-        db = SubstructureDb(self.to_test_result("substructures_new.sqlite"), "")
+        db = SubstructureDb(self.to_test_results("substructures_new.sqlite"))
         db.create_compound_database()
         db.add_small_substructures("substructures")
 

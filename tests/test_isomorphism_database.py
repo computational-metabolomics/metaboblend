@@ -22,23 +22,28 @@
 
 import os
 import unittest
-import zipfile
+import shutil
 import tempfile
 from metaboblend.databases import *
 
 
 class IsomorphDbTestCase(unittest.TestCase):
     temp_results_dir = None
-    temp_results_name = None
 
     @classmethod
-    def to_test_result(cls, *args):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
-        cls.temp_results_name = cls.temp_results_dir.name
+
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
         pkg_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         if sys.platform == "win32" or sys.platform == "win64":  # TODO: add RI as dependency
@@ -56,27 +61,18 @@ class IsomorphDbTestCase(unittest.TestCase):
         elif sys.platform == "linux":
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
 
-        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip"]:
-            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                   "data",
-                                                   compr_data
-                                                   ), 'r')
-            zip_ref.extractall(cls.to_test_result())
-            zip_ref.close()
-
-        os.mkdir(cls.to_test_result("pkls"))
-        create_isomorphism_database(cls.to_test_result("k_graphs.sqlite"),
+        create_isomorphism_database(cls.to_test_results("connectivity.sqlite"),
                                     3,  # sizes
                                     [1, 2],  # boxes
                                     cls.path_ri
                                     )
 
     def test_create_isomorphism_database(self):
-        ref_db = sqlite3.connect(self.to_test_result("connectivity", "k_graphs.sqlite"))
+        ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
         ref_db_cursor = ref_db.cursor()
         ref_db_cursor.execute("SELECT * FROM subgraphs")
 
-        test_db = sqlite3.connect(self.to_test_result("k_graphs.sqlite"))
+        test_db = sqlite3.connect(self.to_test_results("connectivity.sqlite"))
         test_db_cursor = test_db.cursor()
         test_db_cursor.execute("SELECT * FROM subgraphs")
 

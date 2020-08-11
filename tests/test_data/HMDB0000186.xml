@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hmdb xmlns="http://www.hmdb.ca"> 
+<metabolite>
+  <version>4.0</version>
+  <creation_date>2005-11-16 15:48:42 UTC</creation_date>
+  <update_date>2020-02-26 21:21:55 UTC</update_date>
+  <accession>HMDB0000186</accession>
+  <status>quantified</status>
+  <secondary_accessions>
+    <accession>HMDB0005761</accession>
+    <accession>HMDB00186</accession>
+    <accession>HMDB05761</accession>
+  </secondary_accessions>
+  <name>Alpha-Lactose</name>
+  <description>alpha-Lactose is the major sugar present in milk and the main source of energy supplied to the newborn mammalian in its mother's milk. Lactose is also an important osmotic regulator of lactation. It is digested by the intestinal lactase (EC 3.2.1.108), an enzyme expressed in newborns. Its activity declines following weaning. As a result, adult mammals are normally lactose-intolerant and more than 75% of the human adult population suffers from lactase deficiency. Lactase deficiency is present in up to 80 percent of blacks and Latinos, and up to 100 percent of American Indians and Asians. Persons with lactose intolerance are unable to digest significant amounts of lactose. Common symptoms include abdominal pain and bloating, excessive flatus, and watery stool following the ingestion of foods containing lactose. A sizable number of adults believe they are lactose intolerant but do not actually have impaired lactose digestion, and some persons with lactase deficiency can tolerate moderate amounts of ingested lactose. A diagnosis of lactose intolerance can usually be made with a careful history supported by dietary manipulation. If necessary, diagnosis can be confirmed by using a breath hydrogen or lactose tolerance test. These mostly uncomfortable symptoms of lactose maldigestion are blamed for a variably dairy consumption. There is, however, emerging evidence that certain lactic acid-producing bacteria, which selectively consume prebiotics, may be beneficial against some lower intestinal diseases. Lactose maldigestion and lactose should perhaps be re-evaluated as a potential provider of such a prebiotic. Treatment consists primarily of avoiding lactose-containing foods. Lactase enzyme supplements may be helpful. The degree of lactose malabsorption varies greatly among patients with lactose intolerance, but most of them can ingest up to 350 mL of milk daily without symptoms. Lactose-intolerant patients must ensure adequate calcium intake. (PMID: 13130292, 12216958, 12197838, 12018807). Lactose in the urine is a biomarker for the consumption of milk.</description>
+  <synonyms>
+    <synonym>1-beta-D-Galactopyranosyl-4-alpha-D-glucopyranose</synonym>
+    <synonym>4-O-beta-D-Galactopyranosyl-alpha-D-glucopyranose</synonym>
+    <synonym>Anhydrous lactose</synonym>
+    <synonym>beta-D-Galp-(1-&gt;4)-alpha-D-GLCP</synonym>
+    <synonym>Lactose</synonym>
+    <synonym>Milk sugar</synonym>
+    <synonym>1-b-D-Galactopyranosyl-4-a-D-glucopyranose</synonym>
+    <synonym>1-Β-D-galactopyranosyl-4-α-D-glucopyranose</synonym>
+    <synonym>4-O-b-D-Galactopyranosyl-a-D-glucopyranose</synonym>
+    <synonym>4-O-Β-D-galactopyranosyl-α-D-glucopyranose</synonym>
+    <synonym>b-D-Galp-(1-&gt;4)-a-D-GLCP</synonym>
+    <synonym>Β-D-galp-(1-&gt;4)-α-D-GLCP</synonym>
+    <synonym>a-Lactose</synonym>
+    <synonym>Α-lactose</synonym>
+    <synonym>(+)-Lactose</synonym>
+    <synonym>1-beta-delta-Galactopyranosyl-4-alpha-delta-glucopyranose</synonym>
+    <synonym>4-O-Hexopyranosylhexose</synonym>
+    <synonym>Aletobiose</synonym>
+    <synonym>Dilactose</synonym>
+    <synonym>Fast-flo lactose</synonym>
+    <synonym>Flowlac 100</synonym>
+    <synonym>Galactinum</synonym>
+    <synonym>GLC-(4-1)Gal</synonym>
+    <synonym>Granulac 140m</synonym>
+    <synonym>Lactin</synonym>
+    <synonym>Lactin (carbohydrate)</synonym>
+    <synonym>Lactobiose</synonym>
+    <synonym>Lactohale 300</synonym>
+    <synonym>Lactose anhydride</synonym>
+    <synonym>Lactose fast-flo</synonym>
+    <synonym>Osmolactan</synonym>
+    <synonym>Pharmatosa DCL 21</synonym>
+    <synonym>Pharmatose 21</synonym>
+    <synonym>Pharmatose 325m</synonym>
+    <synonym>Pharmatose DCL 15</synonym>
+    <synonym>Prismalac</synonym>
+    <synonym>Respitose ML 003</synonym>
+    <synonym>Respitose SV 003</synonym>
+    <synonym>Saccharum lactin</synonym>
+    <synonym>Sachelac</synonym>
+    <synonym>Sorbalac 400</synonym>
+    <synonym>Sorbolac 400</synonym>
+    <synonym>Spherolac</synonym>
+    <synonym>Super-tab</synonym>
+    <synonym>Tablettose</synonym>
+    <synonym>Tablettose 70</synonym>
+    <synonym>Tablettose 80</synonym>
+    <synonym>Zeparox ep</synonym>
+    <synonym>Lactose, anhydrous</synonym>
+  </synonyms>
+  <chemical_formula>C12H22O11</chemical_formula>
+  <average_molecular_weight>342.2965</average_molecular_weight>
+  <monisotopic_molecular_weight>342.116211546</monisotopic_molecular_weight>
+  <iupac_name>(2R,3R,4S,5R,6S)-2-(hydroxymethyl)-6-{[(2R,3S,4R,5R,6S)-4,5,6-trihydroxy-2-(hydroxymethyl)oxan-3-yl]oxy}oxane-3,4,5-triol</iupac_name>
+  <traditional_iupac>α-lactose</traditional_iupac>
+  <cas_registry_number>63-42-3</cas_registry_number>
+  <smiles>OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@H]1O</smiles>
+  <inchi>InChI=1S/C12H22O11/c13-1-3-5(15)6(16)9(19)12(22-3)23-10-4(2-14)21-11(20)8(18)7(10)17/h3-20H,1-2H2/t3-,4-,5+,6+,7-,8-,9-,10-,11+,12+/m1/s1</inchi>
+  <inchikey>GUBGYTABKSRVRQ-XLOQQCSPSA-N</inchikey>
+  <taxonomy>
+    <description> belongs to the class of organic compounds known as o-glycosyl compounds. These are glycoside in which a sugar group is bonded through one carbon to another group via a O-glycosidic bond.</description>
+    <direct_parent>O-glycosyl compounds</direct_parent>
+    <kingdom>Organic compounds</kingdom>
+    <super_class>Organic oxygen compounds</super_class>
+    <class>Organooxygen compounds</class>
+    <sub_class>Carbohydrates and carbohydrate conjugates</sub_class>
+    <molecular_framework>Aliphatic heteromonocyclic compounds</molecular_framework>
+    <alternative_parents>
+      <alternative_parent>Acetals</alternative_parent>
+      <alternative_parent>Disaccharides</alternative_parent>
+      <alternative_parent>Hemiacetals</alternative_parent>
+      <alternative_parent>Hydrocarbon derivatives</alternative_parent>
+      <alternative_parent>Oxacyclic compounds</alternative_parent>
+      <alternative_parent>Oxanes</alternative_parent>
+      <alternative_parent>Polyols</alternative_parent>
+      <alternative_parent>Primary alcohols</alternative_parent>
+      <alternative_parent>Secondary alcohols</alternative_parent>
+    </alternative_parents>
+    <substituents>
+      <substituent>Acetal</substituent>
+      <substituent>Alcohol</substituent>
+      <substituent>Aliphatic heteromonocyclic compound</substituent>
+      <substituent>Disaccharide</substituent>
+      <substituent>Hemiacetal</substituent>
+      <substituent>Hydrocarbon derivative</substituent>
+      <substituent>O-glycosyl compound</substituent>
+      <substituent>Organoheterocyclic compound</substituent>
+      <substituent>Oxacycle</substituent>
+      <substituent>Oxane</substituent>
+      <substituent>Polyol</substituent>
+      <substituent>Primary alcohol</substituent>
+      <substituent>Secondary alcohol</substituent>
+    </substituents>
+    <external_descriptors>
+      <external_descriptor>lactose</external_descriptor>
+    </external_descriptors>
+  </taxonomy>
+  <ontology>
+    <root>
+      <term>Disposition</term>
+      <definition>A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Route of exposure</term>
+          <definition>A mean by which a chemical agent comes in contact with an organism, either under intended or unintended circumstances.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Enteral</term>
+              <definition>Chemical exposure via the alimentary canal (mouth to anus).</definition>
+              <parent_id>7743</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Ingestion</term>
+                  <definition>Chemical exposure facilitated by entry through the mouth.</definition>
+                  <parent_id>7744</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Digestion</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Source</term>
+          <definition>Natural or synthetic origin of a chemical.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Endogenous</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Food</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Biological</term>
+              <definition>A living organism (species or a higher taxonomy rank), in which a chemical can be found.</definition>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Animal</term>
+                  <definition>A living organism belonging to the kingdom animalia. it feeds on organic matter, typically having specialized sense organs and nervous system and able to respond rapidly to stimuli.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fauna</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Plant</term>
+                  <definition>A living organism belonging to the kingdom plantea. typically, it grows in a permanent site, absorbs water and inorganic substances through its roots, and synthesizes nutrients in its leaves by photosynthesis using the green pigment chlorophyll. examples incude trees, shrubs, herbs, grasses, ferns, and mosses.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                    <synonym>Flora</synonym>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Poaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Gramineae</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Coffea</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Coffee bean</synonym>
+                        <synonym>Coffee</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fabaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Papilionoideae</synonym>
+                        <synonym>Legume</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Glycine max</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Soy</synonym>
+                        <synonym>Soya</synonym>
+                        <synonym>Soybean</synonym>
+                        <synonym>Soya bean</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Cucurbitaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Cucurbits</synonym>
+                        <synonym>Gourds</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Theobroma cacao</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Biological location</term>
+          <definition>The physiological origin within an organism, including anatomical compnents, biofluids and excreta.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Tissue and substructures</term>
+              <definition>An anatomical organizational level including multiple cells yet not comprising a complete organ .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Muscle</term>
+                  <definition>A fibrous soft tissue with the ability to contract to produce force and motion. (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Organ and components</term>
+              <definition>An anatomical organizational level including multiple tissues or substructures, which enables a common biological function.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Intestine</term>
+                  <definition>The portion of the gastrointestinal tract that includes the small and large intestines.</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Spleen</term>
+                  <definition>An abdominal organ that is part of the hematopoietic and immune systems. it is composed of the white pulp and the red pulp and is surrounded by a capsule. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Bladder</term>
+                  <definition>The distensible sac-like organ that functions as a reservoir of urine, collecting from the kidneys and eliminating via the urethra. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Skin</term>
+                  <definition>An organ that constitutes the external surface of the body. it consists of the epidermis, dermis, and skin appendages. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Biofluid and excreta</term>
+              <definition>A liquid, semi-solid or solid material originating in the body.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Feces</term>
+                  <definition>The material discharged from the bowel during defecation. It consists of undigested food, intestinal mucus, epithelial cells, and bacteria.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fecal</synonym>
+                    <synonym>Stool</synonym>
+                    <synonym>Faecal</synonym>
+                    <synonym>Faeces</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Urine</term>
+                  <definition>Excretion in liquid state processed by the kidney.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Blood</term>
+                  <definition>A liquid tissue with the primary function of transporting oxygen and carbon dioxide (nci). it supplies the tissues with nutrients, removes waste products, and contains various components of the immune system defending the body against infection.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Breast milk</term>
+                  <definition>Portion of secreted substance produced by the mammary gland.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Subcellular</term>
+              <definition>An anatomical organizational level including a component within a biological cell .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Cytoplasm</term>
+                  <definition>The portion of the cell contained within the plasma membrane but excluding the nucleus.</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Cytoplasma</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Lysosome</term>
+                  <definition>В A sac-like compartment inside a cell that has enzymes that can break down cellular components that need to be destroyed. (NCI).</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Golgi</term>
+                  <definition>A compound membranous cytoplasmic organelle of eukaryotic cells, consisting of flattened, ribosome-free vesicles arranged in a more or less regular stack. Note that the Golgi apparatus can be located in various places in the cytoplasm. </definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Golgi apparatus</synonym>
+                    <synonym>Golgi complex</synonym>
+                    <synonym>Golgi ribbon</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Cell and elements</term>
+              <definition>An anatomical organizational level comprising of a single cell (or a fragment in some exceptions). a cell is defined by its type or function. it is the smallest unit of living structure capable of independent existence, composed of a membrane-enclosed mass of protoplasm and containing a nucleus or nucleoid.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Extracellular</term>
+                  <definition>The space external to the outermost structure of a cell.</definition>
+                  <parent_id>7732</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Extracellular region</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Element</term>
+                  <definition/>
+                  <parent_id>7732</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Platelet</term>
+                      <definition>A fragment of a large bone marrow cell (megakaryocyte) which is present in the blood but is not a blood cell. It is an irregular, disc-shaped element in the blood that assists in blood clotting.</definition>
+                      <parent_id>7733</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Thrombocyte</synonym>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Process</term>
+      <definition>Biological or chemical events, or a series thereof, leading to a known function or end-product.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Naturally occurring process</term>
+          <definition>Naturally-occurring molecular events or a series thereof, leading to a known function or end-product.</definition>
+          <parent_id>7659</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Biological process</term>
+              <definition>Biological or chemical events or a series thereof, leading to a known function or end-product within an organism.</definition>
+              <parent_id>7660</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Biochemical pathway</term>
+                  <definition>A linked series of chemical reactions that occur in a defined order within or between organism cells, and lead to a known function or end product.</definition>
+                  <parent_id>7661</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Congenital disorder of glycosylation CDG-IId</term>
+                      <definition> these glycoconjugates play critical roles in metabolism, cell recognition and adhesion, cell migration, protease resistance, host defense, and antigenicity, among others. cdgs are divided into 2 main groups: type i cdgs (see, e.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Galactose metabolism</term>
+                      <definition> the main sources of galactose in the human diet are milk and milk products. the milk sugar, lactose, is hydrolyzed in the intestine to its constituent monosaccharides, glucose and galactose.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Lactose Degradation</term>
+                      <definition> alpha-lactose is the major sugar present in milk and the main source of energy supplied to the newborn mammalian in its mother’s milk. lactose is also an important osmotic regulator of lactation.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Lactose intolerance</term>
+                      <definition> its activity declines following weaning. as a result, adult mammals are normally lactose-intolerant and more than 75% of the human adult population suffers from lactase deficiency.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Lactose Synthesis</term>
+                      <definition> lactose is created by joining two monosaccarides with a b1,4 glycosidic bond. glucose is first converted to udp-galactose via the enzyme galactose-1-phosphate uridylyltransferase.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Role</term>
+      <definition>The purpose or function assumed by a chemical, either naturally or as intended by humans .</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Industrial application</term>
+          <definition>The assumed function of a chemical utilized by human.</definition>
+          <parent_id>7671</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Food and nutrition</term>
+              <definition>A chemical purpose related to manufacturing of food and nutrition products.</definition>
+              <parent_id>7678</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+  </ontology>
+  <state>Solid</state>
+  <experimental_properties>
+    <property>
+      <kind>water_solubility</kind>
+      <value>195 mg/mL at 20 °C</value>
+      <source></source>
+    </property>
+    <property>
+      <kind>melting_point</kind>
+      <value>201 - 202 °C</value>
+      <source></source>
+    </property>
+  </experimental_properties>
+  <predicted_properties>
+    <property>
+      <kind>logp</kind>
+      <value>-3.01</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logs</kind>
+      <value>0.23</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>solubility</kind>
+      <value>586 g/L</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logp</kind>
+      <value>-4.7</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_acidic</kind>
+      <value>11.25</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_basic</kind>
+      <value>-3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>iupac</kind>
+      <value>(2R,3R,4S,5R,6S)-2-(hydroxymethyl)-6-{[(2R,3S,4R,5R,6S)-4,5,6-trihydroxy-2-(hydroxymethyl)oxan-3-yl]oxy}oxane-3,4,5-triol</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>average_mass</kind>
+      <value>342.2965</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mono_mass</kind>
+      <value>342.116211546</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>smiles</kind>
+      <value>OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@H]1O</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formula</kind>
+      <value>C12H22O11</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchi</kind>
+      <value>InChI=1S/C12H22O11/c13-1-3-5(15)6(16)9(19)12(22-3)23-10-4(2-14)21-11(20)8(18)7(10)17/h3-20H,1-2H2/t3-,4-,5+,6+,7-,8-,9-,10-,11+,12+/m1/s1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchikey</kind>
+      <value>GUBGYTABKSRVRQ-XLOQQCSPSA-N</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polar_surface_area</kind>
+      <value>189.53</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>refractivity</kind>
+      <value>68.34</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polarizability</kind>
+      <value>30.92</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rotatable_bond_count</kind>
+      <value>4</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>acceptor_count</kind>
+      <value>11</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>donor_count</kind>
+      <value>8</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>physiological_charge</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formal_charge</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>number_of_rings</kind>
+      <value>2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>bioavailability</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rule_of_five</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>ghose_filter</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>veber_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mddr_like_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+  </predicted_properties>
+  <spectra>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>426</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>427</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>428</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>23173</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>37343</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>1154</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>1196</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>292</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>293</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>294</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>317407</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>317408</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>317409</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>363868</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>363869</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>363870</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrTwoD</type>
+      <spectrum_id>986</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrTwoD</type>
+      <spectrum_id>1192</spectrum_id>
+    </spectrum>
+  </spectra>
+  <biological_properties>
+    <cellular_locations>
+      <cellular>Cytoplasm</cellular>
+      <cellular>Extracellular</cellular>
+      <cellular>Golgi apparatus</cellular>
+      <cellular>Lysosome</cellular>
+    </cellular_locations>
+    <biospecimen_locations>
+      <biospecimen>Blood</biospecimen>
+      <biospecimen>Breast Milk</biospecimen>
+      <biospecimen>Feces</biospecimen>
+      <biospecimen>Urine</biospecimen>
+    </biospecimen_locations>
+    <tissue_locations>
+      <tissue>Bladder</tissue>
+      <tissue>Gut</tissue>
+      <tissue>Intestine</tissue>
+      <tissue>Muscle</tissue>
+      <tissue>Platelet</tissue>
+      <tissue>Skin</tissue>
+      <tissue>Spleen</tissue>
+    </tissue_locations>
+    <pathways>
+      <pathway>
+        <name>Congenital disorder of glycosylation CDG-IId</name>
+        <smpdb_id>SMP00579</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Galactose Metabolism</name>
+        <smpdb_id>SMP00043</smpdb_id>
+        <kegg_map_id>map00052</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Galactosemia</name>
+        <smpdb_id>SMP00182</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>GLUT-1 deficiency syndrome</name>
+        <smpdb_id>SMP00580</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Lactose Degradation</name>
+        <smpdb_id>SMP00457</smpdb_id>
+        <kegg_map_id></kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Lactose Intolerance</name>
+        <smpdb_id>SMP00458</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Lactose Synthesis</name>
+        <smpdb_id>SMP00444</smpdb_id>
+        <kegg_map_id></kegg_map_id>
+      </pathway>
+    </pathways>
+  </biological_properties>
+  <normal_concentrations>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value/>
+      <concentration_units/>
+      <subject_age/>
+      <subject_sex/>
+      <subject_condition>Normal</subject_condition>
+      <comment>Inferred from detection in urine</comment>
+      <references>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Breast Milk</biospecimen>
+      <concentration_value>170000 +/- 7300</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Female</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Samples collected in the morning on day 90 postpartum. Metabolite was measured by using 1H NMR spectroscopy.</comment>
+      <references>
+        <reference>
+          <reference_text>Smilowitz JT, O'Sullivan A, Barile D, German JB, Lonnerdal B, Slupsky CM: The human milk metabolome reveals diverse oligosaccharide profiles. J Nutr. 2013 Nov;143(11):1709-18. doi: 10.3945/jn.113.178772. Epub 2013 Sep 11.</reference_text>
+          <pubmed_id>24027187</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Feces</biospecimen>
+      <concentration_value/>
+      <concentration_units/>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>By GC-MS on lyophilized fecal samples from premature breast milk-fed infants</comment>
+      <references>
+        <reference>
+          <reference_text>Poroyko V, Morowitz M, Bell T, Ulanov A, Wang M, Donovan S, Bao N, Gu S, Hong L, Alverdy JC, Bergelson J, Liu DC: Diet creates metabolic niches in the "immature gut" that shape microbial communities. Nutr Hosp. 2011 Nov-Dec;26(6):1283-95. doi: 10.1590/S0212-16112011000600015.</reference_text>
+          <pubmed_id>22411374</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>19.378 +/- 10.997</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Children (1 - 13 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>By NMR</comment>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>11.8 (1.0-24.2)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>by NMR</comment>
+      <references>
+        <reference>
+          <reference_text>Bouatra S, Aziat F, Mandal R, Guo AC, Wilson MR, Knox C, Bjorndahl TC, Krishnamurthy R, Saleem F, Liu P, Dame ZT, Poelzer J, Huynh J, Yallou FS, Psychogios N, Dong E, Bogumil R, Roehring C, Wishart DS: The human urine metabolome. PLoS One. 2013 Sep 4;8(9):e73076. doi: 10.1371/journal.pone.0073076. eCollection  2013.</reference_text>
+          <pubmed_id>24023812</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>13.600-48.467</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, Volume 3. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp., Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>30.0 (13.0-49.0)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, pp. 130. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp. Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>1.45 (0.63-3.45)</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, pp. 130. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp. Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>36.31 +/- 6.60</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>After lactose ingestion in lactose absorbers</comment>
+      <references>
+        <reference>
+          <reference_text>Bezerra JA, Thompson SH, Morse M, Koldovsky O, Udall JN Jr: Intestinal permeability to intact lactose in newborns and adults. Biol Neonate. 1990;58(6):334-42.</reference_text>
+          <pubmed_id>2288995</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>66.02 +/- 6.60</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>After ingestion of lactose in lactose malabsorbers</comment>
+      <references>
+        <reference>
+          <reference_text>Bezerra JA, Thompson SH, Morse M, Koldovsky O, Udall JN Jr: Intestinal permeability to intact lactose in newborns and adults. Biol Neonate. 1990;58(6):334-42.</reference_text>
+          <pubmed_id>2288995</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>676.75 +/- 85.83</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Newborn (0-30 days old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>After ingestion of lactose</comment>
+      <references>
+        <reference>
+          <reference_text>Bezerra JA, Thompson SH, Morse M, Koldovsky O, Udall JN Jr: Intestinal permeability to intact lactose in newborns and adults. Biol Neonate. 1990;58(6):334-42.</reference_text>
+          <pubmed_id>2288995</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>6.08 +/- 6.07</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <subject_age>Infant (0-1 year old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Shoemaker JD, Elliott WH: Automated screening of urine samples for carbohydrates, organic and amino acids after treatment with urease. J Chromatogr. 1991 Jan 2;562(1-2):125-38.</reference_text>
+          <pubmed_id>2026685</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+  </normal_concentrations>
+  <abnormal_concentrations>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>51.475 +/- 126.985</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Children (1 - 13 years old)</patient_age>
+      <patient_sex>Not Specified</patient_sex>
+      <patient_information>Eosinophilic esophagitis</patient_information>
+      <comment>By NMR</comment>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value/>
+      <concentration_units/>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Bladder cancer</patient_information>
+      <references>
+        <reference>
+          <reference_text>Zhou Y, Song R, Ma C, Zhou L, Liu X, Yin P, Zhang Z, Sun Y, Xu C, Lu X, Xu G: Discovery and validation of potential urinary biomarkers for bladder cancer diagnosis using a pseudotargeted GC-MS metabolomics method. Oncotarget. 2017 Mar 28;8(13):20719-20728. doi: 10.18632/oncotarget.14988.</reference_text>
+          <pubmed_id>28157703</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Urine</biospecimen>
+      <concentration_value>585</concentration_value>
+      <concentration_units>umol/mmol creatinine</concentration_units>
+      <patient_age>Infant (0-1 year old)</patient_age>
+      <patient_sex>Male</patient_sex>
+      <patient_information>Lactose Intolerance</patient_information>
+      <references>
+        <reference>
+          <reference_text>Hoskova A, Sabacky J, Mrskos A, Pospisil R: Severe lactose intolerance with lactosuria and vomiting. Arch Dis Child. 1980 Apr;55(4):304-5.</reference_text>
+          <pubmed_id>7416780</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+  </abnormal_concentrations>
+  <diseases>
+    <disease>
+      <name>Eosinophilic esophagitis</name>
+      <omim_id>610247</omim_id>
+      <references>
+        <reference>
+          <reference_text>Mordechai, Hien, and David S. Wishart</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Lactose Intolerance</name>
+      <omim_id>223000</omim_id>
+      <references>
+        <reference>
+          <reference_text>Hoskova A, Sabacky J, Mrskos A, Pospisil R: Severe lactose intolerance with lactosuria and vomiting. Arch Dis Child. 1980 Apr;55(4):304-5.</reference_text>
+          <pubmed_id>7416780</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+  </diseases>
+  <kegg_id>C00243</kegg_id>
+  <chemspider_id>76293</chemspider_id>
+  <drugbank_id/>
+  <foodb_id>FDB021789</foodb_id>
+  <pubchem_compound_id>84571</pubchem_compound_id>
+  <pdb_id/>
+  <chebi_id>36219</chebi_id>
+  <biocyc_id>LACTOSE</biocyc_id>
+  <knapsack_id>C00001136</knapsack_id>
+  <wikipedia_id/>
+  <phenol_explorer_compound_id/>
+  <bigg_id>34366</bigg_id>
+  <metlin_id>267</metlin_id>
+  <vmh_id>LCTS</vmh_id>
+  <fbonto_id/>
+  <synthesis_reference>Ruffing, Anne; Mao, Zichao; Ruizhen Chen, Rachel. Metabolic engineering of Agrobacterium sp. for UDP-galactose regeneration and oligosaccharide synthesis. Metabolic Engineering  (2006),  8(5),  465-473.</synthesis_reference>
+  <general_references>
+    <reference>
+      <reference_text>Jung SK, Fujimoto D: A novel beta-galactoside-binding lectin in adult rat kidney. J Biochem. 1994 Sep;116(3):547-53.</reference_text>
+      <pubmed_id>7852273</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Oozeer R, Furet JP, Goupil-Feuillerat N, Anba J, Mengaud J, Corthier G: Differential activities of four Lactobacillus casei promoters during bacterial transit through the gastrointestinal tracts of human-microbiota-associated mice. Appl Environ Microbiol. 2005 Mar;71(3):1356-63.</reference_text>
+      <pubmed_id>15746338</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Dimopoulos MA, Anagnostopoulos A: Thalidomide in relapsed/refractory multiple myeloma: pivotal trials conducted outside the United States. Semin Hematol. 2003 Oct;40(4 Suppl 4):8-16.</reference_text>
+      <pubmed_id>15015891</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Muthusamy A, Erickson DR, Sheykhnazari M, Bhavanandan VP: Enhanced binding of modified pentosan polysulfate and heparin to bladder--a strategy for improved treatment of interstitial cystitis. Urology. 2006 Jan;67(1):209-13.</reference_text>
+      <pubmed_id>16413377</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Johnson JD, Simoons FJ, Hurwitz R, Grange A, Mitchell CH, Sinatra FR, Sunshine P, Robertson WV, Bennett PH, Kretchmer N: Lactose malabsorption among the Pima indians of Arizona. Gastroenterology. 1977 Dec;73(6):1299-304.</reference_text>
+      <pubmed_id>578795</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Lustenberger RW: [A 23-year old patient with chronic diarrhea. Celiac disease and lactose intolerance]. Praxis (Bern 1994). 2005 Feb 2;94(5):163-4.</reference_text>
+      <pubmed_id>15745382</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Sharma A, DiCioccio RA, Allen HJ: Identification and synthesis of a novel 15 kDa beta-galactoside-binding lectin in human leukocytes. Glycobiology. 1992 Aug;2(4):285-92.</reference_text>
+      <pubmed_id>1421750</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Rana SV, Bhasin DK, Vinayak VK: Lactose hydrogen breath test in Giardia lamblia-positive patients. Dig Dis Sci. 2005 Feb;50(2):259-61.</reference_text>
+      <pubmed_id>15745082</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Mitchell JD, Brand J, Halbisch J: Weight-gain inhibition by lactose in Australian Aboriginal children. A controlled trial of normal and lactose hydrolysed milk. Lancet. 1977 Mar 5;1(8010):500-2.</reference_text>
+      <pubmed_id>65606</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Soupene E, van Heeswijk WC, Plumbridge J, Stewart V, Bertenthal D, Lee H, Prasad G, Paliy O, Charernnoppakul P, Kustu S: Physiological studies of Escherichia coli strain MG1655: growth defects and apparent cross-regulation of gene expression. J Bacteriol. 2003 Sep;185(18):5611-26.</reference_text>
+      <pubmed_id>12949114</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Yeoh E, Horowitz M, Russo A, Muecke T, Robb T, Chatterton B: The effects of abdominal irradiation for seminoma of the testis on gastrointestinal function. J Gastroenterol Hepatol. 1995 Mar-Apr;10(2):125-30.</reference_text>
+      <pubmed_id>7787155</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Bondesson E, Bengtsson T, Borgstrom L, Nilsson LE, Norrgren K, Olsson B, Svensson M, Wollmer P: Dose delivery late in the breath can increase dry powder aerosol penetration into the lungs. J Aerosol Med. 2005 Spring;18(1):23-33.</reference_text>
+      <pubmed_id>15741771</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Roberson CM: Lactose intolerance. Ala Nurse. 2004 Dec-2005 Feb;31(4):23-4; quiz 24.</reference_text>
+      <pubmed_id>15662762</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Kim KI, Lee WS, Benevenga NJ: Feeding diets containing high levels of milk products or cellulose decrease urease activity and ammonia production in rat intestine. J Nutr. 1998 Jul;128(7):1186-91.</reference_text>
+      <pubmed_id>9649604</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Gunther S, Patterson RE, Kristal AR, Stratton KL, White E: Demographic and health-related correlates of herbal and specialty supplement use. J Am Diet Assoc. 2004 Jan;104(1):27-34.</reference_text>
+      <pubmed_id>14702580</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Delaveau P: [Milk lactose. Hypothesis on its biological importance]. Ann Pharm Fr. 2003;61(5):340-2.</reference_text>
+      <pubmed_id>13130292</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Vilotte JL: Lowering the milk lactose content in vivo: potential interests, strategies and physiological consequences. Reprod Nutr Dev. 2002 Mar-Apr;42(2):127-32.</reference_text>
+      <pubmed_id>12216958</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Szilagyi A: Review article: lactose--a potential prebiotic. Aliment Pharmacol Ther. 2002 Sep;16(9):1591-602.</reference_text>
+      <pubmed_id>12197838</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Swagerty DL Jr, Walling AD, Klein RM: Lactose intolerance. Am Fam Physician. 2002 May 1;65(9):1845-50.</reference_text>
+      <pubmed_id>12018807</pubmed_id>
+    </reference>
+  </general_references>
+  <protein_associations>
+    <protein>
+      <protein_accession>HMDBP00365</protein_accession>
+      <name>Lactase-phlorizin hydrolase</name>
+      <uniprot_id>P09848</uniprot_id>
+      <gene_name>LCT</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00371</protein_accession>
+      <name>Beta-1,4-galactosyltransferase 2</name>
+      <uniprot_id>O60909</uniprot_id>
+      <gene_name>B4GALT2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00372</protein_accession>
+      <name>Alpha-lactalbumin</name>
+      <uniprot_id>P00709</uniprot_id>
+      <gene_name>LALBA</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00377</protein_accession>
+      <name>Beta-1,4-galactosyltransferase 1</name>
+      <uniprot_id>P15291</uniprot_id>
+      <gene_name>B4GALT1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00843</protein_accession>
+      <name>Beta-galactosidase</name>
+      <uniprot_id>P16278</uniprot_id>
+      <gene_name>GLB1</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP11449</protein_accession>
+      <name>Glycolipid transfer protein</name>
+      <uniprot_id>Q9NZD2</uniprot_id>
+      <gene_name>GLTP</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+  </protein_associations>
+</metabolite>
+</hmdb>

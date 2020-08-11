@@ -370,7 +370,7 @@ class SubstructureDb:
 
         return mass_values
 
-    def select_ecs(self, exact_mass, table_name, accuracy):
+    def select_mfs(self, exact_mass, table_name, accuracy):
         """
         Select elemental compositions based on an exact mass; allows for inexact mass searches based on error (ppm).
 
@@ -1317,7 +1317,7 @@ def create_isomorphism_database(path_connectivity_db: Union[str, bytes, os.PathL
             s_gfu.seek(0)
 
             proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                    stderr=subprocess.PIPE)  # TODO: add ri as dependency
             ri_out, err = proc.communicate()
 
             k_gfu.close()

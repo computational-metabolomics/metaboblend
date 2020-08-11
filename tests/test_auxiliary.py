@@ -23,7 +23,7 @@
 import os
 import unittest
 from io import BytesIO
-import zipfile
+import shutil
 import tempfile
 import pickle
 from metaboblend.auxiliary import *
@@ -31,31 +31,28 @@ from metaboblend.auxiliary import *
 
 class AuxiliaryTestCase(unittest.TestCase):
     temp_results_dir = None
-    temp_results_name = None
 
     @classmethod
-    def to_test_result(cls, *args):
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_name, *args)
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
         cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
-        cls.temp_results_name = cls.temp_results_dir.name
+
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
         cls.lines_geng = [b'E?oo', b'ECO_', b'ECQ_', b'ECZ?', b'ECX_', b'ECYO', b'EEh_', b'EQhO']
 
-        for compr_data in ["connectivity.zip", "test_mols.zip", "substructures.zip", "test_aux.zip"]:
-            zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                   "data",
-                                                   compr_data
-                                                   ), 'r')
-            zip_ref.extractall(cls.to_test_result())
-            zip_ref.close()
-
-        with open(cls.to_test_result("test_aux", "mappings.pkl"), "rb") as mappings_pkl:
+        with open(cls.to_test_data("mappings.pkl"), "rb") as mappings_pkl:
             cls.mappings = pickle.load(mappings_pkl)
 
-        with open(cls.to_test_result("test_aux", "gi_out.pkl"), "rb") as gi_out_pkl:
+        with open(cls.to_test_data("gi_out.pkl"), "rb") as gi_out_pkl:
             cls.gi_out = pickle.load(gi_out_pkl)
 
         cls.p_list = []
