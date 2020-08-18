@@ -55,163 +55,15 @@ def parse_testing_data(csv_path, hmdb_path):
                     data_categories[line[4]][line[0]]["mc"] = [record_dict["C"], record_dict["H"], record_dict["N"],
                                                                record_dict["O"], record_dict["P"], record_dict["S"]]
                     data_categories[line[4]][line[0]]["exact_mass"] = record_dict["exact_mass"]
-                    mol = Chem.MolFromSmiles(Chem.MolToSmiles(record_dict["mol"]))
+                    mol = Chem.MolFromSmiles(Chem.MolToSmiles(record_dict["mol"], isomericSmiles=False))
                     Chem.SanitizeMol(mol)
                     data_categories[line[4]][line[0]]["mol"] = mol
-                    data_categories[line[4]][line[0]]["smiles"] = Chem.MolToSmiles(mol)
+                    data_categories[line[4]][line[0]]["smiles"] = Chem.MolToSmiles(mol, isomericSmiles=False)
 
             assert data_categories[line[4]][line[0]]["exact_mass"] is not None
             data_categories[line[4]][line[0]]["peaks"].append(float(line[2]))
 
     return data_categories
-
-
-def add_small_substructures(path_subs, table_name="substructures"):
-    """
-    Add a curated set of small substructures to a substructure database - useful for improving the number of peaks
-    that the MS2 method can annotate.
-
-    :param path_subs: Path of the SQLite substructure database to be appended to.
-    """
-
-    substructures = SubstructureDb(path_subs, "")
-    small_smis = ["CCC", "C=C-C", "C=C=C", "ccc", "ccC", "C=N", "CN", "cnc", "CO", "C=O"]
-
-    for smi in small_smis:
-        mol = Chem.MolFromSmarts(smi)
-
-        atom_idxs_subgraph = [1]
-        atoms_to_dummy = []
-        for idx in atom_idxs_subgraph:
-            for atom in mol.GetAtomWithIdx(idx).GetNeighbors():
-                if atom.GetIdx() not in atom_idxs_subgraph:
-                    atoms_to_dummy.append(atom.GetIdx())
-
-        mol_edit = Chem.EditableMol(mol)
-        degree_atoms = {}
-
-        for atom in reversed(mol.GetAtoms()):
-
-            if atom.GetIdx() in atoms_to_dummy:
-                mol_edit.ReplaceAtom(atom.GetIdx(), Chem.Atom("*"))
-
-        mol = mol_edit.GetMol()
-        mol_edit = Chem.EditableMol(mol)
-
-        for atom in reversed(mol.GetAtoms()):
-            if atom.GetIdx() not in atom_idxs_subgraph and atom.GetSymbol() != "*":
-                mol_edit.RemoveAtom(atom.GetIdx())
-
-        mol_out = mol_edit.GetMol()
-
-        dummies = [atom.GetIdx() for atom in mol_out.GetAtoms() if atom.GetSymbol() == "*"]
-
-        for atom in mol_out.GetAtoms():
-
-            if atom.GetIdx() in dummies:
-
-                for atom_n in atom.GetNeighbors():
-
-                    if atom_n.GetSymbol() == "*":
-                        continue  # do not count dummies for valence calculations
-                    elif atom_n.GetIdx() not in degree_atoms:
-                        degree_atoms[atom_n.GetIdx()] = 1
-                    else:
-                        degree_atoms[atom_n.GetIdx()] += 1
-
-        # Returns the type of the bond as a double (i.e. 1.0 for SINGLE, 1.5 for AROMATIC, 2.0 for DOUBLE)
-        bond_types = {}
-
-        for b in mol_out.GetBonds():
-
-            if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
-                if b.GetEndAtomIdx() not in bond_types:
-                    bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
-                else:
-                    bond_types[b.GetEndAtomIdx()].append(b.GetBondTypeAsDouble())
-
-            elif mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol() == "*":
-                if b.GetBeginAtomIdx() not in bond_types:
-                    bond_types[b.GetBeginAtomIdx()] = [b.GetBondTypeAsDouble()]
-                else:
-                    bond_types[b.GetBeginAtomIdx()].append(b.GetBondTypeAsDouble())
-
-        try:
-            mol_out.UpdatePropertyCache()  # alternative to Chem.SanitizeMol that updates valence information
-        except:
-            continue
-
-        lib = {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES
-               "mol": mol_out,
-               "bond_types": bond_types,
-               "degree_atoms": degree_atoms,
-               "valence": sum(degree_atoms.values()),
-               "atoms_available": len(degree_atoms.keys()),
-               "dummies": dummies}
-
-        smiles_rdkit = Chem.MolToSmiles(lib["mol"])
-
-        exact_mass = calculate_exact_mass(lib["mol"])
-        els = get_elements(lib["mol"])
-
-        pkl_lib = pickle.dumps(lib)
-        sub_smi_dict = {'smiles': smiles_rdkit,
-                                'exact_mass': exact_mass,
-                                'length': sum([els[atom] for atom in els if atom != "*"]),
-                                "valence": lib["valence"],
-                                "valence_atoms": str(lib["degree_atoms"]),
-                                "atoms_available": lib["atoms_available"],
-                                "mol": lib["mol"].ToBinary(),
-                                "bond_types": str(lib["bond_types"]),
-                                "dummies": str(lib["dummies"])}
-
-        sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-        sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
-
-        sub_smi_dict.update(els)
-        sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
-
-        substructures.cursor.execute("""INSERT OR IGNORE INTO %s (
-                                      smiles,
-                                      heavy_atoms,
-                                      length, 
-                                      exact_mass__1, 
-                                      exact_mass__0_0001, 
-                                      exact_mass, 
-                                      C, 
-                                      H, 
-                                      N, 
-                                      O, 
-                                      P, 
-                                      S, 
-                                      valence, 
-                                      valence_atoms, 
-                                      atoms_available, 
-                                      bond_types,
-                                      dummies,
-                                      mol)
-                                  values (
-                                      :smiles,
-                                      :heavy_atoms,
-                                      :length,
-                                      :exact_mass__1,
-                                      :exact_mass__0_0001,
-                                      :exact_mass,
-                                      :C,
-                                      :H,
-                                      :N,
-                                      :O,
-                                      :P,
-                                      :S,
-                                      :valence,
-                                      :valence_atoms,
-                                      :atoms_available,
-                                      :bond_types,
-                                      :dummies,
-                                      :mol)""" % table_name, sub_smi_dict)
-
-    substructures.conn.commit()
-    substructures.conn.close()
 
 
 class MspDatabase:
@@ -380,7 +232,7 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
             if len(atom_check) > 0:
                 continue
 
-            if "+" in Chem.MolToSmiles(mol) or "-" in Chem.MolToSmiles(mol):
+            if "+" in Chem.MolToSmiles(mol, isomericSmiles=False) or "-" in Chem.MolToSmiles(mol, isomericSmiles=False):
                 continue
 
             try:
@@ -433,7 +285,7 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
             data_categories[name_msp][hmdb_id]["actual_accession"] = spectra[4]
 
             data_categories[name_msp][hmdb_id]["mol"] = mol
-            data_categories[name_msp][hmdb_id]["smiles"] = Chem.MolToSmiles(mol)
+            data_categories[name_msp][hmdb_id]["smiles"] = Chem.MolToSmiles(mol, isomericSmiles=False)
 
             data_categories[name_msp][hmdb_id]["chemical_formula"] = get_elements(mol)
 
