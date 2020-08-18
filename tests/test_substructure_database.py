@@ -263,19 +263,6 @@ class DatabasesTestCase(unittest.TestCase):
         db.create_indexes()
         db.close()
 
-    def test_add_small_substructures(self):
-        db = SubstructureDb(self.to_test_results("substructures_new.sqlite"))
-        db.create_compound_database()
-        db.add_small_substructures("substructures")
-
-        db.cursor.execute("SELECT * FROM substructures")
-
-        for small_row in db.cursor.fetchall():
-            self.assertEqual(small_row[1], 1)
-            self.assertEqual(small_row[0], Chem.MolToSmiles(Chem.Mol(small_row[17])))
-
-        db.close()
-
 
 if __name__ == '__main__':
     unittest.main()

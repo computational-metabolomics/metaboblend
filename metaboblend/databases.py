@@ -584,84 +584,6 @@ class SubstructureDb:
             self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
                                        ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
-    def add_small_substructures(self, table_name):
-        """
-        Adds a curated list of small substructures (single atom). Similar to update_substructure_database but deals
-        with substructures without reference molecules.
-
-        :param table_name: Which table to append the substructure entries to.
-        """
-
-        # list of potential relevant small substructures (smarts)
-        small_smis = ["CCC", "C=C-C", "C=C=C", "ccc", "ccC", "C=N", "CN", "cnc", "CO", "C=O"]
-
-        for smi in small_smis:
-            mol = Chem.MolFromSmarts(smi)
-
-            lib = get_substructure(mol, None)
-
-            smiles_rdkit = Chem.MolToSmiles(lib["mol"])
-
-            exact_mass = calculate_exact_mass(lib["mol"])
-            els = get_elements(lib["mol"])
-
-            sub_smi_dict = {'smiles': smiles_rdkit,
-                            'exact_mass': exact_mass,
-                            'length': sum([els[atom] for atom in els if atom != "*"]),
-                            "valence": lib["valence"],
-                            "valence_atoms": str(lib["degree_atoms"]),
-                            "atoms_available": lib["atoms_available"],
-                            "mol": lib["mol"].ToBinary(),
-                            "bond_types": str(lib["bond_types"]),
-                            "dummies": str(lib["dummies"])}
-
-            sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-            sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
-
-            sub_smi_dict.update(els)
-            sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
-
-            self.cursor.execute("""INSERT OR IGNORE INTO %s (
-                                       smiles,
-                                       heavy_atoms,
-                                       length, 
-                                       exact_mass__1, 
-                                       exact_mass__0_0001, 
-                                       exact_mass, 
-                                       C, 
-                                       H, 
-                                       N, 
-                                       O, 
-                                       P, 
-                                       S, 
-                                       valence, 
-                                       valence_atoms, 
-                                       atoms_available, 
-                                       bond_types,
-                                       dummies,
-                                       mol
-                                   ) values (
-                                       :smiles,
-                                       :heavy_atoms,
-                                       :length,
-                                       :exact_mass__1,
-                                       :exact_mass__0_0001,
-                                       :exact_mass,
-                                       :C,
-                                       :H,
-                                       :N,
-                                       :O,
-                                       :P,
-                                       :S,
-                                       :valence,
-                                       :valence_atoms,
-                                       :atoms_available,
-                                       :bond_types,
-                                       :dummies,
-                                       :mol)""" % table_name, sub_smi_dict)
-
-        self.conn.commit()
-
     def close(self, clean=True):
         if clean:
             self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
@@ -677,7 +599,9 @@ def get_substructure(mol, idxs_edges_subgraph):
 
     :param mol: An :py:meth:`rdkit.Chem.Mol` object containing a reference molecule that has been fragmented.
 
-    :param idxs_edges_subgraph: List of atom indices within the reference molecule that make up the substructure.
+    :param idxs_edges_subgraph: Either a list of atom indices within the reference molecule that make up the
+        substructure (as returned by :py:meth:`metaboblend.databases.get_sgs`) or an integer representing the index
+        of a single atom.
 
     :return: A list of lists containing the libs of the substructures obtained by the query; the lib is a
         dictionary containing details about the substructure, in the format:
@@ -707,8 +631,8 @@ def get_substructure(mol, idxs_edges_subgraph):
     """
 
     # convert list of bond indices to list of atom indices
-    if idxs_edges_subgraph is None:  # small substructure addition
-        atom_idxs_subgraph = [1]
+    if isinstance(idxs_edges_subgraph, int):  # small substructure addition
+        atom_idxs_subgraph = [idxs_edges_subgraph]
     else:
         atom_idxs_subgraph = []
         for bIdx in idxs_edges_subgraph:
@@ -1191,85 +1115,147 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)  # convert bond IDs to substructure mol
 
-                if lib is None:
-                    continue
+                # insert substructure obtained from get_sgs
+                insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree)
 
-                if max_atoms_available is not None:
-                    if lib["atoms_available"] > max_atoms_available:
-                        continue
+        if ha_min <= 1:
+            for atom in record_dict["mol"].GetAtoms():
+                lib = get_substructure(record_dict["mol"], atom.GetIdx())
 
-                if max_degree is not None:
-                    if lib["valence"] > max_degree:
-                        continue
-
-                smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
-
-                exact_mass = calculate_exact_mass(lib["mol"])
-                els = get_elements(lib["mol"])
-
-                sub_smi_dict = {'smiles': smiles_rdkit,
-                                'exact_mass': exact_mass,
-                                'length': sum([els[atom] for atom in els if atom != "*"]),
-                                "valence": lib["valence"],
-                                "valence_atoms": str(lib["degree_atoms"]),
-                                "atoms_available": lib["atoms_available"],
-                                "mol": lib["mol"].ToBinary(),
-                                "bond_types": str(lib["bond_types"]),
-                                "dummies": str(lib["dummies"])}
-
-                sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-                sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
-
-                sub_smi_dict.update(els)
-                sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
-
-                cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                      smiles, 
-                                      heavy_atoms, 
-                                      length, 
-                                      exact_mass__1, 
-                                      exact_mass__0_0001, 
-                                      exact_mass, 
-                                      C, 
-                                      H, 
-                                      N, 
-                                      O, 
-                                      P, 
-                                      S, 
-                                      valence, 
-                                      valence_atoms, 
-                                      atoms_available, 
-                                      bond_types,
-                                      dummies,
-                                      mol)
-                                  values (
-                                      :smiles,
-                                      :heavy_atoms,
-                                      :length,
-                                      :exact_mass__1,
-                                      :exact_mass__0_0001,
-                                      :exact_mass,
-                                      :C,
-                                      :H,
-                                      :N,
-                                      :O,
-                                      :P,
-                                      :S,
-                                      :valence,
-                                      :valence_atoms,
-                                      :atoms_available,
-                                      :bond_types,
-                                      :dummies,
-                                      :mol)""", sub_smi_dict)
-
-                if not substructures_only:
-                    cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
-                                          hmdbid, 
-                                          smiles) 
-                                      VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+                # insert single atom substructures
+                insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree)
 
     conn.commit()
     conn.close()
+
+
+def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree):
+    """
+    Converts the details of a single substructure into an entry in a substructure database. See
+    :py:meth:`update_substructure_database`.
+
+    :param lib: A dictionary containing details about the substructure, as returned by
+        :py:meth:`metaboblend.databases.get_substructure`, in the format:
+
+        * "**smiles**": Substructure smiles string
+
+        * "**mol**": Substructure :py:meth:`rdkit.Chem.Mol`
+
+        * "**bond_types**": The type of bonds to be formed by dummy atoms - see
+            :py:meth:`metaboblend.build_structures.add_bonds` and :py:meth:`Chem.rdchem.BondType`. Is a dictionary
+            whose keys are atom indices and values are bond types, as follows:
+
+            * **1.0** Single
+            * **1.5** Aromatic
+            * **2.0** Double
+
+        * "**degree_atoms**": A dictionary containing indices of the atoms connected to dummy atoms that can form bonds
+            during structure generation as keys, and the number of bonds they can form as values.
+
+        * "**valence**": The total number of bonds that can be formed by the substructure
+            (the product of `degree_atoms` and `atoms_available`).
+
+        * "**atoms_available**": The total number of degree atoms.
+
+        * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
+            represented by `*`.
+
+    :param cursor: SQLite3 cursor connected to the substructure database. Used to insert substructures.
+
+    :param record_dict: Record of molecule to be fragmented. Must be a dictionary containing key
+        information about the molecule, as generated by :py:meth:`metaboblend.databases.parse_xml`.
+
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
+
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
+
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
+    """
+
+    if lib is None:
+        return
+
+    if max_atoms_available is not None:
+        if lib["atoms_available"] > max_atoms_available:
+            return
+
+    if max_degree is not None:
+        if lib["valence"] > max_degree:
+            return
+
+    smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
+
+    exact_mass = calculate_exact_mass(lib["mol"])
+    els = get_elements(lib["mol"])
+
+    sub_smi_dict = {'smiles': smiles_rdkit,
+                    'exact_mass': exact_mass,
+                    'length': sum([els[atom] for atom in els if atom != "*"]),
+                    "valence": lib["valence"],
+                    "valence_atoms": str(lib["degree_atoms"]),
+                    "atoms_available": lib["atoms_available"],
+                    "mol": lib["mol"].ToBinary(),
+                    "bond_types": str(lib["bond_types"]),
+                    "dummies": str(lib["dummies"])}
+
+    sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
+    sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
+
+    sub_smi_dict.update(els)
+    sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
+
+    cursor.execute("""INSERT OR IGNORE INTO substructures (
+                          smiles, 
+                          heavy_atoms, 
+                          length, 
+                          exact_mass__1, 
+                          exact_mass__0_0001, 
+                          exact_mass, 
+                          C, 
+                          H, 
+                          N, 
+                          O, 
+                          P, 
+                          S, 
+                          valence, 
+                          valence_atoms, 
+                          atoms_available, 
+                          bond_types,
+                          dummies,
+                          mol)
+                      values (
+                          :smiles,
+                          :heavy_atoms,
+                          :length,
+                          :exact_mass__1,
+                          :exact_mass__0_0001,
+                          :exact_mass,
+                          :C,
+                          :H,
+                          :N,
+                          :O,
+                          :P,
+                          :S,
+                          :valence,
+                          :valence_atoms,
+                          :atoms_available,
+                          :bond_types,
+                          :dummies,
+                          :mol)""", sub_smi_dict)
+
+    if not substructures_only:
+        cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
+                              hmdbid, 
+                              smiles) 
+                          VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
 
 
 def create_connectivity_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,

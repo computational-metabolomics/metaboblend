@@ -283,7 +283,6 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                  max_atoms_available: int = 2,
                  max_degree: int = 6,
                  max_n_substructures: int = 3,
-                 add_small_substructures: bool = True,
                  path_smi_out: Union[str, bytes, os.PathLike, None] = None,
                  path_connectivity_db: Union[str, bytes, os.PathLike, None] = None,
                  ncpus: Union[int, None] = None,
@@ -328,13 +327,6 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
 
     :param max_n_substructures: The maximum number of substructures to be used for building molecules. The max number
         of substructures is also limited by the extensivity of the supplied connectivity database.
-
-    :param add_small_substructures: Whether to add a curated list of small substructures (i.e. single `heavy_atoms`)
-        to the substructure database prior to annotation. The `heavy_atoms` parameter must include 1 in order to make
-        use of these additional substructures. It is recommended that these substructures are added because i) the
-        substructure generation methods of MetaboBlend do not allow for the generation of substructures with less
-        than 2 heavy atoms and ii) these substructures are commonly required for building the correct structure from
-        fragment masses.
 
     :param path_smi_out: The directory to which unique smile strings should be written representing the final
         structures generated and their respective scores; this is a csv file unique SMILEs strings of structures built
@@ -386,9 +378,6 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
         minimum_frequency=minimum_frequency,
         max_mass=round(max([msn_data[ms_id]["exact_mass"] for ms_id in msn_data.keys()]))
     )
-
-    if add_small_substructures:
-        db.add_small_substructures(table_name)
 
     for i, ms_id in enumerate(msn_data.keys()):
         if path_smi_out is not None and write_fragment_smis:

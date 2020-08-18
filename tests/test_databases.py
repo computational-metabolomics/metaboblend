@@ -319,6 +319,48 @@ class DatabasesTestCase(unittest.TestCase):
 
         test_db.close()
 
+        # small substructures
+        db = SubstructureDb(self.to_test_results("test_db.sqlite"), "")
+        db.create_compound_database()
+        db.close()
+
+        for record in ["HMDB0000073", "HMDB0000122", "HMDB0000158", "HMDB0000186"]:
+            record = self.to_test_data(record + ".xml")
+
+            update_substructure_database(self.to_test_data(record),
+                                         self.to_test_results("test_db.sqlite"), 1, 1, method="exhaustive")
+
+        test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
+        test_db_cursor = test_db.cursor()
+
+        test_db_cursor.execute("""SELECT smiles,
+                                                 heavy_atoms,
+                                                 length,
+                                                 exact_mass__1,
+                                                 exact_mass__0_0001,
+                                                 exact_mass,
+                                                 C,
+                                                 H,
+                                                 N,
+                                                 O,
+                                                 P,
+                                                 S,
+                                                 valence,
+                                                 valence_atoms,
+                                                 atoms_available,
+                                                 bond_types,
+                                                 dummies
+                                          FROM substructures WHERE valence <= 4""")
+
+        for i, row in enumerate(test_db_cursor.fetchall()):
+            if i == 0:
+                self.assertEqual(row, ('*N', 1, 3, 16, 16.0187, 16.018724, 0, 2, 1, 0, 0, 0, 1,
+                                       '{0: 1}', 1, '{0: [1.0]}', '[1]'))
+
+        self.assertEqual(i, 8)
+
+        test_db.close()
+
 
 if __name__ == '__main__':
     unittest.main()
