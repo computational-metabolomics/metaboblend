@@ -56,9 +56,6 @@ def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2,
                 "Maximal_Recurrence",
                 "Total_Structures",
                 "Fragment_Masses",
-                "Heavy_Atoms",
-                "Max_Valence",
-                "Accuracy",
                 "ppm"
             ])
 
@@ -81,6 +78,9 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
 
         annot_msn_data = {}
         for hmdb in ms_data[category].keys():
+            if hmdb != "HMDB0130495":
+                continue
+
             ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
                 = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
             ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
@@ -97,7 +97,8 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
                 path_connectivity_db="../../Data/databases/k_graphs.sqlite",
                 ha_min=None, ha_max=None, max_degree=max_valence,
                 ppm=ppm,
-                max_atoms_available=max_atoms_available
+                max_atoms_available=max_atoms_available,
+                write_fragment_smis=True
             ):
 
             hmdb = list(subs_freqs.keys())[0]
@@ -107,7 +108,6 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
             except KeyError:
                 subs_freqs[hmdb][ms_data[category][hmdb]["smiles"]] = 0
 
-            test_build_start = datetime.datetime.now()
             with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
                 rcsv = csv.writer(overall_results)
 
@@ -121,7 +121,4 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
                                max(subs_freqs[hmdb].values()),  # max recurr
                                len(subs_freqs[hmdb].keys()),  # tot structs
                                ms_data[category][hmdb]["neutral_peaks"],
-                               max_valence,
                                ppm])
-
-            print("test_build_time = " + str(datetime.datetime.now() - test_build_start))

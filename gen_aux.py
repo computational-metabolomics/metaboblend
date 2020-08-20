@@ -9,7 +9,7 @@ from shutil import rmtree
 import pickle
 
 sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
-from databases import reformat_xml, create_isomorphism_database
+from databases import reformat_xml, create_connectivity_database
 
 
 def get_from_hmdb(name, hmdb, out_dir):
@@ -28,9 +28,7 @@ def get_from_hmdb(name, hmdb, out_dir):
     reformat_xml(os.path.join(out_dir, name + ".xml"))
 
 
-def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
-                                     db_out='../databases/k_graphs.sqlite',
-                                     pkls_out='../databases/pkls', path="..", debug=False):
+def build_graph_isomorphism_database(db_out='../databases/k_graphs.sqlite', path=".."):
     #########################################
     # BUILD GRAPH ISOMORPHISM DATABASE
     #########################################
@@ -56,9 +54,4 @@ def build_graph_isomorphism_database(sizes=[1, 2], boxes=3,
     else:
         path_ri = os.path.join(path, "ri36")
 
-    print("==================================")
-    print(db_out)
-    print(pkls_out)
-    print(sizes, boxes)
-    print("==================================")
-    create_isomorphism_database(db_out, boxes, sizes, path_ri, debug=debug)
+    create_connectivity_database(db_out, path_ri=path_ri)

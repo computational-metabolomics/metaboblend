@@ -9,11 +9,8 @@ from shutil import rmtree
 import pickle
 
 sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
-from databases import reformat_xml, update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
-from build_structures import build
 
 sys.path.append(os.path.join("..", "functions"))
-from gen_aux import get_uniq_subs
 
 
 def hmdb_sdf_to_csv(path_in, path_out):
