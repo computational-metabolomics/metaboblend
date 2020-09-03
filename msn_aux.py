@@ -13,7 +13,8 @@ from msp2db.parse import LibraryData
 import sqlite3
 
 sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
-from databases import update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, calculate_exact_mass
+from databases import update_substructure_database, filter_records, parse_xml, SubstructureDb, get_elements, \
+    calculate_exact_mass
 from build_structures import build
 
 sys.path.append(os.path.join("..", "functions"))
@@ -189,7 +190,7 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
 
     with open(path_hmdb_ids, "r") as hmdb_ids:
         hmdb_ids_csv = csv.reader(hmdb_ids)
-        
+
         hmdb_dict = {}
         for row in hmdb_ids_csv:
             hmdb_dict[row[1]] = row[4]
@@ -200,7 +201,7 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
         full_hmdb_dict = {}
         for row in full_hmdb_csv:
             full_hmdb_dict[row[9]] = row[0]
-            
+
     seen_hmdbs = set()
     data_categories = {}
     for path_msp_db, name_msp in zip(paths_msp_db, names_msp):
@@ -291,7 +292,8 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
 
             chemical_formula = []
             for element in ["C", "H", "N", "O", "P", "S"]:
-                data_categories[name_msp][hmdb_id][element] = data_categories[name_msp][hmdb_id]["chemical_formula"][element]
+                data_categories[name_msp][hmdb_id][element] = data_categories[name_msp][hmdb_id]["chemical_formula"][
+                    element]
                 chemical_formula.append(data_categories[name_msp][hmdb_id]["chemical_formula"][element])
 
             data_categories[name_msp][hmdb_id]["mc"] = chemical_formula
