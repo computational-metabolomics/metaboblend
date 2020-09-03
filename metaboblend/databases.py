@@ -23,18 +23,19 @@ import io
 import os
 import sys
 import subprocess
-import pickle
 import sqlite3
 import tempfile
+import pickle
 from collections import OrderedDict
 import xml.etree.ElementTree as ElementTree
 import networkx as nx
+from typing import Sequence, Dict, Union
+
 from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
-from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs, draw_subgraph
 
-sqlite3.register_converter("PICKLE", pickle.loads)
+from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs
 
 
 def reformat_xml(source, encoding="utf8"):
@@ -125,29 +126,14 @@ def parse_xml(source, encoding="utf8", reformat=False):
                 record_out = OrderedDict()
 
 
-class ConnectivityDb:
-    """
-    Object containing a reference to the connectivity database.
-
-    :param db: Path to the connectivity database.
-    """
-
-    def __init__(self, db):
-        """Constructor method"""
-
-        self.db = db
-
-
 class SubstructureDb:
     """
     Methods for interacting with the SQLITE3 substructure and connectivity databases. Provides a connection to the
     substructure database and, if provided, the connectivity database.
 
-    :param db: Path to the substructure database.
+    :param path_substructure_db: Path to the substructure database.
 
-    :param db2: Path to the connectivity database.
-
-    :ivar path_pkls: Path to the directory containing connectivity graph PKLs
+    :param path_connectivity_db: Path to the connectivity database.
 
     :param conn: A :py:meth:`sqlite3.connection` to the substructure database; the connectivity database will be attached
         as 'graphs'.
@@ -156,20 +142,17 @@ class SubstructureDb:
         be attached as "graphs".
     """
 
-    def __init__(self, db, path_pkls=None, db2=None, clean=True):
+    def __init__(self, path_substructure_db, path_connectivity_db=None):
         """Constructor method"""
 
-        self.db = db
-        self.db2 = db2
-        self.path_pkls = path_pkls
+        self.path_substructure_db = path_substructure_db
+        self.path_connectivity_db = path_connectivity_db
 
-        self.conn = sqlite3.connect(self.db)
+        self.conn = sqlite3.connect(self.path_substructure_db)
         self.cursor = self.conn.cursor()
 
-        if self.db2 is not None:
-            self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.db2)
-
-        self.clean = clean
+        if self.path_connectivity_db is not None:
+            self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.path_connectivity_db)
 
     def select_compounds(self, cpds=[]):
         """
@@ -186,7 +169,8 @@ class SubstructureDb:
         else:
             sql = ""
 
-        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles FROM compounds%s""" % sql)
+        self.cursor.execute("""SELECT DISTINCT hmdbid, exact_mass, formula, C, H, N, O, P, S, smiles 
+                               FROM compounds%s""" % sql)
 
         return self.cursor.fetchall()
 
@@ -386,7 +370,7 @@ class SubstructureDb:
 
         return mass_values
 
-    def select_ecs(self, exact_mass, table_name, accuracy, ppm=None):
+    def select_mfs(self, exact_mass, table_name, accuracy):
         """
         Select elemental compositions based on an exact mass; allows for inexact mass searches based on error (ppm).
 
@@ -399,49 +383,82 @@ class SubstructureDb:
             * **1** Integer level
             * **0_0001** Four decimal places
 
-        :param ppm: The allowable error of the query (in parts per million).
-
         :return: Returns the elemental compositions associated with the `exact_mass` via
             :py:meth:`sqlite3.connection.cursor.fetchall`; essentially provides a list containing a list for the values
             of each row (C, H, N, O, P, S).
         """
 
-        if ppm is None:
-            mass_statement = "= " + str(exact_mass)
-        else:
-            tolerance = (exact_mass / 1000000) * ppm
-            mass_statement = "< {} AND exact_mass__{} > {}".format(exact_mass + tolerance,
-                                                                   accuracy,
-                                                                   exact_mass - tolerance)
-
         self.cursor.execute("""SELECT DISTINCT C, H, N, O, P, S
                                    FROM {} 
-                                   WHERE exact_mass__{} {}
-                            """.format(table_name, accuracy, mass_statement))
+                                   WHERE exact_mass__{} = {}
+                            """.format(table_name, accuracy, str(exact_mass)))
 
         return self.cursor.fetchall()
 
-    def k_configs(self):
+    def k_configs(self, fragment_edges_only=False):
         """
         Obtains strings detailing the valences for each substructure in a connectivity graph and the ID of the related
         PKL file. Used to match a set of substructures to the correct set of non-isomorphic graphs in the connectivity
         database.
 
+        :param fragment_edges_only: If true, only include sets of edges that connect to the fragment ion.
+
         :return: Dictionary containing the valences as keys and PKL IDs as values.
         """
 
-        self.cursor.execute("""SELECT id_pkl, nodes_valences 
+        self.cursor.execute("""SELECT root, nodes_valences
                                    FROM subgraphs""")
 
         records = self.cursor.fetchall()
         configs = {}
 
         for record in records:
-            configs[str(record[1])] = record[0]
+            configs[str(record[1])] = []
+            fragment_atoms = [i for i in range(len(eval(record[1])[0]))]
+
+            for path in self.paths(pickle.loads(record[0])):
+                if fragment_edges_only:
+                    all_bonds_connect_to_fragment = True
+
+                    for edge in path:
+                        if edge[0] not in fragment_atoms and edge[1] not in fragment_atoms:
+                            all_bonds_connect_to_fragment = False
+
+                    # check that all bonds connect to fragment ion
+                    if all_bonds_connect_to_fragment:
+                        configs[str(record[1])].append(path)
+
+                else:
+                    # for normal building, there is no fragment ion
+                    configs[str(record[1])].append(path)
+
+            # delete keys for which there are no valid edge sets
+            if len(configs[str(record[1])]) == 0:
+                del configs[str(record[1])]
 
         return configs
 
-    def select_sub_structures(self, l_atoms, table_name):
+    def paths(self, tree, cur=()):
+        """
+        Parses a tree structure within a dictionary, representing a set of non-isomorphic graphs
+        to be used to connect substructures together to generate molecules.
+
+        :param tree: A dictionary containing a set of non-isomorphic graphs for a particular connectivity configuration.
+
+        :param cur: Tuple for results to be appended to.
+
+        :return: For each graph contained within *tree*, generates a tuple of bonds to be formed between substructures.
+        """
+
+        if tree == {}:
+            yield cur
+
+        else:
+            for n, s in tree.items():
+                for path in self.paths(s, cur + (n,)):
+                    yield path
+
+    def select_substructures(self, l_atoms, table_name):
         """
         Selects specific substructures from a substructure table based on elemental composition. Used to obtain
         sets substructures to be connected.
@@ -552,6 +569,7 @@ class SubstructureDb:
 
         if selection != "gen_subs_table":
             self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
+            self.cursor.execute("DROP INDEX IF EXISTS smiles__heavy_atoms__valence__atoms_available__exact_mass__1")
 
         self.cursor.execute("""CREATE INDEX mass__1
                                ON %s (exact_mass__1)""" % table)
@@ -563,9 +581,11 @@ class SubstructureDb:
         if selection != "gen_subs_table":
             self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
                                    ON %s (heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
+            self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
+                                       ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
 
-    def close(self):
-        if self.clean:
+    def close(self, clean=True):
+        if clean:
             self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
             self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
             self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
@@ -573,13 +593,15 @@ class SubstructureDb:
         self.conn.close()
 
 
-def get_substructure(mol, idxs_edges_subgraph, debug=False):
+def get_substructure(mol, idxs_edges_subgraph):
     """
     Generates information for the substructure database from a reference molecule and the bond IDs of a substructure.
 
     :param mol: An :py:meth:`rdkit.Chem.Mol` object containing a reference molecule that has been fragmented.
 
-    :param idxs_edges_subgraph: List of atom indices within the reference molecule that make up the substructure.
+    :param idxs_edges_subgraph: Either a list of atom indices within the reference molecule that make up the
+        substructure (as returned by :py:meth:`metaboblend.databases.get_sgs`) or an integer representing the index
+        of a single atom.
 
     :return: A list of lists containing the libs of the substructures obtained by the query; the lib is a
         dictionary containing details about the substructure, in the format:
@@ -606,26 +628,22 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
 
         * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
             represented by `*`.
-
-        :param debug: Debug print statements provide further information on how the function is generating the connectivity
-            database.
-
-            * **True** Print debug statements.
-
-            * **False** Hide debug print statements.
     """
 
     # convert list of bond indices to list of atom indices
-    atom_idxs_subgraph = []
-    for bIdx in idxs_edges_subgraph:
-        b = mol.GetBondWithIdx(bIdx)
-        a1 = b.GetBeginAtomIdx()
-        a2 = b.GetEndAtomIdx()
+    if isinstance(idxs_edges_subgraph, int):  # small substructure addition
+        atom_idxs_subgraph = [idxs_edges_subgraph]
+    else:
+        atom_idxs_subgraph = []
+        for bIdx in idxs_edges_subgraph:
+            b = mol.GetBondWithIdx(bIdx)
+            a1 = b.GetBeginAtomIdx()
+            a2 = b.GetEndAtomIdx()
 
-        if a1 not in atom_idxs_subgraph:
-            atom_idxs_subgraph.append(a1)
-        if a2 not in atom_idxs_subgraph:
-            atom_idxs_subgraph.append(a2)
+            if a1 not in atom_idxs_subgraph:
+                atom_idxs_subgraph.append(a1)
+            if a2 not in atom_idxs_subgraph:
+                atom_idxs_subgraph.append(a2)
 
     # identify atoms which will become dummy elements in the final substructure
     atoms_to_dummy = []
@@ -671,11 +689,6 @@ def get_substructure(mol, idxs_edges_subgraph, debug=False):
     bond_types = {}
 
     for b in mol_out.GetBonds():
-        if debug:
-            print(b.GetBondTypeAsDouble())
-            print(b.GetBondType())
-            print(b.GetBeginAtomIdx(), b.GetEndAtomIdx(), mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol(),
-                  mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol())
 
         # use bond types to dummy atoms to inform future structure building from compatible substructures
         if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
@@ -746,9 +759,9 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     exact_mass = 0.0
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
-        atomSymbol = atom.GetSymbol()
-        if atomSymbol != "*":
-            exact_mass += exact_mass_elements[atomSymbol]
+        atom_symbol = atom.GetSymbol()
+        if atom_symbol != "*":
+            exact_mass += exact_mass_elements[atom_symbol]
 
     return exact_mass
 
@@ -874,8 +887,14 @@ def subset_sgs_sizes(sgs, n_min, n_max):
         edge_idxs_new = []
 
         for j, bonds in enumerate(edge_idxs):
-            if n_min <= len(bonds) <= n_max:
-                edge_idxs_new.append(bonds)
+
+            if n_max is None:
+                if n_min <= len(bonds):
+                    edge_idxs_new.append(bonds)
+
+            else:
+                if n_min <= len(bonds) <= n_max:
+                    edge_idxs_new.append(bonds)
 
         if len(edge_idxs_new) > 0:
             sgs_new.append(edge_idxs_new)
@@ -912,6 +931,9 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
 
     if method == "exhaustive":
 
+        if n_max is None:
+            n_max = 1000
+
         return Chem.FindAllSubgraphsOfLengthMToN(record_dict["mol"], n_min, n_max)
 
     elif method == "RECAP":
@@ -925,7 +947,7 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
             if edge_idxs is not None:
                 sgs.append(edge_idxs)
 
-        return subset_sgs_sizes([sgs], n_min, n_max)
+        return subset_sgs_sizes(sgs=[sgs], n_min=n_min, n_max=n_max)
 
     elif method == "BRICS":
 
@@ -938,31 +960,44 @@ def get_sgs(record_dict, n_min, n_max, method="exhaustive"):
             if edge_idxs is not None:
                 sgs.append(edge_idxs)
 
-        return subset_sgs_sizes([sgs], n_min, n_max)
+        return subset_sgs_sizes(sgs=[sgs], n_min=n_min, n_max=n_max)
 
 
-def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, method="exhaustive",
-                                 max_atoms_available=None, max_valence=None, substructures_only=False):
+def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
+                                 path_substructure_db: Union[str, bytes, os.PathLike],
+                                 ha_min: Union[int, None] = None,
+                                 ha_max: Union[int, None] = None,
+                                 max_degree: Union[int, None] = None,
+                                 max_atoms_available: Union[int, None] = None,
+                                 method: str = "exhaustive",
+                                 substructures_only: bool = False) -> None:
     """
-    Add entries to the substructure database by fragmenting a set of molecules. Combinations of substructures in this
-    database are used to build new molecules.
+    Creates a substructure database by fragmenting one or more input molecules. Combinations of
+    substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
+    connected sets bonds in the supplied compound(s). Creates the database before calling
+    'metaboverse.databases.update_substructure_database' to add substructures for each input molecule. Generates
+    indexes on the substructure table.
 
-    :param max_atoms_available: Maximum number of atoms that may be used for bonding by valid substructures.
+    :param hmdb_paths: The paths of the HMDB XML records detailing molecules to be fragmented.
 
-    :param max_valence: Maximum valence of valid substructures.
+    :param path_substructure_db: The path of the SQLite 3 substructure database to be created.
 
-    :param fn_hmdb: The path of the HMDB XML record(s) detailing molecules to be fragmented. Will be overriden by
-        `records` if provided.
+    :param ha_min: The minimum size (number of heavy atoms) of substructures to be added to the substructure
+        database. If None, no limit is applied.
 
-    :param fn_db: The path of the SQLite 3 substructure database to be updated.
+    :param ha_max: The maximum size (number of heavy atoms) of substructures to be added to the substructure
+        database. None, no limit is applied.
 
-    :param n_min: The minimum number of bonds (edges) for a valid substructure.
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
 
-    :param n_max: The maximum number of bonds (edges) for a valid substructure.
-
-    :param records: Records of molecules to be fragmented. Must be a list containing dictionaries containing key
-        information about the molecules, as generated by :py:meth:`metaboblend.databases.parse_xml`; if records
-        is not supplied, the records will be obtained from the XML at `fn_hmdb`.
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
 
     :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
         the original molecule in order to be considered valid.
@@ -976,14 +1011,89 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
         * **BRICS** Generates substructures by breaking retrosynthetically interesting chemical substructures; fragments
             are identified that are likely to be useful for drug synthesis.. See :py:meth:`rdkit.Chem.BRICS`.
 
-    :param substructures_only: Whether to generate all tables or only the substructures table.
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
     """
 
-    conn = sqlite3.connect(fn_db)
+    db = SubstructureDb(path_substructure_db)
+    db.create_compound_database()
+    db.close()
+
+    for hmdb_path in hmdb_paths:
+        update_substructure_database(hmdb_path=hmdb_path, path_substructure_db=path_substructure_db, ha_min=ha_min,
+                                     ha_max=ha_max, method=method, max_atoms_available=max_atoms_available,
+                                     max_degree=max_degree, substructures_only=substructures_only)
+
+    db = SubstructureDb(path_substructure_db)
+    db.create_indexes()
+    db.close()
+
+
+def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
+                                 path_substructure_db: Union[str, bytes, os.PathLike],
+                                 ha_min: Union[int, None] = None,
+                                 ha_max: Union[int, None] = None,
+                                 max_atoms_available: Union[int, None] = None,
+                                 max_degree: Union[int, None] = None,
+                                 method: str = "exhaustive",
+                                 substructures_only: bool = False,
+                                 records: Union[Sequence[Dict], None] = None) -> None:
+    """
+    Add entries to the substructure database by fragmenting a molecule or set of molecules. Combinations of
+    substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
+    connected sets bonds in the supplied compound(s).
+
+    :param hmdb_path: The path of the HMDB XML record(s) detailing molecules to be fragmented. Can take HMDB records for
+        individual metabolites or the entirety of HMDB. Will be overriden by
+        `records` parameter, if provided.
+
+    :param path_substructure_db: The path of the existing SQLite 3 substructure database to be updated.
+
+    :param ha_min: The minimum size (number of heavy atoms) of substructures to be added to the substructure
+        database. If None, no limit is applied.
+
+    :param ha_max: The maximum size (number of heavy atoms) of substructures to be added to the substructure
+        database. None, no limit is applied.
+
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
+
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
+
+    :param method: The method by which to fragment molecules. Substructures must have an exact substructure match in
+        the original molecule in order to be considered valid.
+
+        * **exhaustive** The default method for substructure generation. Generates all substructures for a molecule
+            within the size range. See :py:meth:`rdkit.Chem.FindAllSubgraphsOfLengthMToN`.
+
+        * **RECAP**  Generates substructures using the retrosynthetic combinatorial analysis procedure; fragments are
+            identified that are likely to be useful for drug synthesis. See :py:meth:`rdkit.Chem.RECAP`.
+
+        * **BRICS** Generates substructures by breaking retrosynthetically interesting chemical substructures; fragments
+            are identified that are likely to be useful for drug synthesis.. See :py:meth:`rdkit.Chem.BRICS`.
+
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
+
+    :param records: Records of molecules to be fragmented. Must be a list containing dictionaries containing key
+        information about the molecules, as generated by :py:meth:`metaboblend.databases.parse_xml`; if records
+        is not supplied, the records will be obtained from the XML at `hmdb_path`.
+    """
+
+    conn = sqlite3.connect(path_substructure_db)
     cursor = conn.cursor()
 
     if records is None:
-        records = parse_xml(fn_hmdb, reformat=False)
+        records = parse_xml(hmdb_path, reformat=False)
+
+    if ha_min is None:
+        ha_min = 0
 
     for record_dict in filter_records(records):
         if not substructures_only:
@@ -1001,121 +1111,176 @@ def update_substructure_database(fn_hmdb, fn_db, n_min, n_max, records=None, met
                                    :smiles)""", record_dict)
 
         # Returns a tuple of 2-tuples with bond IDs
-        for sgs in get_sgs(record_dict, n_min, n_max, method=method):
+        for sgs in get_sgs(record_dict=record_dict, n_min=ha_min-1, n_max=ha_max-1, method=method):
             for edge_idxs in sgs:
                 lib = get_substructure(record_dict["mol"], edge_idxs)  # convert bond IDs to substructure mol
 
-                if lib is None:
-                    continue
+                # insert substructure obtained from get_sgs
+                insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree)
 
-                if max_atoms_available is not None:
-                    if lib["atoms_available"] > max_atoms_available:
-                        continue
+        if ha_min <= 1:
+            for atom in record_dict["mol"].GetAtoms():
+                lib = get_substructure(record_dict["mol"], atom.GetIdx())
 
-                if max_valence is not None:
-                    if lib["valence"] > max_valence:
-                        continue
-
-                smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
-
-                exact_mass = calculate_exact_mass(lib["mol"])
-                els = get_elements(lib["mol"])
-
-                sub_smi_dict = {'smiles': smiles_rdkit,
-                                'exact_mass': exact_mass,
-                                'length': sum([els[atom] for atom in els if atom != "*"]),
-                                "valence": lib["valence"],
-                                "valence_atoms": str(lib["degree_atoms"]),
-                                "atoms_available": lib["atoms_available"],
-                                "mol": lib["mol"].ToBinary(),
-                                "bond_types": str(lib["bond_types"]),
-                                "dummies": str(lib["dummies"])}
-
-                sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
-                sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
-
-                sub_smi_dict.update(els)
-                sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
-
-                cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                      smiles, 
-                                      heavy_atoms, 
-                                      length, 
-                                      exact_mass__1, 
-                                      exact_mass__0_0001, 
-                                      exact_mass, 
-                                      C, 
-                                      H, 
-                                      N, 
-                                      O, 
-                                      P, 
-                                      S, 
-                                      valence, 
-                                      valence_atoms, 
-                                      atoms_available, 
-                                      bond_types,
-                                      dummies,
-                                      mol)
-                                  values (
-                                      :smiles,
-                                      :heavy_atoms,
-                                      :length,
-                                      :exact_mass__1,
-                                      :exact_mass__0_0001,
-                                      :exact_mass,
-                                      :C,
-                                      :H,
-                                      :N,
-                                      :O,
-                                      :P,
-                                      :S,
-                                      :valence,
-                                      :valence_atoms,
-                                      :atoms_available,
-                                      :bond_types,
-                                      :dummies,
-                                      :mol)""", sub_smi_dict)
-
-                if not substructures_only:
-                    cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
-                                          hmdbid, 
-                                          smiles) 
-                                      VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+                # insert single atom substructures
+                insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree)
 
     conn.commit()
     conn.close()
 
 
-def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms_available, path_geng=None, path_RI=None, debug=False):
+def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_available, max_degree):
     """
-    Generates a connectivity database containing sets of possible combinations of substructures; also generates PKL
-    files containing the graphs required for building molecules from substructures. The connectivity database is
-    required to build moelcules from substructures.
+    Converts the details of a single substructure into an entry in a substructure database. See
+    :py:meth:`update_substructure_database`.
 
-    :param db_out: The path of the SQLite 3 database to be generated.
+    :param lib: A dictionary containing details about the substructure, as returned by
+        :py:meth:`metaboblend.databases.get_substructure`, in the format:
 
-    :param pkls_out: The directory in which to dump the PKL files containing teh graphs required for building
-        molecules from substructures.
+        * "**smiles**": Substructure smiles string
+
+        * "**mol**": Substructure :py:meth:`rdkit.Chem.Mol`
+
+        * "**bond_types**": The type of bonds to be formed by dummy atoms - see
+            :py:meth:`metaboblend.build_structures.add_bonds` and :py:meth:`Chem.rdchem.BondType`. Is a dictionary
+            whose keys are atom indices and values are bond types, as follows:
+
+            * **1.0** Single
+            * **1.5** Aromatic
+            * **2.0** Double
+
+        * "**degree_atoms**": A dictionary containing indices of the atoms connected to dummy atoms that can form bonds
+            during structure generation as keys, and the number of bonds they can form as values.
+
+        * "**valence**": The total number of bonds that can be formed by the substructure
+            (the product of `degree_atoms` and `atoms_available`).
+
+        * "**atoms_available**": The total number of degree atoms.
+
+        * "**dummies**": List of the indices of atoms that may be removed to form bonds during structure generation,
+            represented by `*`.
+
+    :param cursor: SQLite3 cursor connected to the substructure database. Used to insert substructures.
+
+    :param record_dict: Record of molecule to be fragmented. Must be a dictionary containing key
+        information about the molecule, as generated by :py:meth:`metaboblend.databases.parse_xml`.
+
+    :param substructures_only: Whether to generate all tables or only the substructures table. Retains necessary
+        information for building and reduces database size.
+
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds). Atoms available are also limited by the extensivity of the
+        supplied connectivity database.
+
+    :param max_degree: The maximum allowable degree of substructures to be considered for building structures. We
+        define degree as the product of `atoms_available` and the degree of their bonds (bond types, where 1 = single,
+        2 = double, etc.). Maximum degree is also limited by the extensivity of the supplied connectivity database. For
+        instance, a substructure that has 3 `atoms_available`, each of their bond types being single bonds, would have
+        a total degree of 3.
+    """
+
+    if lib is None:
+        return
+
+    if max_atoms_available is not None:
+        if lib["atoms_available"] > max_atoms_available:
+            return
+
+    if max_degree is not None:
+        if lib["valence"] > max_degree:
+            return
+
+    smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
+
+    exact_mass = calculate_exact_mass(lib["mol"])
+    els = get_elements(lib["mol"])
+
+    sub_smi_dict = {'smiles': smiles_rdkit,
+                    'exact_mass': exact_mass,
+                    'length': sum([els[atom] for atom in els if atom != "*"]),
+                    "valence": lib["valence"],
+                    "valence_atoms": str(lib["degree_atoms"]),
+                    "atoms_available": lib["atoms_available"],
+                    "mol": lib["mol"].ToBinary(),
+                    "bond_types": str(lib["bond_types"]),
+                    "dummies": str(lib["dummies"])}
+
+    sub_smi_dict["exact_mass__1"] = round(sub_smi_dict["exact_mass"], 0)
+    sub_smi_dict["exact_mass__0_0001"] = round(sub_smi_dict["exact_mass"], 4)
+
+    sub_smi_dict.update(els)
+    sub_smi_dict["heavy_atoms"] = sum([els[atom] for atom in els if atom != "H" and atom != "*"])
+
+    cursor.execute("""INSERT OR IGNORE INTO substructures (
+                          smiles, 
+                          heavy_atoms, 
+                          length, 
+                          exact_mass__1, 
+                          exact_mass__0_0001, 
+                          exact_mass, 
+                          C, 
+                          H, 
+                          N, 
+                          O, 
+                          P, 
+                          S, 
+                          valence, 
+                          valence_atoms, 
+                          atoms_available, 
+                          bond_types,
+                          dummies,
+                          mol)
+                      values (
+                          :smiles,
+                          :heavy_atoms,
+                          :length,
+                          :exact_mass__1,
+                          :exact_mass__0_0001,
+                          :exact_mass,
+                          :C,
+                          :H,
+                          :N,
+                          :O,
+                          :P,
+                          :S,
+                          :valence,
+                          :valence_atoms,
+                          :atoms_available,
+                          :bond_types,
+                          :dummies,
+                          :mol)""", sub_smi_dict)
+
+    if not substructures_only:
+        cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
+                              hmdbid, 
+                              smiles) 
+                          VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+
+
+def create_connectivity_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,
+                                 max_atoms_available: int = 2, path_ri: Union[str, bytes, os.PathLike, None] = None
+                                 ) -> None:
+    """
+    Generates a connectivity database containing sets of possible combinations of substructures; these combinations are
+    represented by graphs whose vertices correspond to substructures and edges to bonds. We use geng, part of the nauty
+    package, along with RI3.6 to ensure that the generated graphs are non-isomorphic - i.e. we only generate each
+    combination of substructures once. These graphs are pickled in order to be stored in the final column of the
+    SQLite 3 connectivity database.
+
+    :param path_connectivity_db: The path at which to generate the SQLite 3 database.
 
     :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
         available for bonding for a graph to be created.
 
-    :param max_atoms_available: The maximal number of atoms available (maximal number of edges per vertice) in each
-        substructure for bonding. At least one atom must be available for bonding for a graph to be created.
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds).
 
-    :param path_geng: The path of geng, a tool for the generation of small non-isomorphic graphs.
-
-    :param path_RI: The path of RI, a tool for verifying subgraph isomorphism.
-
-    :param debug: Debug print statements provide further information on how the function is generating the connectivity
-        database.
-
-        * **True** Print debug statements.
-
-        * **False** Hide debug print statements.
+    :param path_ri: The path of RI, a required tool for verifying subgraph isomorphism.
     """
     
-    conn = sqlite3.connect(db_out)
+    conn = sqlite3.connect(path_connectivity_db)
     cursor = conn.cursor()
 
     cursor.execute("""DROP TABLE IF EXISTS subgraphs""")
@@ -1129,19 +1294,18 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                           nodes_valences TEXT,
                           n_nodes INTEGER,
                           n_edges INTEGER,
+                          root BLOB,
                           PRIMARY KEY (graph6, k_partite, nodes_valences)
                    );""")
     conn.commit()
 
     id_pkl = 0
 
-    for G, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
+    for g, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
 
         # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
-        if debug:
-            print([path_geng, str(G.number_of_nodes()), "-d1", "-D2", "-q"])  # max valence for single atom of 2
-        proc = subprocess.Popen([path_geng, str(len(G.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+        proc = subprocess.Popen(["geng", str(len(g.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)  # max valence for single atom of 2
         geng_out, err = proc.communicate()
 
         proc.stdout.close()
@@ -1149,23 +1313,20 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
 
         # pipe geng output to RI to generate mappings (complete set of non-isomorphic configurations)
         for i, line_geng in enumerate(geng_out.split()):
-            
-            if debug:
-                print(line_geng)
 
-            sG = nx.read_graph6(io.BytesIO(line_geng))
+            s_g = nx.read_graph6(io.BytesIO(line_geng))
 
             k_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
-            k_gfu.write(graph_to_ri(G, "k_graph"))
+            k_gfu.write(graph_to_ri(g, "k_graph"))
             k_gfu.seek(0)
 
             s_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
-            s_gfu.write(graph_to_ri(sG, "subgraph"))
+            s_gfu.write(graph_to_ri(s_g, "subgraph"))
             s_gfu.seek(0)
 
-            proc = subprocess.Popen([path_RI, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            RI_out, err = proc.communicate()
+            proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)  # TODO: add ri as dependency
+            ri_out, err = proc.communicate()
 
             k_gfu.close()
             s_gfu.close()
@@ -1173,12 +1334,12 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
             mappings = []
             subgraphs = {}
 
-            for line in RI_out.decode("utf-8").splitlines():
+            for line in ri_out.decode("utf-8").splitlines():
                 if line[0] == "{":
                     mappings.append(eval(line))
 
             if len(mappings) > 0:
-                gi = graph_info(p, sG, mappings, )  # convert mappings to valence/connectivity specifications
+                gi = graph_info(p, s_g, mappings, )  # convert mappings to valence/connectivity specifications
 
                 for vn in gi:
                     if vn not in subgraphs:
@@ -1194,19 +1355,12 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                     subgraphs[vn] = sort_subgraphs(subgraphs[vn])  # sort to remove duplicate configurations
                     root = {}  # graph to be pickled
 
-                    if debug:
-                        col_plt, sG_plt = draw_subgraph(subgraphs[vn][0], eval(vn))
-                        col_plt.show()
-
                     for fr in subgraphs[vn]:
                         parent = root
                         for e in fr:
                             parent = parent.setdefault(e, {})
 
                     vt = tuple([sum(v) for v in eval(vn)])
-                    if debug:
-                        print("INSERT:", i, line_geng.decode("utf-8"), len(subgraphs[vn]), len(p), str(p), vt, vn,
-                              sG.number_of_nodes(), sG.number_of_edges())
 
                     id_pkl += 1
                     cursor.execute("""INSERT INTO subgraphs (
@@ -1217,8 +1371,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           k_partite,
                                           k_valences,
                                           nodes_valences,
-                                          n_nodes, n_edges)
-                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                                          n_nodes, n_edges,
+                                          root)
+                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
                                           id_pkl,
                                           len(subgraphs[vn]),
                                           line_geng,
@@ -1226,11 +1381,9 @@ def create_isomorphism_database(db_out, pkls_out, max_n_substructures, max_atoms
                                           str(p),
                                           str(vt),
                                           str(vn),
-                                          sG.number_of_nodes(),
-                                          sG.number_of_edges()))
-
-                    with open(os.path.join(pkls_out, "{}.pkl".format(id_pkl)), "wb") as fn_pkls:
-                        pickle.dump(root, fn_pkls)  # pickled graph for generating structures from substructures
+                                          s_g.number_of_nodes(),
+                                          s_g.number_of_edges(),
+                                          pickle.dumps(root)))
 
             conn.commit()
     conn.close()

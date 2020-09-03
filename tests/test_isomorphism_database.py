@@ -20,64 +20,59 @@
 #
 
 
+import os
 import unittest
-import zipfile
+import shutil
+import tempfile
 from metaboblend.databases import *
 
 
-def to_test_result(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
-
-
 class IsomorphDbTestCase(unittest.TestCase):
+    temp_results_dir = None
+
+    @classmethod
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(to_test_result())
+        cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
+
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
         pkg_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        if sys.platform == "win32" or sys.platform == "win64":
-            cls.path_geng = os.path.join(pkg_path, "tools", "nauty25r9_win", "geng")
+        if sys.platform == "win32" or sys.platform == "win64":  # TODO: add RI as dependency
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_win", "RI3.6-release", "ri36")
 
         elif sys.platform == "darwin":
-            cls.path_geng = os.path.join(pkg_path, "tools", "nauty25r9_mac", "geng")
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_mac", "RI3.6-release", "ri36")
 
         elif sys.platform == "linux2":
             if "bb" in "socket.gethostname":
-                cls.path_geng = os.path.join(pkg_path, "tools", "nauty25r9_unix", "geng")
                 cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
             else:
-                cls.path_geng = os.path.join(pkg_path, "tools", "nauty25r9_bb", "geng")
                 cls.path_ri = os.path.join(pkg_path, "tools", "RI_bb", "RI3.6-release", "ri36")
 
         elif sys.platform == "linux":
-            cls.path_geng = os.path.join(pkg_path, "tools", "nauty25r9_unix", "geng")
             cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(to_test_result())
-        zip_ref.close()
-
-        os.mkdir(to_test_result("pkls"))
-        create_isomorphism_database(to_test_result("k_graphs.sqlite"),
-                                    to_test_result("pkls"),
+        create_connectivity_database(cls.to_test_results("connectivity.sqlite"),
                                     3,  # sizes
                                     [1, 2],  # boxes
-                                    cls.path_geng,
                                     cls.path_ri
                                     )
 
-    def test_create_isomorphism_database(self):
-        ref_db = sqlite3.connect(to_test_result("connectivity", "k_graphs.sqlite"))
+    def test_create_connectivity_database(self):
+        ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
         ref_db_cursor = ref_db.cursor()
         ref_db_cursor.execute("SELECT * FROM subgraphs")
 
-        test_db = sqlite3.connect(to_test_result("k_graphs.sqlite"))
+        test_db = sqlite3.connect(self.to_test_results("connectivity.sqlite"))
         test_db_cursor = test_db.cursor()
         test_db_cursor.execute("SELECT * FROM subgraphs")
 
@@ -90,41 +85,6 @@ class IsomorphDbTestCase(unittest.TestCase):
 
         ref_db.close()
         test_db.close()
-
-    def test_create_pkls(self):
-        for pkl_path in os.listdir(to_test_result("pkls")):
-            with open(to_test_result("connectivity", "pkls", pkl_path), "rb") as ref_pkl, \
-                 open(to_test_result("pkls", pkl_path), "rb") as test_pkl:
-
-                self.assertEqual(pickle.load(ref_pkl), pickle.load(test_pkl))
-
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.isdir(to_test_result()):
-            if os.path.isdir(to_test_result("pkls")):
-                for pkl in os.listdir(to_test_result("pkls")):
-                    if os.path.isfile(to_test_result("pkls", pkl)):
-                        os.remove(to_test_result("pkls", pkl))
-
-                os.rmdir(to_test_result("pkls"))
-
-            if os.path.isfile(to_test_result("k_graphs.sqlite")):
-                os.remove(to_test_result("k_graphs.sqlite"))
-
-            if os.path.isdir(to_test_result("connectivity")):
-                if os.path.isdir(to_test_result("connectivity", "pkls")):
-                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                            os.remove(to_test_result("connectivity", "pkls", pkl))
-
-                    os.rmdir(to_test_result("connectivity", "pkls"))
-
-                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-                os.rmdir(to_test_result("connectivity"))
-
-            os.rmdir(to_test_result())
 
 
 if __name__ == '__main__':

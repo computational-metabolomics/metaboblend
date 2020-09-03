@@ -21,83 +21,67 @@
 
 
 import unittest
-import zipfile
+import shutil
+import tempfile
 from metaboblend.build_structures import *
 from metaboblend.databases import *
 
 
-def to_test_result(*args):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_results", *args)
-
-
 class BuildStructuresTestCase(unittest.TestCase):
+    temp_results_dir = None
+
+    @classmethod
+    def to_test_results(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, *args)
+
+    @classmethod
+    def to_test_data(cls, *args):
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), cls.temp_results_dir.name, "test_data", *args)
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(to_test_result())
+        cls.temp_results_dir = tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__)))
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "connectivity.zip"
-                                               ), 'r')
-        zip_ref.extractall(to_test_result())
-        zip_ref.close()
+        shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
+                        cls.to_test_results("test_data"))
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "test_mols.zip"
-                                               ), 'r')
-        zip_ref.extractall(to_test_result())
-        zip_ref.close()
+    def test_build(self):  # core - all other build functions rely on
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
-        zip_ref = zipfile.ZipFile(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               "data",
-                                               "substructures.zip"
-                                               ), 'r')
-        zip_ref.extractall(to_test_result())
-        zip_ref.close()
-
-    def test_build(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), to_test_result("connectivity", "pkls"),
-                            to_test_result("connectivity", "k_graphs.sqlite"))
-        smis = [{'NCCc1cc(O)cc(O)c1', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1'},
+        # ref data
+        smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
                 None,
-                {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
+                {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O'},
                 None]
+        std_lens = [4, 51, 3, 1892]
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+        exp_lens = [1, 41, 2, 0]
 
-        std_lens = [15, 76, 5, 1920]
-
-        fragments = [58.005, 60.021, 58.005, 58.005]
-
-        exp_lens = [1, 41, 0, 0]
-
-        with open(to_test_result("test_mols", "test_hmdbs.dictionary"), "rb") as test_hmdbs:
+        # hmdb records to build from
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             record_dicts = pickle.load(test_hmdbs)
-            for i, record_dict in enumerate(record_dicts.values()):
-                record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
 
-                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9),
-                      max_valence=4, accuracy="1", max_atoms_available=2, max_n_substructures=3,
-                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
+            for i, record_dict in enumerate(record_dicts.values()):
+
+                # test standard building
+                built_smis = build(
+                    mf=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
+                )
 
                 j = 0
                 unique_smis = set()
-                with open(to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
 
-                        substructures = eval("".join(line.split()[1:]))
-
-                        for k, substructure in enumerate(substructures):
-                            self.assertLessEqual(k, 2)
-                            mol = Chem.MolFromSmiles(substructure, False)
-                            if mol is not None:
-                                self.assertTrue(mol.GetNumHeavyAtoms() in range(4, 9))
-
+                self.assertEqual(unique_smis, built_smis)
                 self.assertEqual(j, std_lens[i])
 
                 if smis[i] is not None:
@@ -105,49 +89,296 @@ class BuildStructuresTestCase(unittest.TestCase):
                 else:
                     self.assertTrue(len(unique_smis) == 51 or len(unique_smis) == 1892)
 
-                if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
-                    os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
-
-                build(mc=[record_dict["C"], record_dict["H"], record_dict["N"], record_dict["O"], record_dict["P"],
-                          record_dict["S"]], exact_mass=record_dict["exact_mass"],
-                      fn_out=to_test_result(record_dict["HMDB_ID"] + ".smi"), heavy_atoms=range(4, 9), max_valence=4,
-                      accuracy="1", max_atoms_available=2, max_n_substructures=3, fragment_mass=fragments[i], ppm=15,
-                      path_db_k_graphs=to_test_result("connectivity", "k_graphs.sqlite"),
-                      path_pkls=to_test_result("connectivity", "pkls"), path_db=to_test_result("substructures.sqlite"))
+                # test prescribed substructure building
+                built_smis = build(
+                    mf=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    prescribed_mass=fragments[i], ppm=15, clean=True,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
+                    out_mode="w", ncpus=None, table_name="substructures"
+                )
 
                 j = 0
                 unique_smis = set()
-                with open(to_test_result(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
                     for line in smi_out:
                         j += 1
                         unique_smis.add(line.split()[0])
 
-                        substructures = eval("".join(line.split()[1:]))
+                self.assertEqual(unique_smis, built_smis)
 
-                        for k, substructure in enumerate(substructures):
-                            self.assertLessEqual(k, 2)
-                            mol = Chem.MolFromSmiles(substructure, False)
-                            if mol is not None:
-                                self.assertTrue(mol.GetNumHeavyAtoms() in range(4, 9))
-
-                if i == 0:
-                    self.assertEqual(unique_smis, {'NCCc1ccc(O)c(O)c1'})
+                if i == 2:
+                    self.assertEqual(unique_smis, {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O'})
 
                 self.assertEqual(len(unique_smis), exp_lens[i])
 
-                if os.path.isfile(to_test_result(record_dict["HMDB_ID"] + ".smi")):
-                    os.remove(to_test_result(record_dict["HMDB_ID"] + ".smi"))
+        db.close()
+
+    def test_substructure_combination_build(self):
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"),
+                            self.to_test_data("connectivity.sqlite"))
+
+        ec_products = [((4, 5, 0, 0, 0, 0), (4, 6, 1, 2, 0, 0)),
+                       ((5, 5, 0, 2, 0, 0), (3, 6, 1, 0, 0, 0)),
+                       ((2, 4, 0, 2, 0, 0), (4, 8, 0, 4, 0, 0))]
+        configs_iso = db.k_configs(True)
+        lens = [0, 1, 60]
+
+        for i, ec_product in enumerate(ec_products):
+            substructure_subset = db.select_substructures(ec_product, "substructures")
+            smis = substructure_combination_build(substructure_subset, configs_iso)
+
+            self.assertEqual(len(smis), lens[i])
+
+            if i == 1:
+                self.assertEqual(smis, ['NCCc1ccc(O)c(O)c1'])
+
+        db.close()
+
+    def test_build_from_subsets(self):
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+
+        mcs = [[8, 11, 1, 2, 0, 0], [8, 11, 1, 2, 0, 0], [12, 22, 0, 11, 0, 0], [10, 0, 0, 0, 0, 0],
+               [9, 11, 1, 3, 0, 0], [9, 11, 1, 3, 0, 0], [8, 11, 1, 2, 0, 0]]
+        exact_subsets = [(74.0242, 79.0548), (65.0391, 88.0399), (103.0395, 119.0344, 120.0423),
+                         (84.0449, 97.029), (50.0156, 57.0215, 74.0368), (50.0156, 57.034, 74.0242),
+                         (50.0156, 57.0215, 74.0368)]
+
+        lens = [1, 7, 26, 0, 4, 4, 0]
+        
+        for i, mc, exact_subset in zip(range(len(mcs)), mcs, exact_subsets):
+            substructure_subsets = build_from_subsets(exact_subset, mc, "substructures", db)
+
+            if i == 3 or i == 6:
+                self.assertEqual(len(substructure_subsets), 0)
+            else:
+                self.assertEqual(len(substructure_subsets[0][0]), lens[i])
+
+            if i == 0:
+                del substructure_subsets[0][0][0]["mol"]
+                self.assertEqual(substructure_subsets[0][0],
+                                 [{'smiles': '*[C@H](N)C(=O)O',
+                                   'bond_types': {1: [1.0]},
+                                   'degree_atoms': {1: 1},
+                                   'valence': 1,
+                                   'atoms_available': 1,
+                                   'dummies': [2]}])
+
+        db.close()
+
+    def test_generate_structures(self):  # tests vs build
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+            for i, record_dict in enumerate(record_dicts.values()):
+                ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                    "exact_mass": record_dict["exact_mass"]}}
+
+                # test standard building
+                returned_smis = list(generate_structures(
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results(),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
+                    minimum_frequency=None, yield_smi_set=True
+                ))
+
+                build_smis = build(
+                    mf=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
+                )
+
+                unique_smis = set()
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                    for line in smi_out:
+                        unique_smis.add(line.split()[0])
+
+                self.assertEqual(unique_smis, returned_smis[0])
+                self.assertEqual(unique_smis, build_smis)
+
+                ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                    "exact_mass": record_dict["exact_mass"],
+                                                    "prescribed_masses": fragments[i]}}
+
+                # test prescribed building
+                returned_smis = list(generate_structures(
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results(),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
+                    minimum_frequency=None, yield_smi_set=True
+                ))
+
+                build_smis = build(
+                    mf=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
+                    prescribed_mass=fragments[i], ppm=0,
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
+                    out_mode="w", ncpus=None, table_name="substructures", clean=True
+                )
+
+                unique_smis = set()
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                    for line in smi_out:
+                        unique_smis.add(line.split()[0])
+
+                self.assertEqual(unique_smis, returned_smis[0])
+                self.assertEqual(unique_smis, build_smis)
+
+            ms_data = {}
+            for i, record_dict in enumerate(record_dicts.values()):
+                record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+                ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                          record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                   "exact_mass": record_dict["exact_mass"],
+                                                   "prescribed_masses": None}
+            # test building with multiple inputs
+            returned_smi_list = list(generate_structures(
+                ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                path_smi_out=self.to_test_results(),
+                path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                path_substructure_db=self.to_test_data("substructures.sqlite"),
+                minimum_frequency=None, yield_smi_set=True
+            ))
+
+            for i, record_dict in enumerate(record_dicts.values()):
+                build_smis = build(
+                    mf=[record_dict["C"], record_dict["H"], record_dict["N"],
+                        record_dict["O"], record_dict["P"], record_dict["S"]],
+                    exact_mass=record_dict["exact_mass"],
+                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
+                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures"
+                )
+
+                unique_smis = set()
+                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
+                    for line in smi_out:
+                        unique_smis.add(line.split()[0])
+
+                self.assertEqual(unique_smis, returned_smi_list[i])
+                self.assertEqual(unique_smis, build_smis)
+
+        db.close()
+
+    def test_annotate_msn(self):  # tests vs build_msn
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+
+        overall_lens = [3, 41, 2, 0]
+        smis = [{'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)cc(O)c1'},
+                None,
+                {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
+                None]
+        freqs = [1, 0, 0, 0]
+
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+            for i, record_dict in enumerate(record_dicts.values()):
+
+                if not os.path.exists(self.to_test_results("annotate")):
+                    os.mkdir(self.to_test_results("annotate"))
+
+                ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                    "exact_mass": record_dict["exact_mass"],
+                                                    "fragment_masses": fragments}}
+
+                # test standard building
+                returned_smis = list(annotate_msn(
+                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                    path_smi_out=self.to_test_results("annotate"),
+                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                    path_substructure_db=self.to_test_data("substructures.sqlite"),
+                    minimum_frequency=None, yield_smi_dict=True, write_fragment_smis=True
+                ))
+
+                peak_smis = set()
+                for prescribed_mass in fragments:
+                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
+                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                        for line in smi_out:
+                            peak_smis.add(line.split()[0])
+
+                csv_output_smis = set()
+                for prescribed_mass in fragments:
+                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
+                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
+                        for line in smi_out:
+                            csv_output_smis.add(line.split()[0])
+
+                self.assertEqual(peak_smis, csv_output_smis)
+                self.assertEqual(peak_smis, set(returned_smis[0].keys()))
+
+                self.assertEqual(len(peak_smis), overall_lens[i])
+
+                self.assertEqual(len([freq for freq in set(returned_smis[0].values()) if freq > 1]), freqs[i])
+
+                if smis[i] is not None:
+                    self.assertEqual(peak_smis, smis[i])
+
+                if i == 0:
+                    self.assertEqual(returned_smis[0]['NCCc1ccc(O)c(O)c1'], 2)
+
+            ms_data = {}
+            for i, record_dict in enumerate(record_dicts.values()):
+                record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+                ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                          record_dict["O"], record_dict["P"], record_dict["S"]],
+                                                   "exact_mass": record_dict["exact_mass"],
+                                                   "fragment_masses": fragments}
+
+            os.mkdir(self.to_test_results("annotate_multi"))
+
+            # test building with multiple inputs
+            returned_smi_list = list(annotate_msn(
+                ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                path_smi_out=self.to_test_results("annotate_multi"),
+                path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                path_substructure_db=self.to_test_data("substructures.sqlite"),
+                minimum_frequency=None, yield_smi_dict=True
+            ))
+
+            for i, record_dict in enumerate(record_dicts.values()):
+                unique_smis = set()
+
+                with open(self.to_test_results("annotate_multi",
+                                               record_dict["HMDB_ID"] + "_frequency.csv"), "r") as smi_out:
+                    for line in smi_out:
+                        unique_smis.add(line.split()[0].split(",")[0])
+
+                self.assertEqual(unique_smis, set(returned_smi_list[i].keys()))
+                self.assertEqual(len(unique_smis), overall_lens[i])
 
         db.close()
 
     def test_gen_subs_table(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
-        table_name = gen_subs_table(db, range(5, 7), 4, 2, 500)
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
+        table_name = gen_subs_table(db, 5, 6, 4, 2, 500)
 
         i = 0
         db.cursor.execute("SELECT heavy_atoms, valence, atoms_available FROM %s" % table_name)
         for row in db.cursor.fetchall():
             i += 1
+
             self.assertTrue(row[0] in range(5, 7))
             self.assertTrue(row[1] <= 4)
             self.assertTrue(row[2] <= 2)
@@ -156,50 +387,51 @@ class BuildStructuresTestCase(unittest.TestCase):
 
         db.close()
 
-    def test_subset_sum(self):
+    def test_subset_sum(self):  # also tests find_path
         self.assertEqual([s_sum for s_sum in subset_sum([1, 2, 3, 4], 5)], [[2, 3], [1, 4]])
 
         self.assertEqual(len(list(subset_sum(list(range(60)), 70, 3))), 378)
         self.assertEqual(len(list(subset_sum(list(range(60)), 70, 1000))), 29884)
 
     def test_combine_ecs(self):
-        db = SubstructureDb(to_test_result("substructures.sqlite"), "")
-        self.assertEqual(combine_ecs([54.0106, 69.0578], db, "substructures", "0_0001"),
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
+        self.assertEqual(combine_mfs([54.0106, 69.0578], db, "substructures", "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
-        self.assertEqual(combine_ecs([54, 69], db, "substructures", "1"),
+        self.assertEqual(combine_mfs([54, 69], db, "substructures", "1"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0), (4, 5, 0, 1, 0, 0)]])
-        self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=15),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
-        self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001", ppm=1), [])
-        self.assertEqual(combine_ecs([54.0101, 69.0580], db, "substructures", "0_0001"), [])
+        self.assertEqual(combine_mfs([54.0101, 69.0580], db, "substructures", "0_0001"), [])
 
         db.close()
 
     def test_reindex_atoms(self):
-        llls = [[{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
-                  'valence': 2, 'atoms_available': 1, 'dummies': [0, 2]},
-                 {'smiles': 'NCCc1c:*:*:cc1', 'mol': None, 'bond_types': {4: [1.5], 6: [1.5], 7: [1.5]},
-                  'degree_atoms': {4: 1, 7: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [5, 6]}],
-                [{'smiles': '*[C@@H](O)[C@@H](*)O', 'mol': None, 'bond_types': {1: [1.0], 3: [1.0]},
-                  'degree_atoms': {1: 1, 3: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [0, 5]},
-                 {'smiles': 'OC1**[C@@H](O)[C@H](O)[C@H]1O', 'mol': None, 'bond_types': {0: [1.0], 3: [1.0], 4: [1.0]},
-                  'degree_atoms': {0: 1, 4: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [2, 3]}],
-                [{'smiles': '*C[C@H](N)C(=O)O', 'mol': None, 'bond_types': {2: [1.0]}, 'degree_atoms': {2: 1},
-                  'valence': 1, 'atoms_available': 1, 'dummies': [3]},
-                 {'smiles': '*c1ccc(O)cc1', 'mol': None, 'bond_types': {1: [1.0]}, 'degree_atoms': {1: 1},
-                  'valence': 1, 'atoms_available': 1, 'dummies': [0]}]]
+        substructure_combinations = [
+            [{'smiles': '*C(*)C(=O)O', 'mol': None, 'bond_types': {1: [1.0, 1.0]}, 'degree_atoms': {1: 2},
+              'valence': 2, 'atoms_available': 1, 'dummies': [0, 2]},
+             {'smiles': 'NCCc1c:*:*:cc1', 'mol': None, 'bond_types': {4: [1.5], 6: [1.5], 7: [1.5]},
+              'degree_atoms': {4: 1, 7: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [5, 6]}],
+            [{'smiles': '*[C@@H](O)[C@@H](*)O', 'mol': None, 'bond_types': {1: [1.0], 3: [1.0]},
+              'degree_atoms': {1: 1, 3: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [0, 5]},
+             {'smiles': 'OC1**[C@@H](O)[C@H](O)[C@H]1O', 'mol': None, 'bond_types': {0: [1.0], 3: [1.0], 4: [1.0]},
+              'degree_atoms': {0: 1, 4: 1}, 'valence': 2, 'atoms_available': 2, 'dummies': [2, 3]}],
+            [{'smiles': '*C[C@H](N)C(=O)O', 'mol': None, 'bond_types': {2: [1.0]}, 'degree_atoms': {2: 1},
+              'valence': 1, 'atoms_available': 1, 'dummies': [3]},
+             {'smiles': '*c1ccc(O)cc1', 'mol': None, 'bond_types': {1: [1.0]}, 'degree_atoms': {1: 1},
+              'valence': 1, 'atoms_available': 1, 'dummies': [0]}]
+        ]
 
-        reindexed = [["*C(*)C(=O)O.NCCc1c:*:*:cc1", [1, 10, 13], [0, 2, 11, 12],
-                      {1: [1.0, 1.0], 10: [1.5], 12: [1.5], 13: [1.5]}],
-                     ["*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", [1, 3, 6, 10], [0, 5, 8, 9],
-                      {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
-                     ["*C[C@H](N)C(=O)O.*c1ccc(O)cc1", [2, 8], [3, 7], {2: [1.0], 8: [1.0]}]]
+        reindexed = [
+            ["*C(*)C(=O)O.NCCc1c:*:*:cc1", [1, 10, 13], [0, 2, 11, 12],
+             {1: [1.0, 1.0], 10: [1.5], 12: [1.5], 13: [1.5]}],
+            ["*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", [1, 3, 6, 10], [0, 5, 8, 9],
+             {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
+            ["*C[C@H](N)C(=O)O.*c1ccc(O)cc1", [2, 8], [3, 7], {2: [1.0], 8: [1.0]}]
+        ]
 
-        for lll, reindex in zip(llls, reindexed):
-            lll[0]["mol"] = Chem.MolFromSmiles(lll[0]["smiles"], False)
-            lll[1]["mol"] = Chem.MolFromSmiles(lll[1]["smiles"], False)
+        for substructure_combination, reindex in zip(substructure_combinations, reindexed):
+            substructure_combination[0]["mol"] = Chem.MolFromSmiles(substructure_combination[0]["smiles"], False)
+            substructure_combination[1]["mol"] = Chem.MolFromSmiles(substructure_combination[1]["smiles"], False)
 
-            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(lll)
+            mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(substructure_combination)
             self.assertEqual([Chem.MolToSmiles(mol_comb), atoms_available, atoms_to_remove, bond_types], reindex)
 
     def test_add_bonds(self):
@@ -224,106 +456,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                 self.assertTrue(mol_e is None)
             else:
                 self.assertEqual(Chem.MolToSmiles(mol_e.GetMol(), False), mol_out[i])
-
-    def test_paths(self):
-        with open(to_test_result("connectivity", "pkls", "5.pkl"), "rb") as root_pkl:
-            for p in paths(pickle.load(root_pkl)):
-                self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
-
-        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
-              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
-              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
-        ps_found = []
-
-        with open(to_test_result("connectivity", "pkls", "60.pkl"), "rb") as root_pkl:
-            for p in paths(pickle.load(root_pkl)):
-                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        for i in range(len(ps)):
-            self.assertTrue(i in ps_found)
-
-        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
-        ps_found = []
-        with open(to_test_result("connectivity", "pkls", "100.pkl"), "rb") as root_pkl:
-            for p in paths(pickle.load(root_pkl)):
-                ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        self.assertEqual(sorted(ps_found), [0, 1])
-
-    def test_isomorphism_graphs(self):
-        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 5):
-            self.assertEqual(p, ((0, 2), (0, 3), (1, 2)))
-
-        ps = [((0, 5), (1, 3), (1, 5), (2, 4)), ((0, 5), (1, 2), (1, 5), (3, 4)),
-              ((0, 4), (1, 2), (1, 5), (3, 5)), ((0, 4), (1, 3), (1, 5), (2, 5)),
-              ((0, 3), (1, 4), (1, 5), (2, 5)), ((0, 2), (1, 4), (1, 5), (3, 5))]
-        ps_found = []
-        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 60):
-            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        for i in range(len(ps)):
-            self.assertTrue(i in ps_found)
-
-        ps = [((0, 2), (0, 5), (1, 3), (1, 4), (3, 4)), ((0, 3), (0, 4), (1, 2), (1, 5), (3, 4))]
-        ps_found = []
-        for p in isomorphism_graphs(to_test_result("connectivity", "pkls"), 100):
-            ps_found += [i for i, ref_p in enumerate(ps) if ref_p == p]
-
-        self.assertEqual(sorted(ps_found), [0, 1])
-
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.isdir(to_test_result()):
-            if os.path.isdir(to_test_result("connectivity")):
-                if os.path.isdir(to_test_result("connectivity", "pkls")):
-                    for pkl in os.listdir(to_test_result("connectivity", "pkls")):
-                        if os.path.isfile(to_test_result("connectivity", "pkls", pkl)):
-                            os.remove(to_test_result("connectivity", "pkls", pkl))
-
-                    os.rmdir(to_test_result("connectivity", "pkls"))
-
-                if os.path.isfile(to_test_result("connectivity", "k_graphs.sqlite")):
-                    os.remove(to_test_result("connectivity", "k_graphs.sqlite"))
-
-                os.rmdir(to_test_result("connectivity"))
-
-            if os.path.isdir(to_test_result("test_mols")):
-                if os.path.isfile(to_test_result("test_mols", "test_hmdbs.dictionary")):
-                    os.remove(to_test_result("test_mols", "test_hmdbs.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "parsed_records.dictionary")):
-                    os.remove(to_test_result("test_mols", "parsed_records.dictionary"))
-
-                if os.path.isfile(to_test_result("test_mols", "HMDB0000073.xml")):
-                    os.remove(to_test_result("test_mols", "HMDB0000073.xml"))
-
-                if os.path.isdir(to_test_result("test_mols", "hmdb")):
-                    for hmdb_xml in os.listdir(to_test_result("test_mols", "hmdb")):
-                        os.remove(to_test_result("test_mols", "hmdb", hmdb_xml))
-
-                    os.rmdir(to_test_result("test_mols", "hmdb"))
-
-                os.rmdir(to_test_result("test_mols"))
-
-            if os.path.isfile(to_test_result("test_db.sqlite")):
-                os.remove(to_test_result("test_db.sqlite"))
-
-            if os.path.isfile(to_test_result("substructures.sqlite")):
-                os.remove((to_test_result("substructures.sqlite")))
-
-            if os.path.isfile(to_test_result("HMDB0000073.smi")):
-                os.remove(to_test_result("HMDB0000073.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000122.smi")):
-                os.remove(to_test_result("HMDB0000122.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000158.smi")):
-                os.remove(to_test_result("HMDB0000158.smi"))
-
-            if os.path.isfile(to_test_result("HMDB0000186.smi")):
-                os.remove(to_test_result("HMDB0000186.smi"))
-
-            os.rmdir(to_test_result())
 
 
 if __name__ == '__main__':
