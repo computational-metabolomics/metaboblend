@@ -153,13 +153,14 @@ class MspDatabase:
                 intensity.append(spectra[1])
 
             # inchikey_id, name, exact_mass, smiles, accession, precursor_mz, mzs, itensities
-            # med_snr = median(intensity) * snr
-            # indices = [i for i in range(len(mz)) if intensity[i] > med_snr]
-            indices = sorted(range(len(intensity)), key=lambda i: intensity[i])[-15:]  # top 15 results
+            med_snr = median(intensity) * snr
+            indices = [i for i, mzs in enumerate(mz) if intensity[i] > med_snr and mzs < spectra_meta[2] - 0.5]
+            # indices = sorted(range(len(intensity)), key=lambda i: intensity[i])[-15:]  # top 15 results
+
             mz, intensity = [m for i, m in enumerate(mz) if i in indices], \
                             [inten for i, inten in enumerate(intensity) if i in indices]
 
-            if len(intensity) == 0:
+            if len(intensity) < 5 or len(intensity) > 30:
                 continue
 
             yield list(compound) + list(spectra_meta[1:3]) + [mz] + [intensity]
