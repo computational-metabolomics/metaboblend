@@ -426,7 +426,7 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                     [k + "," + str(i) + "\n" for k, i in zip(structure_frequency.keys(), structure_frequency.values())])
 
         if yield_smi_dict:
-            yield structure_frequency
+            yield {ms_id: structure_frequency}
 
     db.close()
 
