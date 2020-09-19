@@ -194,6 +194,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     isomeric_smiles=True
                 ))
 
+                returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
+
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
@@ -210,7 +212,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
-                self.assertEqual(unique_smis, returned_smis[0])
+                self.assertEqual(unique_smis, returned_smis)
                 self.assertEqual(unique_smis, build_smis)
 
                 ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
@@ -227,6 +229,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     minimum_frequency=None, yield_smi_set=True,
                     isomeric_smiles=True
                 ))
+
+                returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
@@ -245,7 +249,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
-                self.assertEqual(unique_smis, returned_smis[0])
+                self.assertEqual(unique_smis, returned_smis)
                 self.assertEqual(unique_smis, build_smis)
 
             ms_data = {}
@@ -255,6 +259,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
                                                    "exact_mass": record_dict["exact_mass"],
                                                    "prescribed_masses": None}
+
             # test building with multiple inputs
             returned_smi_list = list(generate_structures(
                 ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
@@ -282,7 +287,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     for line in smi_out:
                         unique_smis.add(line.split()[0])
 
-                self.assertEqual(unique_smis, returned_smi_list[i])
+                self.assertEqual(unique_smis, returned_smi_list[i][record_dict["HMDB_ID"]])
                 self.assertEqual(unique_smis, build_smis)
 
         db.close()
@@ -314,38 +319,18 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(annotate_msn(
                     ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    path_smi_out=self.to_test_results("annotate"),
+                    path_sql_out=self.to_test_results("results.sqlite"),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_dict=True, write_fragment_smis=True,
-                    isomeric_smiles=True
+                    minimum_frequency=None, yield_smi_dict=True, isomeric_smiles=True
                 ))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
-                peak_smis = set()
-                for prescribed_mass in fragments:
-                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
-                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
-                        for line in smi_out:
-                            peak_smis.add(line.split()[0])
-
-                csv_output_smis = set()
-                for prescribed_mass in fragments:
-                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
-                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
-                        for line in smi_out:
-                            csv_output_smis.add(line.split()[0])
-
-                self.assertEqual(peak_smis, csv_output_smis)
-                self.assertEqual(peak_smis, set(returned_smis.keys()))
-
-                self.assertEqual(len(peak_smis), overall_lens[i])
-
                 self.assertEqual(len([freq for freq in set(returned_smis.values()) if freq > 1]), freqs[i])
 
                 if smis[i] is not None:
-                    self.assertEqual(peak_smis, smis[i])
+                    self.assertEqual(set(returned_smis.keys()), smis[i])
 
                 if i == 0:
                     self.assertEqual(returned_smis['NCCc1ccc(O)c(O)c1'], 3)
@@ -363,7 +348,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
                 ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                path_smi_out=self.to_test_results("annotate_multi"),
+                path_sql_out=self.to_test_results("annotate_multi", "results.sqlite"),
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_dict=True,
@@ -371,15 +356,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             ))
 
             for i, record_dict in enumerate(record_dicts.values()):
-                unique_smis = set()
-
-                with open(self.to_test_results("annotate_multi",
-                                               record_dict["HMDB_ID"] + "_frequency.csv"), "r") as smi_out:
-                    for line in smi_out:
-                        unique_smis.add(line.split()[0].split(",")[0])
-
-                self.assertEqual(unique_smis, set(returned_smi_list[i][record_dict["HMDB_ID"]].keys()))
-                self.assertEqual(len(unique_smis), overall_lens[i])
+                self.assertEqual(len(set(returned_smi_list[i][record_dict["HMDB_ID"]].keys())), overall_lens[i])
 
         db.close()
 
