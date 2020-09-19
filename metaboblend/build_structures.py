@@ -682,7 +682,7 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
         smi_lists = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
-                    prescribed_structure=prescribed_mass is not None, isomeric_smiles=isomeric_smiles),
+                    prescribed_structure=prescribed_mass, isomeric_smiles=isomeric_smiles),
             substructure_subsets
         )
 
