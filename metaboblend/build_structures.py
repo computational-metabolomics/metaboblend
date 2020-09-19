@@ -292,7 +292,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                  minimum_frequency: Union[int, None] = None,
                  hydrogenation_allowance: int = 2,
                  yield_smi_dict: bool = True,
-                 isomeric_smiles: bool = False) -> Union[Sequence[Dict[str, int]], None]:
+                 isomeric_smiles: bool = False
+                 ) -> Dict[str, Sequence[Dict[str, int]]]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
     fragmentation spectra. Final structures and rankings are yielded by the function as a dictionary and/or written in
@@ -450,7 +451,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
                         minimum_frequency: Union[int, None] = None,
                         yield_smi_set: bool = True,
                         isomeric_smiles: bool = False
-                        ) -> Union[Sequence[list], None]:
+                        ) -> Dict[str, Sequence[list]]:
     """
     Generate molecules of a given mass using chemical substructures and connectivity graphs. Can optionally take a
     "prescribed" fragment mass to further filter results. Final structures are returned as a list and/or written in
@@ -542,7 +543,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
         else:
             id_path_smi_out = None
 
-        smi_list = build(
+        smi_set = build(
             mf=ms_data[ms_id]["mf"],
             exact_mass=ms_data[ms_id]["exact_mass"],
             max_n_substructures=max_n_substructures,
@@ -559,7 +560,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
         )
 
         if yield_smi_set:
-            yield smi_list
+            yield {ms_id: smi_set}
 
     db.close()
 
@@ -743,7 +744,7 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
                                     FROM hmdbid_substructures 
                                     GROUP BY smiles 
                                     HAVING COUNT(*) >= {})
-                            """.format(minimum_frequency,)
+                         """.format(minimum_frequency,)
 
     if ha_min is None:
         ha_min_statement = ""
@@ -759,7 +760,6 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
 
     db.cursor.execute("""CREATE TABLE {} AS
                              SELECT * FROM substructures WHERE
-                                 
                                  atoms_available <= {} AND
                                  valence <= {} AND
                                  exact_mass__1 < {}{}{}{}
