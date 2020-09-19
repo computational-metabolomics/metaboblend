@@ -185,8 +185,10 @@ def reindex_atoms(records):
 
             if atom.GetIdx() in record["degree_atoms"]:
                 atoms_available.append(new_idx)
+
             if atom.GetIdx() in record["dummies"]:
                 atoms_to_remove.append(new_idx)
+
             if atom.GetIdx() in record["bond_types"]:
                 bond_types[new_idx] = record["bond_types"][atom.GetIdx()]
                 all_bond_types[i] += record["bond_types"][atom.GetIdx()]
@@ -606,17 +608,26 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
     tolerance = 0.001
 
-    if prescribed_mass is None:  # standard build method
+    if prescribed_mass is None:
         exact_mass__1 = round(exact_mass)
-        exact_mass__0_0001 = round(exact_mass, 4)
 
     else:  # prescribed substructure build method
+        if ((prescribed_mass / 1000000) * ppm) > 0.001:
+            fragment_tolerance = round((prescribed_mass / 1000000) * ppm, 4)
+        else:
+            fragment_tolerance = 0.001
+
+        prescribed_subset = db.select_mass_values("0_0001", [round(prescribed_mass)], table_name)
+        prescribed_subset = [m for m in prescribed_subset[0] if abs(m - prescribed_mass) <= fragment_tolerance]
+
+        if len(prescribed_subset) == 0:
+            return set()
+
         loss = exact_mass - prescribed_mass
         exact_mass__1 = round(loss)
-        exact_mass__0_0001 = round(loss, 4)
 
-        if ((loss / 1000000) * ppm) > 0.001:
-            tolerance = round((loss / 1000000) * ppm, 4)
+        if ((exact_mass / 1000000) * ppm) > 0.001:
+            tolerance = round((exact_mass / 1000000) * ppm, 4)
 
         max_n_substructures -= 1  # we find sets of mols that add up to the loss, not the precursor mass
 
@@ -630,7 +641,7 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
 
     integer_subsets = list(subset_sum(integer_mass_values, exact_mass__1, max_n_substructures))
 
-    configs_iso = db.k_configs(prescribed_mass is not None)
+    configs_iso = db.k_configs()
     if path_smi_out is not None:
         smi_out = open(path_smi_out, out_mode)
 
@@ -641,25 +652,28 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
 
         # refine groups of masses to 4dp mass resolution
         exact_mass_values = db.select_mass_values("0_0001", integer_subset, table_name)
-        exact_subsets = []
+
+        if prescribed_mass is not None:
+            exact_mass_values = [prescribed_subset] + exact_mass_values
 
         # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
+        exact_subsets = []
         for mass_combo in itertools.product(*exact_mass_values):
-            if abs(sum(mass_combo) - exact_mass__0_0001) <= tolerance:
+            if abs(sum(mass_combo) - exact_mass) <= tolerance:
                 exact_subsets.append(mass_combo)
 
         if len(exact_subsets) == 0:
             continue
-
-        if prescribed_mass is not None:  # add fragments mass to to loss group
-            exact_subsets = [subset + (round(exact_mass - loss, 4),) for subset in exact_subsets]
 
         # refines groups based on ecs and gets substructures from db (appends to substructure_subsets)
         for exact_subset in exact_subsets:
             substructure_subsets += build_from_subsets(exact_subset, mf=mf, table_name=table_name, db=db)
 
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
-        smi_lists = pool.map(partial(substructure_combination_build, configs_iso=configs_iso), substructure_subsets)
+        smi_lists = pool.map(
+            partial(substructure_combination_build, configs_iso=configs_iso, prescribed_structure=prescribed_mass is not None),
+            substructure_subsets
+        )
 
     smis = set([val for sublist in smi_lists for val in sublist])
 
@@ -795,7 +809,7 @@ def build_from_subsets(exact_subset, mf, table_name, db):
     return substructure_subsets
 
 
-def substructure_combination_build(substructure_subset, configs_iso):
+def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -811,11 +825,24 @@ def substructure_combination_build(substructure_subset, configs_iso):
     smis = []
 
     for substructure_combination in itertools.product(*substructure_subset):
+        substructure_combination[0]["fragment"] = True
         substructure_combination = sorted(substructure_combination, key=itemgetter('atoms_available', 'valence'))
 
         v_a = ()
-        for d in substructure_combination:
+        if prescribed_structure is not None:
+            fragment_indexes = []
+        j = -1
+        for i, d in enumerate(substructure_combination):
             v_a += (tuple(d["degree_atoms"].values()),)  # obtain valence configuration of the set of substructures
+
+            for atom_available in tuple(d["degree_atoms"].values()):
+                j += 1
+
+                try:
+                    if prescribed_structure is not None and d["fragment"]:
+                        fragment_indexes.append(j)
+                except KeyError:
+                    continue
 
         if str(v_a) not in configs_iso:  # check mols "fit" together according to the connectivity database
             continue
@@ -826,6 +853,16 @@ def substructure_combination_build(substructure_subset, configs_iso):
             continue  # check that bond types are compatible (imperfect check)
 
         for edges in configs_iso[str(v_a)]:  # build mols for each graph in connectivity db
+            if prescribed_structure is not None:
+                non_fragment_edges = False
+
+                for edge in edges:  # check that edges only connect to fragment ion
+                    if edge[0] not in fragment_indexes and edge[1] not in fragment_indexes:
+                        non_fragment_edges = True
+
+                if non_fragment_edges:
+                    continue
+
             mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)  # add bonds between substructures
 
             if mol_e is None:
@@ -842,7 +879,7 @@ def substructure_combination_build(substructure_subset, configs_iso):
                 continue
 
             try:  # append the canonical smiles of the final structure
-                smis.append(Chem.MolToSmiles(mol_out))
+                smis.append(Chem.MolToSmiles(mol_out, isomericSmiles=False))
             except RuntimeError:
                 continue  # bad bond type violation
 

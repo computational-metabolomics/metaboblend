@@ -395,13 +395,11 @@ class SubstructureDb:
 
         return self.cursor.fetchall()
 
-    def k_configs(self, fragment_edges_only=False):
+    def k_configs(self):
         """
         Obtains strings detailing the valences for each substructure in a connectivity graph and the ID of the related
         PKL file. Used to match a set of substructures to the correct set of non-isomorphic graphs in the connectivity
         database.
-
-        :param fragment_edges_only: If true, only include sets of edges that connect to the fragment ion.
 
         :return: Dictionary containing the valences as keys and PKL IDs as values.
         """
@@ -414,27 +412,9 @@ class SubstructureDb:
 
         for record in records:
             configs[str(record[1])] = []
-            fragment_atoms = [i for i in range(len(eval(record[1])[0]))]
 
             for path in self.paths(pickle.loads(record[0])):
-                if fragment_edges_only:
-                    all_bonds_connect_to_fragment = True
-
-                    for edge in path:
-                        if edge[0] not in fragment_atoms and edge[1] not in fragment_atoms:
-                            all_bonds_connect_to_fragment = False
-
-                    # check that all bonds connect to fragment ion
-                    if all_bonds_connect_to_fragment:
-                        configs[str(record[1])].append(path)
-
-                else:
-                    # for normal building, there is no fragment ion
                     configs[str(record[1])].append(path)
-
-            # delete keys for which there are no valid edge sets
-            if len(configs[str(record[1])]) == 0:
-                del configs[str(record[1])]
 
         return configs
 
@@ -708,7 +688,7 @@ def get_substructure(mol, idxs_edges_subgraph):
     except:
         return
 
-    return {"smiles": Chem.MolToSmiles(mol_out),  # REORDERED ATOM INDEXES
+    return {"smiles": Chem.MolToSmiles(mol_out, isomericSmiles=False),  # REORDERED ATOM INDEXES
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
@@ -811,8 +791,8 @@ def filter_records(records):
             if len(atom_check) > 0:
                 continue
 
-            smiles_rdkit = Chem.MolToSmiles(mol)
-            smiles_rdkit_kek = Chem.MolToSmiles(mol, kekuleSmiles=True)
+            smiles_rdkit = Chem.MolToSmiles(mol, isomericSmiles=False)
+            smiles_rdkit_kek = Chem.MolToSmiles(mol, isomericSmiles=False, kekuleSmiles=True)
 
             if "+" in smiles_rdkit_kek or "-" in smiles_rdkit_kek or "+" in smiles_rdkit or "-" in smiles_rdkit:
                 continue  # only neutral molecules are compatible
@@ -1029,7 +1009,7 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
     db.close()
 
 
-def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike],
+def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike, None],
                                  path_substructure_db: Union[str, bytes, os.PathLike],
                                  ha_min: Union[int, None] = None,
                                  ha_max: Union[int, None] = None,
@@ -1191,7 +1171,7 @@ def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_
         if lib["valence"] > max_degree:
             return
 
-    smiles_rdkit = Chem.MolToSmiles(lib["mol"])  # canonical rdkit smiles
+    smiles_rdkit = Chem.MolToSmiles(lib["mol"], isomericSmiles=False)  # canonical rdkit smiles
 
     exact_mass = calculate_exact_mass(lib["mol"])
     els = get_elements(lib["mol"])
