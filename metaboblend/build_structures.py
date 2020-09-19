@@ -291,7 +291,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                  write_fragment_smis: bool = False,
                  minimum_frequency: Union[int, None] = None,
                  hydrogenation_allowance: int = 2,
-                 yield_smi_dict: bool = True) -> Union[Sequence[Dict[str, int]], None]:
+                 yield_smi_dict: bool = True,
+                 isomeric_smiles: bool = False) -> Union[Sequence[Dict[str, int]], None]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
     fragmentation spectra. Final structures and rankings are yielded by the function as a dictionary and/or written in
@@ -357,6 +358,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
     :param yield_smi_dict: If True, for each input molecule the function yields a dictionary whose keys are SMILEs
         strings and values are the number of `fragment_masses` by which the structure was generated. Else, returns None.
 
+    :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
+
     :return: For each input molecule yields a dictionary whose keys are SMILEs strings for the generated
         structures and values are the number of `fragment_masses` by which the structure was built (unless
         `yield_smi_dict = False`).
@@ -415,7 +418,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                     out_mode="a",
                     table_name=table_name,
                     ncpus=ncpus,
-                    clean=False
+                    clean=False,
+                    isomeric_smiles=isomeric_smiles
                 ))
 
             for smi in fragment_smis:
@@ -444,7 +448,8 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
                         ncpus: Union[int, None] = None,
                         path_connectivity_db: Union[str, bytes, os.PathLike, None] = None,
                         minimum_frequency: Union[int, None] = None,
-                        yield_smi_set: bool = True
+                        yield_smi_set: bool = True,
+                        isomeric_smiles: bool = False
                         ) -> Union[Sequence[list], None]:
     """
     Generate molecules of a given mass using chemical substructures and connectivity graphs. Can optionally take a
@@ -501,6 +506,8 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
 
     :param yield_smi_set: If True, yields a set of unique SMILEs string for each input molecule, else returns None.
 
+    :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
+
     :return: For each input molecule, yields a set of unique SMILEs strings (unless
         `yield_smi_set = False`).
     """
@@ -547,7 +554,8 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
             out_mode="w",
             table_name=table_name,
             ncpus=ncpus,
-            clean=False
+            clean=False,
+            isomeric_smiles=isomeric_smiles
         )
 
         if yield_smi_set:
@@ -557,7 +565,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
 
 
 def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_db, path_substructure_db,
-          prescribed_mass, ppm, out_mode, ncpus, table_name, clean):
+          prescribed_mass, ppm, out_mode, ncpus, table_name, clean, isomeric_smiles):
     """
     Core function for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -601,6 +609,8 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
         molecules. Will be removed after structures have been built, unless 'clean = False' is set.
 
     :param clean: Whether to remove the temporary table of substructures, table_name`, after the method is complete.
+
+    :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
 
     :return: Returns a set of unique SMILEs strings.
     """
@@ -671,7 +681,8 @@ def build(mf, exact_mass, max_n_substructures, path_smi_out, path_connectivity_d
 
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
         smi_lists = pool.map(
-            partial(substructure_combination_build, configs_iso=configs_iso, prescribed_structure=prescribed_mass is not None),
+            partial(substructure_combination_build, configs_iso=configs_iso,
+                    prescribed_structure=prescribed_mass is not None, isomeric_smiles=isomeric_smiles),
             substructure_subsets
         )
 
@@ -809,7 +820,7 @@ def build_from_subsets(exact_subset, mf, table_name, db):
     return substructure_subsets
 
 
-def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure):
+def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -879,7 +890,7 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 continue
 
             try:  # append the canonical smiles of the final structure
-                smis.append(Chem.MolToSmiles(mol_out, isomericSmiles=False))
+                smis.append(Chem.MolToSmiles(mol_out, isomericSmiles=isomeric_smiles))
             except RuntimeError:
                 continue  # bad bond type violation
 
