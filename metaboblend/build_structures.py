@@ -457,21 +457,56 @@ class ResultsDb:
 
         self.conn.commit()
 
-    def structure_frequency(self, ms_id):
+    def get_structures(self, ms_id):
         """
-        Generate a dictionary of results with structure frequencies.
+        Gets smiles of generated structures. In the case of the MSn annotation workflow, also gets structure
+        frequencies.
 
-        :param ms_id: Unique identifer for the annotation of a single metabolite.
+        :param ms_id: Unique identifier for the annotation of a single metabolite.
 
-        :return: A dictionary with smiles as keys and the number of peaks for which the smiles were generated as
-        values
+        :return: In the case of simple structure generation, returns a set of smiles strings for output structures.
+            For the MSn annotation workflow, returns a dictionary with smiles as keys and the number of peaks for which
+            the smiles were generated as values.
         """
 
         structure_frequencies = {}
-        for smiles, peak_sum in self.cursor.execute("""SELECT smiles, peak_sum FROM {}""".format(ms_id)):
-            structure_frequencies[smiles] = peak_sum
+        self.cursor.execute("SELECT DISTINCT structure_smiles FROM results WHERE ms_id = '%s'" % ms_id)
 
-        return structure_frequencies
+        for structure_smiles in self.cursor.fetchall():
+            structure_mol = Chem.MolFromSmiles(structure_smiles[0])
+            structure_mass = calculate_exact_mass(structure_mol)
+            structure_mc = get_elements(structure_mol)
+
+            if self.msn:
+                self.cursor.execute("""SELECT DISTINCT fragment_id FROM results 
+                                           WHERE ms_id = '{}' 
+                                           AND structure_smiles = '{}'""".format(ms_id, structure_smiles[0]))
+
+                structure_frequency = len(self.cursor.fetchall())
+            else:
+                structure_frequency = "NULL"
+
+            self.cursor.execute("""INSERT INTO structures (
+                                       ms_id,
+                                       smiles,
+                                       exact_mass,
+                                       C, H, N, O, P, S,
+                                       frequency
+                                   ) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')""".format(
+                                       ms_id,
+                                       structure_smiles[0],
+                                       structure_mass,
+                                       structure_mc["C"], structure_mc["H"], structure_mc["N"],
+                                       structure_mc["O"], structure_mc["P"], structure_mc["S"],
+                                       structure_frequency
+                                   ))
+
+            structure_frequencies[structure_smiles[0]] = structure_frequency
+
+        if self.msn:
+            return structure_frequencies
+        else:
+            return set(structure_frequencies.keys())
 
     def close(self):
         """Close the connection to the SQLITE3 database"""
