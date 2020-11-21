@@ -301,7 +301,7 @@ class ResultsDb:
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
-    def create_results_table(self):
+    def create_results_db(self):
         """Generates a new results database."""
 
         if os.path.exists(self.path_results_db):
@@ -309,10 +309,15 @@ class ResultsDb:
 
         self.connect()
 
-        self.cursor.execute("""CREATE TABLE results (
+        self.cursor.execute("""CREATE TABLE queries (
                                    ms_id TEXT PRIMARY KEY,
                                    exact_mass NUMERIC,
-                                   mc TEXT,
+                                   C INTEGER,
+                                   H INTEGER,
+                                   N INTEGER,
+                                   O INTEGER,
+                                   P INTEGER,
+                                   S INTEGER,
                                    ppm INTEGER,
                                    ha_min INTEGER,
                                    ha_max INTEGER,
@@ -320,8 +325,38 @@ class ResultsDb:
                                    max_degree INTEGER,
                                    max_n_substructures INTEGER,
                                    hydrogenation_allowance INTEGER,
-                                   isomeric_smiles INTEGER,
-                                   neutral_fragments TEXT)""")
+                                   isomeric_smiles INTEGER)""")
+
+        if self.msn:
+            self.cursor.execute("""CREATE TABLE spectra (
+                                       ms_id TEXT,
+                                       fragment_id NUMERIC,
+                                       neutral_mass NUMERIC,
+                                       PRIMARY KEY (ms_id, fragment_id))""")
+
+        self.cursor.execute("""CREATE TABLE structures (
+                                   ms_id TEXT,
+                                   smiles TEXT,
+                                   frequency NUMERIC,
+                                   exact_mass NUMERIC,
+                                   C INTEGER,
+                                   H INTEGER,
+                                   N INTEGER,
+                                   O INTEGER,
+                                   P INTEGER,
+                                   S INTEGER,
+                                   PRIMARY KEY (ms_id, smiles))""")
+
+        self.cursor.execute("""CREATE TABLE substructures (
+                                           structure_smiles TEXT ,
+                                           substructure_smiles TEXT,
+                                           PRIMARY KEY (structure_smiles, substructure_smiles))""")
+
+        self.cursor.execute("""CREATE TABLE results (
+                                   ms_id TEXT,
+                                   fragment_id NUMERIC,
+                                   structure_smiles TEXT,
+                                   PRIMARY KEY(ms_id, fragment_id, structure_smiles))""")
 
         self.conn.commit()
 
