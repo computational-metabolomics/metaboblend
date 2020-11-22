@@ -56,10 +56,10 @@ def parse_testing_data(csv_path, hmdb_path):
                     data_categories[line[4]][line[0]]["mc"] = [record_dict["C"], record_dict["H"], record_dict["N"],
                                                                record_dict["O"], record_dict["P"], record_dict["S"]]
                     data_categories[line[4]][line[0]]["exact_mass"] = record_dict["exact_mass"]
-                    mol = Chem.MolFromSmiles(Chem.MolToSmiles(record_dict["mol"], isomericSmiles=False))
+                    mol = Chem.MolFromSmiles(Chem.MolToSmiles(record_dict["mol"], isomericSmiles=True))
                     Chem.SanitizeMol(mol)
                     data_categories[line[4]][line[0]]["mol"] = mol
-                    data_categories[line[4]][line[0]]["smiles"] = Chem.MolToSmiles(mol, isomericSmiles=False)
+                    data_categories[line[4]][line[0]]["smiles"] = Chem.MolToSmiles(mol, isomericSmiles=True)
 
             assert data_categories[line[4]][line[0]]["exact_mass"] is not None
             data_categories[line[4]][line[0]]["peaks"].append(float(line[2]))
@@ -234,7 +234,7 @@ def parse_msp_testing_data(paths_msp_db, names_msp, path_hmdb_ids, hmdb_path, pa
             if len(atom_check) > 0:
                 continue
 
-            if "+" in Chem.MolToSmiles(mol, isomericSmiles=False) or "-" in Chem.MolToSmiles(mol, isomericSmiles=False):
+            if "+" in Chem.MolToSmiles(mol, isomericSmiles=True) or "-" in Chem.MolToSmiles(mol, isomericSmiles=True):
                 continue
 
             try:

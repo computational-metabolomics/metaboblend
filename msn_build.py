@@ -87,42 +87,12 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
             annot_msn_data[hmdb]["exact_mass"] = ms_data[category][hmdb]["neutral_precursor_ion_mass"]
             annot_msn_data[hmdb]["fragment_masses"] = ms_data[category][hmdb]["neutral_peaks"]
 
-        for subs_freqs in annotate_msn(
-                path_smi_out=os.path.join(out_dir, category),
+        annotate_msn(
+                path_out=os.path.join(out_dir, category),
                 msn_data=annot_msn_data,
                 path_substructure_db=db_path,
                 path_connectivity_db="../../data/databases/k_graphs.sqlite",
                 ha_min=None, ha_max=None, max_degree=max_valence,
-                ppm=ppm,
-                max_atoms_available=max_atoms_available,
-                write_fragment_smis=True
-        ):
-
-            hmdb = list(subs_freqs.keys())[0]
-
-            try:
-                true_recur = subs_freqs[hmdb][ms_data[category][hmdb]["smiles"]]
-                struct_rank = len([freq for freq in list(subs_freqs[hmdb].values()) if freq >= true_recur])
-            except KeyError:
-                true_recur = 0
-                struct_rank = 0
-
-            try:
-                max_recur = max(subs_freqs[hmdb].values())
-            except:
-                max_recur = 0
-
-            with open(os.path.join(out_dir, "results.csv"), newline="", mode="a") as overall_results:
-                rcsv = csv.writer(overall_results)
-
-                rcsv.writerow([category,
-                               hmdb,
-                               ms_data[category][hmdb]["smiles"],
-                               ms_data[category][hmdb]["neutral_precursor_ion_mass"],
-                               len(ms_data[category][hmdb]["neutral_peaks"]),
-                               true_recur,  # true recurr
-                               struct_rank,  # struct rank
-                               max_recur,  # max recurr
-                               len(subs_freqs[hmdb].keys()),  # tot structs
-                               ms_data[category][hmdb]["neutral_peaks"],
-                               ppm])
+                ppm=ppm, write_csv_output=True,
+                max_atoms_available=max_atoms_available
+        )
