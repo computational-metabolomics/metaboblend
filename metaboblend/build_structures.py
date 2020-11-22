@@ -214,7 +214,7 @@ def reindex_atoms(records):
     return mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch
 
 
-def add_bonds(mols, edges, atoms_available, bond_types):
+def add_bonds(mols, edges, atoms_available, bond_types, bond_enthalpies):
     """
     Takes a set of substructures and attempts to combine them together to generate a final structure. One of the last
     steps in the :py:meth:`metaboblend.build_structures.build` workflow.
@@ -244,28 +244,32 @@ def add_bonds(mols, edges, atoms_available, bond_types):
                         1.5: Chem.rdchem.BondType.AROMATIC,
                         2: Chem.rdchem.BondType.DOUBLE}
 
+    bond_types_copy = copy.deepcopy(bond_types)  # deep copy as we modify items within the dict
+
     g = nx.Graph()
     g.add_edges_from(edges)
 
     g = nx.relabel_nodes(g, dict(zip(sorted(g.nodes()), atoms_available)))
 
+    total_bde = 0
+
     mol_edit = Chem.EditableMol(mols)
     for edge in g.edges():
 
-        if edge[0] in bond_types:
-            bt_start = copy.copy(bond_types[edge[0]])
+        if edge[0] in bond_types_copy:
+            bt_start = bond_types_copy[edge[0]]
         else:
-            return None  # nested dummy
+            return None, None  # nested dummy
 
-        if edge[1] in bond_types:
-            bt_end = copy.copy(bond_types[edge[1]])
+        if edge[1] in bond_types_copy:
+            bt_end = bond_types_copy[edge[1]]
         else:
-            return None  # nested dummy
+            return None, None  # nested dummy
 
         bond_matches = list(set(bt_start).intersection(bt_end))
 
         if len(bond_matches) == 0:
-            return None
+            return None, None
 
         else:
             bt_start.remove(bond_matches[0])
@@ -274,9 +278,14 @@ def add_bonds(mols, edges, atoms_available, bond_types):
         try:
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bond_matches[0]])
         except KeyError:
-            return None  # unknown bond type
+            return None, None  # unknown bond type
 
-    return mol_edit
+        try:
+            total_bde += bond_enthalpies[bond_matches[0]][mols.GetAtomWithIdx(edge[0]).GetSymbol()][mols.GetAtomWithIdx(edge[1]).GetSymbol()]
+        except SyntaxError:
+            total_bde = None
+
+    return mol_edit, total_bde
 
 
 class ResultsDb:
@@ -358,6 +367,7 @@ class ResultsDb:
                                    ms_id TEXT,
                                    fragment_id NUMERIC,
                                    structure_smiles TEXT,
+                                   bde NUMERIC,
                                    PRIMARY KEY(ms_id, fragment_id, structure_smiles))""")
 
         self.conn.commit()
@@ -440,14 +450,16 @@ class ResultsDb:
             self.cursor.execute("""INSERT INTO results (
                                        ms_id,
                                        fragment_id,
-                                       structure_smiles
-                                   ) VALUES ('{}', '{}', '{}')""".format(
+                                       structure_smiles,
+                                       bde
+                                   ) VALUES ('{}', '{}', '{}', '{}')""".format(
                                        ms_id,
                                        fragment_id,
-                                       structure_smiles
+                                       structure_smiles,
+                                       smi_dict[structure_smiles][0]
                                    ))
 
-            for substructure_smiles in smi_dict[structure_smiles]:
+            for substructure_smiles in smi_dict[structure_smiles][1]:
 
                 self.cursor.execute("""INSERT INTO substructures (
                                                    structure_smiles,
@@ -920,7 +932,8 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
         smi_dicts = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
-                    prescribed_structure=prescribed_mass, isomeric_smiles=isomeric_smiles),
+                    prescribed_structure=prescribed_mass, isomeric_smiles=isomeric_smiles,
+                    bond_enthalpies=get_bond_enthalpies()),
             substructure_subsets
         )
 
@@ -928,7 +941,11 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     for d in smi_dicts:
         for k in d.keys():
             try:
-                smi_dict[k].update(d[k])
+                smi_dict[k][1].update(d[k][1])
+
+                if d[k][0] < smi_dict[k][0]:
+                    smi_dict[k][0] = d[k][0]
+
             except KeyError:
                 smi_dict[k] = d[k]
 
@@ -1057,7 +1074,26 @@ def build_from_subsets(exact_subset, mf, table_name, db):
     return substructure_subsets
 
 
-def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles):
+def get_bond_enthalpies():
+
+    return {1.0:   {'C': {'C': 348, 'N': 305, 'O': 360, 'P': 264, 'S': 272},
+                         'N': {'C': 305, 'N': 163, 'O': 222, 'P': None, 'S': None},
+                         'O': {'C': 360, 'N': 222, 'O': 146, 'P': 335, 'S': None},
+                         'P': {'C': 264, 'N': None, 'O': 335, 'P': 201, 'S': None},
+                         'S': {'C': 272, 'N': None, 'O': None, 'P': None, 'S': 226}},
+            1.5: {'C': {'C': 837, 'N': 890, 'O': None, 'P': None, 'S': None},
+                         'N': {'C': 890, 'N': 944, 'O': None, 'P': None, 'S': None},
+                         'O': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
+                         'P': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
+                         'S': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None}},
+            2.0:   {'C': {'C': 612, 'N': 613, 'O': 743, 'P': None, 'S': 573},
+                         'N': {'C': 613, 'N': 409, 'O': 607, 'P': None, 'S': None},
+                         'O': {'C': 743, 'N': 607, 'O': 496, 'P': 544, 'S': 522},
+                         'P': {'C': None, 'N': None, 'O': 544, 'P': None, 'S': 335},
+                         'S': {'C': 573, 'N': None, 'O': 522, 'P': 335, 'S': 425}}}
+
+
+def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles, bond_enthalpies):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -1115,9 +1151,9 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 if non_fragment_edges:
                     continue
 
-            mol_e = add_bonds(mol_comb, edges, atoms_available, bond_types)  # add bonds between substructures
+            mol_e, total_bde = add_bonds(mol_comb, edges, atoms_available, bond_types, bond_enthalpies)  # add bonds between substructures
 
-            if mol_e is None:
+            if mol_e is None or total_bde is None:
                 continue
 
             atoms_to_remove.sort(reverse=True)
@@ -1138,8 +1174,12 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
             final_substructures = set(subs["smiles"] for subs in substructure_combination)
 
             try:
-                smis[final_structure].update(final_substructures)
+                smis[final_structure][1].update(final_substructures)
+
+                if total_bde < smis[final_structure][0]:
+                    smis[final_structure][0] = total_bde
+
             except KeyError:
-                smis[final_structure] = final_substructures
+                smis[final_structure] = [total_bde, final_substructures]
 
     return smis

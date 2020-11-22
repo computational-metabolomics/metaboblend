@@ -121,7 +121,8 @@ class BuildStructuresTestCase(unittest.TestCase):
         for i, ec_product in enumerate(ec_products):
             substructure_subset = db.select_substructures(ec_product, "substructures")
             smis = substructure_combination_build(substructure_subset, configs_iso,
-                                                  prescribed_structure=False, isomeric_smiles=True)
+                                                  prescribed_structure=False, isomeric_smiles=True,
+                                                  bond_enthalpies=get_bond_enthalpies())
 
             self.assertEqual(len(smis.keys()), lens[i])
 
@@ -440,7 +441,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         mol_out = [None, "*[CH]1(O)OC2**[CH](O)(C(O)C2O)[CH]1(*)O", "*C[CH](N)(C(=O)O)c1(*)ccc(O)cc1"]
 
         for i in range(len(atoms_available)):
-            mol_e = add_bonds(mol_comb[i], edges[i], atoms_available[i], bond_types[i])
+            mol_e, total_bde = add_bonds(mol_comb[i], edges[i], atoms_available[i], bond_types[i], get_bond_enthalpies())
 
             if i == 0:
                 self.assertTrue(mol_e is None)
