@@ -22,6 +22,7 @@
 
 import unittest
 import shutil
+import filecmp
 import tempfile
 from metaboblend.build_structures import *
 from metaboblend.databases import *
@@ -176,7 +177,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(
                     generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
-                                        path_sql_out=self.to_test_results("results.sqlite"),
+                                        write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                                         minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
@@ -202,7 +203,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test prescribed building
                 returned_smis = list(
                     generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
-                                        path_sql_out=self.to_test_results("results.sqlite"),
+                                        write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                                         minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
@@ -232,7 +233,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(
                 generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
-                                    path_sql_out=self.to_test_results("results.sqlite"),
+                                    write_csv_output=True, path_out=self.to_test_results(),
                                     max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                                     minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
@@ -278,7 +279,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(annotate_msn(
                     ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    path_sql_out=self.to_test_results("results.sqlite"),
+                    write_csv_output=True, path_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smi_dict=True, isomeric_smiles=True
@@ -307,7 +308,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
                 ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                path_sql_out=self.to_test_results("annotate_multi", "results.sqlite"),
+                path_out=self.to_test_results("annotate_multi"), write_csv_output=True,
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smi_dict=True,
@@ -316,8 +317,45 @@ class BuildStructuresTestCase(unittest.TestCase):
 
             for i, record_dict in enumerate(record_dicts.values()):
                 self.assertEqual(len(set(returned_smi_list[i][record_dict["HMDB_ID"]].keys())), overall_lens[i])
-
+        
         db.close()
+
+    def test_results_db(self):
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+
+        ms_data = {}
+        for i, record_dict in enumerate(record_dicts.values()):
+            record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+            ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                      record_dict["O"], record_dict["P"], record_dict["S"]],
+                                               "exact_mass": record_dict["exact_mass"],
+                                               "fragment_masses": fragments}
+
+        os.mkdir(self.to_test_results("test_results_db"))
+
+        list(annotate_msn(
+            ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+            path_out=self.to_test_results("test_results_db"), write_csv_output=True,
+            path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+            path_substructure_db=self.to_test_data("substructures.sqlite"),
+            minimum_frequency=None, yield_smi_dict=True,
+            isomeric_smiles=True
+        ))
+
+        # is the sqlite database the size we expect?
+        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 61440)
+
+        # do the files generated by ResultsDb match what we expect? if not, find differences
+        self.assertTrue(filecmp.cmp(self.to_test_results("test_results_db", "metaboblend_queries.csv"),
+                                    self.to_test_data("metaboblend_queries.csv"),
+                                    shallow=False))
+
+        self.assertTrue(filecmp.cmp(self.to_test_results("test_results_db", "metaboblend_structures.csv"),
+                                    self.to_test_data("metaboblend_structures.csv"),
+                                    shallow=False))
 
     def test_gen_subs_table(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")

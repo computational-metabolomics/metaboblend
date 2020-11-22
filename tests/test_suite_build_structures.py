@@ -36,4 +36,4 @@ if __name__ == '__main__':
     suite.addTest(unittest.findTestCases(test_build_structures))
 
     report = os.path.join(os.path.abspath(os.path.join(__file__, os.pardir)), 'results', 'results_test_suite_build_structures')
-    runTestSuite(suite, report, title='Process Test Suite Report',verbosity=2)
+    runTestSuite(suite, report, title='Process Test Suite Report', verbosity=2)
