@@ -83,7 +83,7 @@ class DatabasesTestCase(unittest.TestCase):
         with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
             filtered_records = pickle.load(test_hmdbs)
 
-        record_gen = filter_records(parsed_records.values())
+        record_gen = filter_records(parsed_records.values(), isomeric_smiles=True)
         test_filtered_records = {}
         for record in record_gen:
             del record["mol"]
@@ -150,7 +150,7 @@ class DatabasesTestCase(unittest.TestCase):
 
         for edges in [[(0, 1, 2, 22, 3, 16, 17, 18, 19, 20, 21), (0, 1, 2, 22, 3, 4, 16, 17, 18, 19, 20)]]:
             for i, edge_idx in enumerate(edges):
-                lib = get_substructure(mol, edge_idx)
+                lib = get_substructure(mol, edge_idx, isomeric_smiles=True)
                 del lib["mol"]
                 self.assertEqual(lib, libs[i])
 
@@ -188,8 +188,8 @@ class DatabasesTestCase(unittest.TestCase):
     def test_create_substructure_database(self):
         records = [self.to_test_data(r + ".xml") for r in ["HMDB0000073", "HMDB0000122", "HMDB0000158", "HMDB0000186"]]
 
-        create_substructure_database(records,
-                                     self.to_test_results("test_db.sqlite"), 4, 8, method="exhaustive")
+        create_substructure_database(records, self.to_test_results("test_db.sqlite"), 4, 8, method="exhaustive",
+                                     isomeric_smiles=True)
 
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
@@ -259,7 +259,8 @@ class DatabasesTestCase(unittest.TestCase):
             record = self.to_test_data(record + ".xml")
 
             update_substructure_database(self.to_test_data(record),
-                                         self.to_test_results("test_db.sqlite"), 4, 8, method="exhaustive")
+                                         self.to_test_results("test_db.sqlite"), 4, 8,
+                                         method="exhaustive", isomeric_smiles=True)
 
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
@@ -328,7 +329,8 @@ class DatabasesTestCase(unittest.TestCase):
             record = self.to_test_data(record + ".xml")
 
             update_substructure_database(self.to_test_data(record),
-                                         self.to_test_results("test_db.sqlite"), 1, 1, method="exhaustive")
+                                         self.to_test_results("test_db.sqlite"), 1, 1,
+                                         method="exhaustive", isomeric_smiles=True)
 
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
