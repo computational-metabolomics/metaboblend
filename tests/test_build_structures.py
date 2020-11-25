@@ -180,7 +180,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                                         write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                        minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
@@ -193,7 +193,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
                 )
 
-                self.assertEqual(set(build_smis.keys()), returned_smis)
+                self.assertEqual(set(build_smis.keys()), set(returned_smis))
 
                 ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                            record_dict["O"], record_dict["P"], record_dict["S"]],
@@ -206,7 +206,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                                         write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                        minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
@@ -220,7 +220,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     ncpus=None, table_name="substructures", clean=True, isomeric_smiles=True
                 )
 
-                self.assertEqual(set(build_smis.keys()), returned_smis)
+                self.assertEqual(set(build_smis.keys()), set(returned_smis))
 
             ms_data = {}
             for i, record_dict in enumerate(record_dicts.values()):
@@ -236,7 +236,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                                     write_csv_output=True, path_out=self.to_test_results(),
                                     max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                    minimum_frequency=None, yield_smi_set=True, isomeric_smiles=True))
+                                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
 
             for i, record_dict in enumerate(record_dicts.values()):
                 build_smis = build(
@@ -248,7 +248,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
                 )
 
-                self.assertEqual(set(build_smis.keys()), returned_smi_list[i][record_dict["HMDB_ID"]])
+                self.assertEqual(set(build_smis.keys()), set(returned_smi_list[i][record_dict["HMDB_ID"]]))
 
         db.close()
 
@@ -282,18 +282,18 @@ class BuildStructuresTestCase(unittest.TestCase):
                     write_csv_output=True, path_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_dict=True, isomeric_smiles=True
+                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True
                 ))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
-                self.assertEqual(len([freq for freq in set(returned_smis.values()) if freq > 1]), freqs[i])
+                self.assertEqual(len([t[1] for t in returned_smis if t[1] > 1]), freqs[i])
 
                 if smis[i] is not None:
-                    self.assertEqual(set(returned_smis.keys()), smis[i])
+                    self.assertEqual(set(t[0] for t in returned_smis), smis[i])
 
                 if i == 0:
-                    self.assertEqual(returned_smis['NCCc1ccc(O)c(O)c1'], 3)
+                    self.assertEqual(returned_smis[2][1], 3)
 
             ms_data = {}
             for i, record_dict in enumerate(record_dicts.values()):
@@ -311,12 +311,12 @@ class BuildStructuresTestCase(unittest.TestCase):
                 path_out=self.to_test_results("annotate_multi"), write_csv_output=True,
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
-                minimum_frequency=None, yield_smi_dict=True,
+                minimum_frequency=None, yield_smis=True,
                 isomeric_smiles=True
             ))
 
             for i, record_dict in enumerate(record_dicts.values()):
-                self.assertEqual(len(set(returned_smi_list[i][record_dict["HMDB_ID"]].keys())), overall_lens[i])
+                self.assertEqual(len(returned_smi_list[i][record_dict["HMDB_ID"]]), overall_lens[i])
         
         db.close()
 
@@ -341,7 +341,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             path_out=self.to_test_results("test_results_db"), write_csv_output=True,
             path_connectivity_db=self.to_test_data("connectivity.sqlite"),
             path_substructure_db=self.to_test_data("substructures.sqlite"),
-            minimum_frequency=None, yield_smi_dict=True,
+            minimum_frequency=None, yield_smis=True,
             isomeric_smiles=True
         ))
 
