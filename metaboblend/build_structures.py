@@ -1069,21 +1069,21 @@ def build_from_subsets(exact_subset, mf, table_name, db):
 
 def get_bond_enthalpies():
 
-    return {1.0:   {'C': {'C': 348, 'N': 305, 'O': 360, 'P': 264, 'S': 272},
-                         'N': {'C': 305, 'N': 163, 'O': 222, 'P': None, 'S': None},
-                         'O': {'C': 360, 'N': 222, 'O': 146, 'P': 335, 'S': None},
-                         'P': {'C': 264, 'N': None, 'O': 335, 'P': 201, 'S': None},
-                         'S': {'C': 272, 'N': None, 'O': None, 'P': None, 'S': 226}},
-            1.5: {'C': {'C': 837, 'N': 890, 'O': None, 'P': None, 'S': None},
-                         'N': {'C': 890, 'N': 944, 'O': None, 'P': None, 'S': None},
-                         'O': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
-                         'P': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
-                         'S': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None}},
-            2.0:   {'C': {'C': 612, 'N': 613, 'O': 743, 'P': None, 'S': 573},
-                         'N': {'C': 613, 'N': 409, 'O': 607, 'P': None, 'S': None},
-                         'O': {'C': 743, 'N': 607, 'O': 496, 'P': 544, 'S': 522},
-                         'P': {'C': None, 'N': None, 'O': 544, 'P': None, 'S': 335},
-                         'S': {'C': 573, 'N': None, 'O': 522, 'P': 335, 'S': 425}}}
+    return {1.0: {'C': {'C':  348, 'N':  305, 'O':  360, 'P':  264, 'S':  272},
+                  'N': {'C':  305, 'N':  163, 'O':  222, 'P': None, 'S': None},
+                  'O': {'C':  360, 'N':  222, 'O':  146, 'P':  335, 'S': None},
+                  'P': {'C':  264, 'N': None, 'O':  335, 'P':  201, 'S': None},
+                  'S': {'C':  272, 'N': None, 'O': None, 'P': None, 'S':  226}},
+            1.5: {'C': {'C':  837, 'N':  890, 'O': None, 'P': None, 'S': None},
+                  'N': {'C':  890, 'N':  944, 'O': None, 'P': None, 'S': None},
+                  'O': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
+                  'P': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None},
+                  'S': {'C': None, 'N': None, 'O': None, 'P': None, 'S': None}},
+            2.0: {'C': {'C':  612, 'N':  613, 'O':  743, 'P': None, 'S':  573},
+                  'N': {'C':  613, 'N':  409, 'O':  607, 'P': None, 'S': None},
+                  'O': {'C':  743, 'N':  607, 'O':  496, 'P':  544, 'S':  522},
+                  'P': {'C': None, 'N': None, 'O':  544, 'P': None, 'S':  335},
+                  'S': {'C':  573, 'N': None, 'O':  522, 'P':  335, 'S':  425}}}
 
 
 def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles, bond_enthalpies):
