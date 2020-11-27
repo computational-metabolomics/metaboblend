@@ -506,7 +506,8 @@ class SubstructureDb:
                                    smiles TEXT)""")
 
         self.cursor.execute("""CREATE TABLE substructures (
-                                   smiles TEXT PRIMARY KEY, 
+                                   substructure_id INTEGER PRIMARY KEY,
+                                   smiles TEXT NOT NULL UNIQUE, 
                                    heavy_atoms INTEGER,
                                    length INTEGER,
                                    exact_mass__1 INTEGER,
@@ -527,8 +528,9 @@ class SubstructureDb:
 
         self.cursor.execute("""CREATE TABLE hmdbid_substructures (
                                    hmdbid TEXT,
-                                   smiles,
-                                   PRIMARY KEY (hmdbid, smiles))""")
+                                   substructure_id INTEGER,
+                                   PRIMARY KEY (hmdbid, substructure_id),
+                                   FOREIGN KEY (substructure_id) REFERENCES substructures(substructure_id))""")
 
     def create_indexes(self, table="substructures", selection="all"):
         """Creates indexes for the `substructures` table for use by the build method."""
@@ -1075,6 +1077,8 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike, None]
     if ha_min is None:
         ha_min = 0
 
+    substructure_id = 0
+
     for record_dict in filter_records(records, isomeric_smiles=isomeric_smiles):
         if not substructures_only:
             cursor.execute("""INSERT OR IGNORE INTO compounds (
@@ -1236,10 +1240,12 @@ def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_
                           :mol)""", sub_smi_dict)
 
     if not substructures_only:
+        cursor.execute("SELECT substructure_id FROM substructures WHERE smiles = '%s'" % sub_smi_dict["smiles"])
+
         cursor.execute("""INSERT OR IGNORE INTO hmdbid_substructures (
                               hmdbid, 
-                              smiles) 
-                          VALUES ("%s", "%s")""" % (record_dict['HMDB_ID'], smiles_rdkit))
+                              substructure_id) 
+                          VALUES ('{}', {})""".format(record_dict['HMDB_ID'], cursor.fetchall()[0][0]))
 
 
 def create_connectivity_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,
