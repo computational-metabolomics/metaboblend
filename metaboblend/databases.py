@@ -281,43 +281,34 @@ class SubstructureDb:
 
         return substructure_graph
 
-    def get_single_edge(self, substructure_ids):
+    def get_single_edge(self, substructure_id_1, substructure_id_2):
         """
         Get the edge weight corresponding to a subset of substructures
 
-        :param substructure_ids: A list of substructure IDs; weights will be obtained for the combinations.
+        :param substructure_id_1: First substructure ID.
+
+        :param substructure_id_2: Second substructure ID.
+
+        :return: Edge weight between the two supplied substructures.
         """
 
-        substructure_weights = {}
+        if substructure_id_1 == substructure_id_2:
+            edge_weight = None
 
-        for substructure_id_1 in substructure_ids:
-            for substructure_id_2 in substructure_ids:
-
-                small_id = min(substructure_id_1, substructure_id_2)
-                large_id = max(substructure_id_1, substructure_id_2)
-
-                if substructure_id_1 == substructure_id_2:
-                    edge_weight = None
-
-                else:
-                    self.cursor.execute("""SELECT COUNT(*) 
-                                               FROM hmdbid_substructures 
+        else:
+            self.cursor.execute("""SELECT COUNT(*) 
+                                       FROM hmdbid_substructures 
+                                       WHERE substructure_id = {}
+                                       AND hmdbid IN (
+                                           SELECT hmdbid
+                                               FROM hmdbid_substructures
                                                WHERE substructure_id = {}
-                                               AND hmdbid IN (
-                                                   SELECT hmdbid
-                                                       FROM hmdbid_substructures
-                                                       WHERE substructure_id = {}
-                                               )
-                                        """.format(substructure_id_1, substructure_id_2))
+                                       )
+                                """.format(substructure_id_1, substructure_id_2))
 
-                    edge_weight = self.cursor.fetchall()[0][0]
+            edge_weight = self.cursor.fetchall()[0][0]
 
-                try:
-                    substructure_weights[small_id][large_id] = edge_weight
-                except KeyError:
-                    substructure_weights[small_id] = {large_id: edge_weight}
-
-        return substructure_weights
+        return edge_weight
 
     def select_mass_values(self, accuracy, masses, table_name):
         """
@@ -446,7 +437,8 @@ class SubstructureDb:
         subsets = []
         for i in range(len(l_atoms)):
 
-            self.cursor.execute("""SELECT DISTINCT 
+            self.cursor.execute("""SELECT 
+                                   substructure_id,
                                    smiles,
                                    mol, 
                                    bond_types, 
@@ -470,13 +462,14 @@ class SubstructureDb:
             ss = []
             for record in records:
                 ss.append({
-                    "smiles": record[0],
-                    "mol": Chem.Mol(record[1]),
-                    "bond_types": eval(record[2]),
-                    "degree_atoms": eval(record[3]),
-                    "valence": record[4],
-                    "atoms_available": record[5],
-                    "dummies": eval(record[6])
+                    "substructure_id": record[0],
+                    "smiles": record[1],
+                    "mol": Chem.Mol(record[2]),
+                    "bond_types": eval(record[3]),
+                    "degree_atoms": eval(record[4]),
+                    "valence": record[5],
+                    "atoms_available": record[6],
+                    "dummies": eval(record[7])
                 })
 
             subsets.append(ss)
