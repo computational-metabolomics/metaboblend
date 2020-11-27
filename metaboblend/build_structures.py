@@ -305,6 +305,8 @@ class ResultsDb:
 
         self.conn = None
         self.cursor = None
+        
+        self.substructure_combo_id = 0
 
     def connect(self):
         """Connects to the results database."""
@@ -321,7 +323,7 @@ class ResultsDb:
         self.connect()
 
         self.cursor.execute("""CREATE TABLE queries (
-                                   ms_id_num NUMERIC PRIMARY KEY,
+                                   ms_id_num INTEGER PRIMARY KEY,
                                    ms_id TEXT,
                                    exact_mass NUMERIC,
                                    C INTEGER,
@@ -341,27 +343,32 @@ class ResultsDb:
 
         if self.msn:
             self.cursor.execute("""CREATE TABLE spectra (
-                                       ms_id_num NUMERIC,
-                                       fragment_id NUMERIC,
+                                       ms_id_num INTEGER,
+                                       fragment_id INTEGER,
                                        neutral_mass NUMERIC,
                                        PRIMARY KEY (ms_id_num, fragment_id))""")
 
         self.cursor.execute("""CREATE TABLE structures (
-                                   ms_id_num NUMERIC,
+                                   ms_id_num INTEGER,
                                    structure_smiles TEXT,
-                                   frequency NUMERIC,
+                                   frequency INTEGER,
                                    PRIMARY KEY (ms_id_num, structure_smiles))""")
 
         self.cursor.execute("""CREATE TABLE substructures (
-                                           structure_smiles TEXT ,
+                                           substructure_combo_id INTEGER,
+                                           substructure_position_id INTEGER,
+                                           ms_id_num INTEGER,
+                                           structure_smiles TEXT,
+                                           fragment_id INTEGER,
                                            substructure_smiles TEXT,
-                                           PRIMARY KEY (structure_smiles, substructure_smiles))""")
+                                           bde INTEGER,
+                                           PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
 
         self.cursor.execute("""CREATE TABLE results (
-                                   ms_id_num NUMERIC,
-                                   fragment_id NUMERIC,
+                                   ms_id_num INTEGER,
+                                   fragment_id INTEGER,
                                    structure_smiles TEXT,
-                                   bde NUMERIC,
+                                   bde INTEGER,
                                    PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
 
         self.conn.commit()
