@@ -281,6 +281,44 @@ class SubstructureDb:
 
         return substructure_graph
 
+    def get_single_edge(self, substructure_ids):
+        """
+        Get the edge weight corresponding to a subset of substructures
+
+        :param substructure_ids: A list of substructure IDs; weights will be obtained for the combinations.
+        """
+
+        substructure_weights = {}
+
+        for substructure_id_1 in substructure_ids:
+            for substructure_id_2 in substructure_ids:
+
+                small_id = min(substructure_id_1, substructure_id_2)
+                large_id = max(substructure_id_1, substructure_id_2)
+
+                if substructure_id_1 == substructure_id_2:
+                    edge_weight = None
+
+                else:
+                    self.cursor.execute("""SELECT COUNT(*) 
+                                               FROM hmdbid_substructures 
+                                               WHERE substructure_id = {}
+                                               AND hmdbid IN (
+                                                   SELECT hmdbid
+                                                       FROM hmdbid_substructures
+                                                       WHERE substructure_id = {}
+                                               )
+                                        """.format(substructure_id_1, substructure_id_2))
+
+                    edge_weight = self.cursor.fetchall()[0][0]
+
+                try:
+                    substructure_weights[small_id][large_id] = edge_weight
+                except KeyError:
+                    substructure_weights[small_id] = {large_id: edge_weight}
+
+        return substructure_weights
+
     def select_mass_values(self, accuracy, masses, table_name):
         """
         Gets mass values from a table of substructures. Can limit results based on mass at integer level. Used by
