@@ -257,21 +257,27 @@ class SubstructureDb:
 
     def get_substructure_network(self):
         """
+        Converts the SQLite 3 network representation to a :py:meth:`networkx.Graph` object.
 
-        # add edges by walking through hmdbid_substructures
-        for unique_hmdb_id in unique_hmdb_ids:
-            self.cursor.execute("""SELECT * FROM hmdbid_substructures 
-                                       WHERE smiles IN (SELECT smiles FROM filtered_hmdbid_substructures) 
-                                       AND hmdbid = '%s'""" % unique_hmdb_id)
-            nodes = []
-            for substructure in self.cursor.fetchall():
-                for node in nodes:
-                    if substructure_graph.has_edge(substructure[1], node):
-                        substructure_graph[substructure[1]][node]['weight'] += 1
-                    else:
-                        substructure_graph.add_edge(substructure[1], node, weight=1)
+        :return: A :py:meth:`networkx.Graph` object containing the generated network.
+        """
 
-                nodes.append(substructure[1])
+        substructure_graph = nx.Graph()
+
+        self.cursor.execute("""SELECT substructure_id, COUNT(*) 
+                                   FROM filtered_hmdbid_substructures
+                                   GROUP BY substructure_id
+                            """)
+
+        for substructure in self.cursor.fetchall():
+            substructure_graph.add_node(substructure[0], weight=substructure[1])
+
+        self.cursor.execute("SELECT * FROM substructure_graph")
+
+        for edge in self.cursor.fetchall():
+            substructure_graph.add_edge(edge[0], edge[1], weight=edge[2])
+
+        substructure_graph.remove_nodes_from(list(nx.isolates(substructure_graph)))
 
         return substructure_graph
 
