@@ -424,7 +424,7 @@ class ResultsDb:
 
         self.conn.commit()
 
-    def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None):
+    def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None, retain_substructures=False):
         """
         Record which smiles were generated for a given fragment mass.
 
@@ -436,6 +436,8 @@ class ResultsDb:
         :param fragment_mass: The neutral fragment mass that has been annotated.
 
         :param fragment_id: The unique identifier for the fragment mass that has been annotated.
+
+        :param retain_substructures: If True, record substructures in the results DB.
         """
 
         if self.msn:
@@ -452,27 +454,43 @@ class ResultsDb:
             fragment_id = "NULL"
 
         for structure_smiles in smi_dict.keys():
+
             self.cursor.execute("""INSERT OR IGNORE INTO results (
                                        ms_id_num,
                                        fragment_id,
                                        structure_smiles,
                                        bde
-                                   ) VALUES ('{}', '{}', '{}', '{}')""".format(
+                                   ) VALUES ({}, {}, '{}', {})""".format(
                                        ms_id_num,
                                        fragment_id,
                                        structure_smiles,
-                                       smi_dict[structure_smiles][0]
+                                       min(smi_dict[structure_smiles]["bdes"])
                                    ))
 
-            for substructure_smiles in smi_dict[structure_smiles][1]:
+            if retain_substructures:
+                for i in range(len(smi_dict[structure_smiles]["substructures"])):  # for each combination
 
-                self.cursor.execute("""INSERT OR IGNORE INTO substructures (
-                                                   structure_smiles,
-                                                   substructure_smiles
-                                               ) VALUES ('{}', '{}')""".format(
-                                                   structure_smiles,
-                                                   substructure_smiles
-                                               ))
+                    for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
+
+                        self.cursor.execute("""INSERT INTO substructures (
+                                                           substructure_combo_id,
+                                                           substructure_position_id,
+                                                           ms_id_num,
+                                                           fragment_id,
+                                                           structure_smiles,
+                                                           substructure_smiles,
+                                                           bde
+                                                       ) VALUES ({}, {}, {}, {}, '{}', '{}', {})""".format(
+                                                           self.substructure_combo_id,
+                                                           j,
+                                                           ms_id_num,
+                                                           fragment_id,
+                                                           structure_smiles,
+                                                           substructure,
+                                                           smi_dict[structure_smiles]["bdes"][i]
+                                                       ))
+
+                    self.substructure_combo_id += 1
 
         self.conn.commit()
 
@@ -563,7 +581,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                  hydrogenation_allowance: int = 2,
                  yield_smis: bool = True,
                  isomeric_smiles: bool = False,
-                 write_csv_output: bool = True
+                 write_csv_output: bool = True,
+                 retain_substructures: bool = False
                  ) -> Dict[str, Sequence[Dict[str, int]]]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
@@ -627,6 +646,8 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
 
     :param write_csv_output: Whether to extract results from the SQLite3 database for deposition in CSV files.
 
+    :param retain_substructures: Whether to record the substructures used to generate final structures.
+
     :return: For each input molecule yields a dictionary whose keys are SMILEs strings for the generated
         structures and values are the number of `fragment_masses` by which the structure was built (unless
         `yield_smi_dict = False`).
@@ -674,11 +695,12 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                     table_name=table_name,
                     ncpus=ncpus,
                     clean=False,
-                    isomeric_smiles=isomeric_smiles
+                    isomeric_smiles=isomeric_smiles,
+                    retain_substructures=retain_substructures
                 )
 
-                results_db.add_results(i, smi_dict, fragment_mass, j)
-                fragment_smis = None
+                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
+                smi_dict = None
 
         results_db.calculate_frequencies(i)
 
@@ -706,6 +728,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
                         yield_smis: bool = True,
                         isomeric_smiles: bool = False,
                         write_csv_output: bool = True,
+                        retain_substructures: bool = False
                         ) -> Dict[str, Sequence[set]]:
     """
     Generate molecules of a given mass using chemical substructures and connectivity graphs. Can optionally take a
@@ -810,10 +833,13 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
             table_name=table_name,
             ncpus=ncpus,
             clean=False,
-            isomeric_smiles=isomeric_smiles
+            isomeric_smiles=isomeric_smiles,
+            retain_substructures=retain_substructures
         )
 
         results_db.add_results(i, smi_dict, ms_data[ms_id]["prescribed_masses"])
+        smi_dict = None
+
         results_db.calculate_frequencies(i)
 
         if yield_smis:
@@ -826,7 +852,7 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
 
 
 def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substructure_db,
-          prescribed_mass, ppm, ncpus, table_name, clean, isomeric_smiles):
+          prescribed_mass, ppm, ncpus, table_name, clean, isomeric_smiles, retain_substructures):
     """
     Core function for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -863,6 +889,8 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     :param clean: Whether to remove the temporary table of substructures, table_name`, after the method is complete.
 
     :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
+
+    :param retain_substructures: Whether to record the substructures used to generate final structures.
 
     :return: Returns a set of unique SMILEs strings.
     """
@@ -933,7 +961,7 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
         smi_dicts = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
                     prescribed_structure=prescribed_mass, isomeric_smiles=isomeric_smiles,
-                    bond_enthalpies=get_bond_enthalpies()),
+                    bond_enthalpies=get_bond_enthalpies(), retain_substructures=retain_substructures),
             substructure_subsets
         )
 
@@ -941,10 +969,10 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     for d in smi_dicts:
         for k in d.keys():
             try:
-                smi_dict[k][1].update(d[k][1])
+                smi_dict[k]["bdes"] += d[k]["bdes"]
 
-                if d[k][0] < smi_dict[k][0]:
-                    smi_dict[k][0] = d[k][0]
+                if retain_substructures:
+                    smi_dict[k]["substructures"] += d[k]["substructures"]
 
             except KeyError:
                 smi_dict[k] = d[k]
@@ -1093,7 +1121,8 @@ def get_bond_enthalpies():
                   'S': {'C':  573, 'N': None, 'O':  522, 'P':  335, 'S':  425}}}
 
 
-def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles, bond_enthalpies):
+def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles,
+                                   bond_enthalpies, retain_substructures):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -1171,15 +1200,18 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
             except RuntimeError:
                 continue  # bad bond type violation
 
-            final_substructures = set(subs["smiles"] for subs in substructure_combination)
+            final_substructures = [subs["smiles"] for subs in substructure_combination]
 
             try:
-                smis[final_structure][1].update(final_substructures)
+                smis[final_structure]["bdes"].append(total_bde)
 
-                if total_bde < smis[final_structure][0]:
-                    smis[final_structure][0] = total_bde
+                if retain_substructures:
+                    smis[final_structure]["substructures"].append(final_substructures)
 
             except KeyError:
-                smis[final_structure] = [total_bde, final_substructures]
+                smis[final_structure] = {"bdes": [total_bde]}
+
+                if retain_substructures:
+                    smis[final_structure]["substructures"] = [final_substructures]
 
     return smis
