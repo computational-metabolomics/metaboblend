@@ -184,14 +184,15 @@ class SubstructureDb:
         :param min_node_weight: Minimal count of the substructure within 'hmdbid_substructures'.
         """
 
-        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
         self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
 
-        self.cursor.execute("CREATE TABLE unique_hmdbid AS SELECT DISTINCT hmdbid FROM compounds")
-
         self.cursor.execute("""CREATE TABLE filtered_hmdbid_substructures AS
-                                   SELECT smiles, COUNT(*) FROM hmdbid_substructures
-                                   GROUP BY smiles HAVING COUNT(*) >=%s""" % min_node_weight)
+                                    SELECT * FROM hmdbid_substructures 
+                                    WHERE substructure_id IN (
+                                        SELECT substructure_id FROM hmdbid_substructures
+                                        GROUP BY substructure_id HAVING COUNT(*) >=%s
+                                    )
+                            """ % min_node_weight)
 
     def generate_substructure_network(self, method="default", min_node_weight=2, remove_isolated=False):
         """
