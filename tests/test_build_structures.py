@@ -71,7 +71,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
                     prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures",
-                    isomeric_smiles=True
+                    isomeric_smiles=True, retain_substructures=True
                 )
 
                 j = 0
@@ -94,7 +94,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     prescribed_mass=fragments[i], ppm=15, clean=True,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    ncpus=None, table_name="substructures", isomeric_smiles=True
+                    ncpus=None, table_name="substructures", isomeric_smiles=True,
+                    retain_substructures=False
                 )
 
                 j = 0
@@ -122,7 +123,8 @@ class BuildStructuresTestCase(unittest.TestCase):
             substructure_subset = db.select_substructures(ec_product, "substructures")
             smis = substructure_combination_build(substructure_subset, configs_iso,
                                                   prescribed_structure=False, isomeric_smiles=True,
-                                                  bond_enthalpies=get_bond_enthalpies())
+                                                  bond_enthalpies=get_bond_enthalpies(),
+                                                  retain_substructures=False)
 
             self.assertEqual(len(smis.keys()), lens[i])
 
@@ -180,7 +182,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                                         write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                        retain_substructures=True))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
@@ -190,7 +193,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     exact_mass=record_dict["exact_mass"],
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
+                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True,
+                    retain_substructures=True
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -206,7 +210,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                                         write_csv_output=True, path_out=self.to_test_results(),
                                         max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                         path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                        retain_substructures=False))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
@@ -214,7 +219,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3,
-                    prescribed_mass=fragments[i], ppm=0,
+                    prescribed_mass=fragments[i], ppm=0, retain_substructures=False,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
                     ncpus=None, table_name="substructures", clean=True, isomeric_smiles=True
@@ -236,13 +241,14 @@ class BuildStructuresTestCase(unittest.TestCase):
                                     write_csv_output=True, path_out=self.to_test_results(),
                                     max_degree=6, max_atoms_available=2, max_n_substructures=3,
                                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True))
+                                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                    retain_substructures=False))
 
             for i, record_dict in enumerate(record_dicts.values()):
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"],
+                    exact_mass=record_dict["exact_mass"], retain_substructures=False,
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
                     prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
@@ -279,7 +285,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(annotate_msn(
                     ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    write_csv_output=True, path_out=self.to_test_results(),
+                    write_csv_output=True, retain_substructures=False, path_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
                     minimum_frequency=None, yield_smis=True, isomeric_smiles=True
@@ -312,7 +318,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
                 minimum_frequency=None, yield_smis=True,
-                isomeric_smiles=True
+                isomeric_smiles=True, retain_substructures=False
             ))
 
             for i, record_dict in enumerate(record_dicts.values()):
@@ -342,11 +348,11 @@ class BuildStructuresTestCase(unittest.TestCase):
             path_connectivity_db=self.to_test_data("connectivity.sqlite"),
             path_substructure_db=self.to_test_data("substructures.sqlite"),
             minimum_frequency=None, yield_smis=True,
-            isomeric_smiles=True
+            isomeric_smiles=True, retain_substructures=True
         ))
 
         # is the sqlite database the size we expect?
-        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 61440)
+        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 53248)
 
         # are the csv files the same as the reference?
         with open(self.to_test_results("test_results_db", "metaboblend_queries.csv"), "r") as results_file, \
