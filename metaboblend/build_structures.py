@@ -349,7 +349,7 @@ class ResultsDb:
                                        neutral_mass NUMERIC,
                                        PRIMARY KEY (ms_id_num, fragment_id))""")
 
-        self.cursor.execute("""CREATE TABLE structures (
+        self.cursor.execute("""CREATE TABLE structure_frequencies (
                                    ms_id_num INTEGER,
                                    structure_smiles TEXT,
                                    frequency INTEGER,
@@ -364,21 +364,21 @@ class ResultsDb:
                                            substructure_id INTEGER,
                                            PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
 
-        self.cursor.execute("""CREATE TABLE substructure_cooccurrence (
-                                   substructure_combo_id INTEGER PRIMARY KEY,
-                                   ms_id_num INTEGER,
-                                   fragment_id INTEGER,
-                                   bde INTEGER,
-                                   mean NUMERIC,
-                                   min INTEGER,
-                                   max INTEGER,
-                                   actual TEXT)""")
-
         self.cursor.execute("""CREATE TABLE results (
                                    ms_id_num INTEGER,
                                    fragment_id INTEGER,
                                    structure_smiles TEXT,
                                    bde INTEGER,
+                                   PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
+
+        self.cursor.execute("""CREATE TABLE filtered_results (
+                                   ms_id_num INTEGER,
+                                   fragment_id INTEGER,
+                                   structure_smiles TEXT,
+                                   bde INTEGER,
+                                   min_cooccurrence NUMERIC,
+                                   max_cooccurrence NUMERIC,
+                                   mean_cooccurrence NUMERIC,
                                    PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
 
         self.conn.commit()
@@ -435,7 +435,7 @@ class ResultsDb:
         self.conn.commit()
 
     def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None,
-                    retain_substructures=False, db=None):
+                    retain_substructures=False):
         """
         Record which smiles were generated for a given fragment mass.
 
@@ -483,29 +483,6 @@ class ResultsDb:
             if retain_substructures:
                 for i in range(len(smi_dict[structure_smiles]["substructures"])):  # for each combination
 
-                    substructure_combinations = itertools.combinations(smi_dict[structure_smiles]["substructures"][i], 2)
-                    substructure_cooccurrence = [db.get_single_edge(co[0], co[1]) for co in substructure_combinations]
-
-                    self.cursor.execute("""INSERT INTO substructure_cooccurrence (
-                                                       substructure_combo_id,
-                                                       ms_id_num,
-                                                       fragment_id,
-                                                       bde,
-                                                       mean,
-                                                       min,
-                                                       max,
-                                                       actual
-                                                   ) VALUES ({}, {}, {}, {}, {}, {}, {}, '{}')""".format(
-                                                       self.substructure_combo_id,
-                                                       ms_id_num,
-                                                       fragment_id,
-                                                       smi_dict[structure_smiles]["bdes"][i],
-                                                       statistics.mean(substructure_cooccurrence),
-                                                       min(substructure_cooccurrence),
-                                                       max(substructure_cooccurrence),
-                                                       str(substructure_cooccurrence)
-                                                   ))
-
                     for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
 
                         self.cursor.execute("""INSERT INTO substructures (
@@ -535,35 +512,92 @@ class ResultsDb:
         :param ms_id_num: Unique identifier for the annotation of a single metabolite.
         """
 
-        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency) 
+        self.cursor.execute("""INSERT INTO structure_frequencies (ms_id_num, structure_smiles, frequency) 
                                    SELECT ms_id_num, structure_smiles, COUNT(*)
                                    FROM results 
                                    WHERE ms_id_num = {}
                                    GROUP BY structure_smiles""".format(ms_id_num))
 
-    def get_edge_weights(self, ms_id_num, prop_results=0.7):
-        """
+    def get_substructure_cooccurrences(self, ms_id_num, db, prop_results=0.7):
+        """Get substructure cooccurrence scores for a given ms_id_num."""
 
-        :return:
-        """
-
-        self.cursor.execute("""SELECT * 
-                                   FROM substructures 
-                                   WHERE structure_smiles IN (
-                                       SELECT structure_smiles FROM structures 
-                                           WHERE ms_id_num = {} 
-                                           AND frequency >= {} * (
-                                               SELECT MAX(frequency)
-                                                   WHERE ms_id_num = {}
-                                           )
-                                   )  
+        self.cursor.execute("""SELECT structure_smiles
+                                   FROM structure_frequencies
+                                   WHERE ms_id_num = {} 
+                                   AND frequency >= {} * (
+                                       SELECT MAX(frequency)
+                                           FROM structure_frequencies
+                                           WHERE ms_id_num = {}
+                                   )
                             """.format(
-                                   ms_id_num,
-                                   prop_results,
-                                   ms_id_num
+                                ms_id_num,
+                                prop_results,
+                                ms_id_num
                             ))
 
-        # substructure_edges = db.get_single_edge(smi_dict[structure_smiles]["substructures"][i])
+        for structure in self.cursor.fetchall():
+            self.cursor.execute("""SELECT * 
+                                       FROM results
+                                       WHERE ms_id_num = {}
+                                       AND structure_smiles = '{}'
+                                """.format(
+                                       ms_id_num,
+                                       structure[0]
+                                 ))
+
+            for fragment in self.cursor.fetchall():
+                self.cursor.execute("""SELECT *
+                                           FROM substructures
+                                           WHERE ms_id_num = {}
+                                           AND fragment_id = {}
+                                    """.format(
+                                           ms_id_num,
+                                           fragment[1]
+                                    ))
+
+                substructures = {}
+
+                for substructure in self.cursor.fetchall():
+                    if substructure[0] in substructures.keys():  # part of a seen set of substructures
+                        for connected_substructure in substructures[substructure[0]]["substructures"]:
+                            substructures[substructure[0]]["cooccurrences"].append(db.get_single_edge(
+                                connected_substructure,
+                                substructure[1]
+                            ))
+
+                            substructures[substructure[0]]["edge"].append((connected_substructure, substructure[1]))
+
+                        substructures[substructure[0]]["substructures"].append(substructure[1])
+
+                    else:
+                        substructures[substructure[0]] = {"substructures": [substructure[1]]}
+                        substructures[substructure[0]]["cooccurrences"] = []
+                        substructures[substructure[0]]["edge"] = []
+
+                # summarise connectivity score
+                substructure_scores = []
+                for substructures_score in substructures.values():
+                    substructure_scores.append(sum(substructures_score["cooccurrences"]))
+
+                # add to filtered results
+                self.cursor.execute("""INSERT INTO filtered_results (
+                                           ms_id_num,
+                                           fragment_id,
+                                           structure_smiles,
+                                           bde,
+                                           min_cooccurrence,
+                                           max_cooccurrence,
+                                           mean_cooccurrence
+                                       ) VALUES ({}, {}, '{}', {}, {}, {}, {})
+                                    """.format(
+                                           fragment[0],
+                                           fragment[1],
+                                           fragment[2],
+                                           fragment[3],
+                                           min(substructure_scores),
+                                           max(substructure_scores),
+                                           statistics.mean(substructure_scores)
+                                    ))
 
     def get_structures(self, ms_id_num):
         """
@@ -582,7 +616,7 @@ class ResultsDb:
         else:
             msn_str = ""
 
-        self.cursor.execute("""SELECT structure_smiles{} FROM structures 
+        self.cursor.execute("""SELECT structure_smiles{} FROM structure_frequencies 
                                    WHERE ms_id_num = {}
                             """.format(msn_str, ms_id_num))
 
@@ -613,7 +647,7 @@ class ResultsDb:
 
             ms_writer.writerow(["ms_id", "smiles", "frequency", "exact_mass", "C", "H", "N", "O", "P", "S"])
 
-            self.cursor.execute("SELECT * FROM structures")
+            self.cursor.execute("SELECT * FROM structure_frequencies")
 
             for structure in self.cursor.fetchall():
                 ms_writer.writerow(structure)
@@ -757,10 +791,11 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                     retain_substructures=retain_substructures
                 )
 
-                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures, db)
+                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
                 smi_dict = None
 
         results_db.calculate_frequencies(i)
+        results_db.get_substructure_cooccurrences(i, db)
 
         if yield_smis:
             yield {ms_id: results_db.get_structures(i)}
