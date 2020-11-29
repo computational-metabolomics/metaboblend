@@ -566,7 +566,25 @@ class ResultsDb:
         self.conn.close()
 
 
-def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
+def parse_ms_data(ms_data):
+    """
+    Parse raw data provided by user and yield formatted input data.
+
+    :param ms_data:
+
+    :param annotate_msn:
+
+    :return: None
+    """
+
+    if isinstance(ms_data, dict):
+        for i, ms_id in enumerate(ms_data.keys()):
+            yield [i] + ms_data[ms_id]
+
+    yield None
+
+
+def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int, list]]]],
                  path_substructure_db: Union[str, bytes, os.PathLike] = os.path.realpath(os.getcwd()),
                  path_out: Union[str, bytes, os.PathLike] = "",
                  ppm: int = 5,
@@ -671,22 +689,23 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
         max_degree=max_degree,
         max_atoms_available=max_atoms_available,
         minimum_frequency=minimum_frequency,
-        max_mass=round(max([msn_data[ms_id]["exact_mass"] for ms_id in msn_data.keys()]))
+        max_mass=None
     )
 
-    for i, ms_id in enumerate(msn_data.keys()):
+    # 0: i, 1: ms_id, 2: mc, 3: exact_mass, 4: fragment_masses
+    for ms in parse_ms_data(msn_data):
 
-        results_db.add_ms(msn_data, ms_id, i,
+        results_db.add_ms(msn_data, ms[1], ms[0],
                           [ppm, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, hydrogenation_allowance, isomeric_smiles])
 
-        for j, fragment_mass in enumerate(msn_data[ms_id]["fragment_masses"]):
+        for j, fragment_mass in enumerate(ms[4]):
 
             for k in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
                 hydrogenated_fragment_mass = fragment_mass + (k * 1.007825)  # consider re-arrangements
 
                 smi_dict = build(
-                    mf=msn_data[ms_id]["mf"],
-                    exact_mass=msn_data[ms_id]["exact_mass"],
+                    mf=ms[2],
+                    exact_mass=ms[3],
                     max_n_substructures=max_n_substructures,
                     path_connectivity_db=path_connectivity_db,
                     path_substructure_db=path_substructure_db,
@@ -699,13 +718,13 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
                     retain_substructures=retain_substructures
                 )
 
-                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
+                results_db.add_results(ms[0], smi_dict, fragment_mass, j, retain_substructures)
                 smi_dict = None
 
-        results_db.calculate_frequencies(i)
+        results_db.calculate_frequencies(ms[0])
 
         if yield_smis:
-            yield {ms_id: results_db.get_structures(i)}
+            yield {ms[1]: results_db.get_structures(ms[0])}
 
     if write_csv_output:
         results_db.generate_csv_output()
@@ -714,7 +733,7 @@ def annotate_msn(msn_data: Dict[str, Dict[str, Union[int, list]]],
     results_db.close()
 
 
-def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
+def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int, None]]]],
                         path_substructure_db: Union[str, bytes, os.PathLike],
                         path_out: Union[str, bytes, os.PathLike] = os.path.realpath(os.getcwd()),
                         ha_min: Union[int, None] = 2,
@@ -809,26 +828,27 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
         max_mass=round(max([ms_data[ms_id]["exact_mass"] for ms_id in ms_data.keys()]))
     )
 
-    for i, ms_id in enumerate(ms_data.keys()):
+    # 0: i, 1: ms_id, 2: mc, 3: exact_mass, 4: prescribed_mass
+    for ms in parse_ms_data(ms_data):
 
-        results_db.add_ms(ms_data, ms_id, i,
+        results_db.add_ms(ms_data, ms[1], ms[0],
                           [None, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, None, isomeric_smiles])
 
         ppm = None
 
         try:
-            if ms_data[ms_id]["prescribed_masses"] is not None:
+            if ms[4] is not None:
                 ppm = 0
-        except KeyError:
-            ms_data[ms_id]["prescribed_masses"] = None
+        except IndexError:
+            ms.append(None)
 
         smi_dict = build(
-            mf=ms_data[ms_id]["mf"],
-            exact_mass=ms_data[ms_id]["exact_mass"],
+            mf=ms[2],
+            exact_mass=ms[3],
             max_n_substructures=max_n_substructures,
             path_connectivity_db=path_connectivity_db,
             path_substructure_db=path_substructure_db,
-            prescribed_mass=ms_data[ms_id]["prescribed_masses"],
+            prescribed_mass=ms[4],
             ppm=ppm,
             table_name=table_name,
             ncpus=ncpus,
@@ -837,13 +857,13 @@ def generate_structures(ms_data: Dict[str, Dict[str, Union[int, None]]],
             retain_substructures=retain_substructures
         )
 
-        results_db.add_results(i, smi_dict, ms_data[ms_id]["prescribed_masses"])
+        results_db.add_results(ms[0], smi_dict, ms[4])
         smi_dict = None
 
-        results_db.calculate_frequencies(i)
+        results_db.calculate_frequencies(ms[0])
 
         if yield_smis:
-            yield {ms_id: results_db.get_structures(i)}
+            yield {ms[1]: results_db.get_structures(ms[0])}
 
     if write_csv_output:
         results_db.generate_csv_output()
@@ -1040,6 +1060,12 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
         ha_max_statement = """
                               AND heavy_atoms <= %s""" % str(ha_max)
 
+    if max_mass is None:
+        max_mass_statment = ""
+    else:
+        max_mass_statment = """
+                               exact_mass__1 < %s""" % str(max_mass)
+
     db.cursor.execute("""CREATE TABLE {} AS
                              SELECT * FROM substructures WHERE
                                  atoms_available <= {} AND
@@ -1048,7 +1074,7 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
                       """.format(table_name,
                                  max_atoms_available,
                                  max_degree,
-                                 max_mass,
+                                 max_mass_statment,
                                  freq_statement,
                                  ha_min_statement,
                                  ha_max_statement))
