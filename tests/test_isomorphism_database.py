@@ -67,6 +67,7 @@ class IsomorphDbTestCase(unittest.TestCase):
                                     [1, 2],  # boxes
                                     cls.path_ri
                                     )
+        shutil.copyfile(cls.to_test_results("connectivity.sqlite"), "connectivity.sqlite")
 
     def test_create_connectivity_database(self):
         ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
@@ -77,12 +78,12 @@ class IsomorphDbTestCase(unittest.TestCase):
         test_db_cursor = test_db.cursor()
         test_db_cursor.execute("SELECT * FROM subgraphs")
 
-        ref_rows = {}
-        for row in ref_db_cursor.fetchall():
-            ref_rows[row[0]] = row
-
+        test_rows = {}
         for row in test_db_cursor.fetchall():
-            self.assertEqual(row, ref_rows[row[0]])
+            test_rows[row[0]] = row
+
+        for row in ref_db_cursor.fetchall():
+            self.assertEqual(row, test_rows[row[0]])
 
         ref_db.close()
         test_db.close()
