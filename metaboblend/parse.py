@@ -30,11 +30,17 @@ import xml.etree.ElementTree as ElementTree
 
 def parse_ms_data(ms_data, msn=True):
     """
-    Parse raw data provided by user and yield formatted input data.
+    Parse raw data provided by user and yield formatted input data. Decides what type of data has been provided
+    (i.e. whether a dictionary has been given vs path to MSP file; if a dictionary, checks whether neutral masses
+    need to be calculated from precursor ions).
 
     :param ms_data: Dictionary containing input data or path to an MSP file.
 
-    :return: None
+    :param msn: If True, formats the data for use by :py:meth:`metaboblend.build_structures.annotate_msn`; else, formats
+        input data for use by :py:meth:`metaboblend.build_structures.generate_structures`. Only relevant if a
+        dictionary has been provided.
+
+    :return: Yields a dictionary for use by build functions to generate structures.
     """
 
     if isinstance(ms_data, dict):
@@ -65,16 +71,41 @@ def parse_ms_data(ms_data, msn=True):
 
 
 def precursor_ion_to_neutral_mass(mass, precursor_type):
-    """ Convert precursor ion to predicted neutral mass for substructure searching. """
+    """
+    Convert precursor ion to predicted neutral mass for substructure searching.
+
+    :param mass: Charged mass to be neutralised.
+
+    :param precursor_type: Type of precursor ion.
+
+    :return: Neutral mass.
+    """
 
     # conversions
-    precursor_dict = {"[M+H]+":  1.007276}
+    precursor_dict = {"[M+H]+":  1.007276,
+                      "[M+Na]+": 22.989221,
+                      "[M+K]+": 38.963158,
+                      "[M-H]-": -1.007276,
+                      "[M+Cl]-": 34.969401,
+                      "[M+Na-2H]-": 20.974668,
+                      "[M+K-2H]-": 36.948605,
+                      "[M+Hac-H]-": 59.013853}
 
     return mass - precursor_dict[precursor_type]
 
 
 def precursor_ions_to_neutral_masses(ms_dict, which="both"):
-    """ Convert precursor ion and fragment ions to neutral. """
+    """
+    Convert precursor ion and fragment ions to neutral.
+
+    :param ms_dict: Dictionary used by build functions to generate structures. Converts the precursor ion mass and/or
+        the fragment ions to their respective neutral masses.
+
+    :param which: Whether to convert the precursor ion ("precursor"), the fragment ions ("fragments") or both ("both")
+        to their respective neutral masses. If which is "none", returns the original dictionary.
+
+    :return: Returns `ms_dict` with additional items corresponding to neutralised masses.
+    """
 
     if which == "precursor" or which == "both":
         ms_dict["exact_mass"] = precursor_ion_to_neutral_mass(ms_dict["precursor_mz"],
@@ -92,12 +123,28 @@ def precursor_ions_to_neutral_masses(ms_dict, which="both"):
 
 
 def parse_msp(msp_path):
-    """ Parse msp files and yield data for each compound. """
+    """
+    Parse msp files and yield data for each compound. Accepts MSP files in MoNa or MassBank format. We expect that
+    the following are provided in the MSP:
+
+    - A unique accession ID.
+    - The molecular formula of the compound.
+    - The precursor mz representing the mass of the charged precursor ion.
+    - Fragment mzs representing masses of charged fragment ions.
+    - The type of precursor, e.g. "[M+H]+".
+
+    Code adapted from `msp2db` (https://github.com/computational-metabolomics/msp2db/blob/master/msp2db/parse.py).
+
+    :param msp_path: Path of an MSP file to be converted into a dictionary.
+
+    :return: Dictionary in a form useable by :py:meth:`metaboblend.build_structures.annotate_msn` and
+        :py:meth:`metaboblend.build_structures.generate_structures`.
+    """
 
     meta_parse = get_msp_regex()
     reached_spectra = False
 
-    empty_dict = {"ms_id": None, "mf": None, "precursor_mz": None, "fragment_mzs": []}
+    empty_dict = {"ms_id": None, "mf": None, "precursor_mz": None, "precursor_type": None, "fragment_mzs": []}
     entry_dict = copy.deepcopy(empty_dict)
 
     with open(msp_path, "r") as msp_file:
@@ -134,7 +181,24 @@ def parse_msp(msp_path):
 
 
 def reformat_msp_input(entry_dict):
-    """ Reformat input for use by build functions. """
+    """
+    Reformat input for use by build functions.
+
+    :param entry_dict: Dictionary containing MSn information extracted from an MSP file (by
+        :py:meth:`metaboblend.parse.parse_msp`. The dictionary must contain the following:
+
+        - ms_id - a unique accession number
+        - mf - the molecular formula of the compound (in the format "CXHXNXOXPXSX")
+        - precursor_mz - mz representing the mass of the charged precursor ion
+        - precursor_type - the type of precursor ion (e.g. "[M+H]+")
+        - fragment_mzs - mz(s) representing the mass of charged fragment ions
+
+    :return: If the correct inputs were not provided in the MSP (and, hence, were not available in `entry_dict`),
+        returns None (and generates a warning with i) the accession (if available) and ii) the variable that was not
+        able to be extracted from the MSP). Else, returns the same dictionary after reformatting the molecular formula,
+        using :py:meth:`metaboblend.parse.mc_to_list`, and converting the precursor ions to their corresponding
+        neutral masses.
+    """
 
     if entry_dict["mf"] is not None:  # convert from C5H6... to [5, 6, ...]
         entry_dict["mf"] = mc_to_list(entry_dict["mf"])
@@ -157,7 +221,13 @@ def reformat_msp_input(entry_dict):
 
 
 def mc_to_list(mc):
-    """ Convert molecular formula to list format. """
+    """
+    Convert molecular formula string to list format.
+
+    :param mc: Molecular formula (in the format "C1H2N3O4P5S6")
+
+    :return: Molecular formula (in the format `[1, 2, 3, 4, 5, 6]`)
+    """
 
     if isinstance(mc, list):
         return mc
