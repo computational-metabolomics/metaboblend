@@ -67,7 +67,6 @@ class IsomorphDbTestCase(unittest.TestCase):
                                     [1, 2],  # boxes
                                     cls.path_ri
                                     )
-        shutil.copyfile(cls.to_test_results("connectivity.sqlite"), "connectivity.sqlite")
 
     def test_create_connectivity_database(self):
         ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))

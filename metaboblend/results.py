@@ -45,13 +45,13 @@ class ResultsDb:
         self.substructure_combo_id = 0
 
     def connect(self):
-        """Connects to the results database."""
+        """ Connects to the results database. """
 
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
     def create_results_db(self):
-        """Generates a new results database."""
+        """ Generates a new results database. """
 
         if os.path.exists(self.path_results_db):
             os.remove(self.path_results_db)
@@ -269,9 +269,7 @@ class ResultsDb:
             return [item for t in self.cursor.fetchall() for item in t]
 
     def generate_csv_output(self):
-        """
-        Generate CSV file output for i) queries and tool parameters and ii) structures generated.
-        """
+        """ Generate CSV file output for i) queries and tool parameters and ii) structures generated. """
 
         with open(os.path.join(self.path_results, "metaboblend_queries.csv"), "w", newline="") as results_file, \
                 open(os.path.join(self.path_results, "metaboblend_structures.csv"), "w", newline="") as ms_file:
@@ -296,6 +294,6 @@ class ResultsDb:
                 ms_writer.writerow(structure)
 
     def close(self):
-        """Close the connection to the SQLITE3 database."""
+        """ Close the connection to the SQLITE3 database. """
 
         self.conn.close()
