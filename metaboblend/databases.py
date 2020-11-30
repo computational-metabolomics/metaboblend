@@ -21,13 +21,10 @@
 
 import io
 import os
-import sys
-import subprocess
+import pickle
 import sqlite3
 import tempfile
-import pickle
-from collections import OrderedDict
-import xml.etree.ElementTree as ElementTree
+import subprocess
 import networkx as nx
 from typing import Sequence, Dict, Union
 
@@ -35,95 +32,8 @@ from rdkit import Chem
 from rdkit.Chem import Recap
 from rdkit.Chem import BRICS
 
+from .parse import parse_xml
 from .auxiliary import calculate_complete_multipartite_graphs, graph_to_ri, graph_info, sort_subgraphs
-
-
-def reformat_xml(source, encoding="utf8"):
-    """
-    Reformats HMDB xml files to be compatible with :py:meth:`metaboblend.databases.parse_xml`; some such files do not
-    contain a `<hmdb xmlns="http://www.hmdb.ca">` header.
-
-    :param source: Path to file to be reformatted.
-
-    :param encoding: Encoding of source file.
-
-    :return: Source file destination.
-    """
-
-    with io.open(source, "r", encoding=encoding) as xml:
-        xml_contents = xml.readlines()
-        if "hmdb" in xml_contents[1]:
-            return source
-
-        xml_contents.insert(1, "<hmdb xmlns=\"http://www.hmdb.ca\"> \n")
-
-    with io.open(source, "w", encoding=encoding) as xml:
-        xml_contents = "".join(xml_contents)
-        xml.write(xml_contents)
-        xml.write("</hmdb>")
-
-    return source
-
-
-def parse_xml(source, encoding="utf8", reformat=False):
-    """
-    Parses the contents of HMDB xml files to to extract information for the generation of substructures.
-
-    :param source: Source file destination.
-
-    :param encoding: Encoding of source file.
-
-    :param reformat: Whether to apply :py:meth:`metaboblend.databases.reformat_xml` to the XML file. Is required for
-        XML files recording single metabolites.
-
-        * **True** Add a `<hmdb xmlns="http://www.hmdb.ca">` header to the XML file before parsing.
-
-        * **False** Parse the XML file as it is (recommended if header is present).
-
-    :return: The XML file converted to a dictionary.
-    """
-
-    if reformat:
-        reformat_xml(source, encoding)
-
-    with io.open(source, "r", encoding=encoding) as inp:
-        record_out = OrderedDict()
-
-        inp.readline()
-        inp.readline()
-
-        xml_record = ""
-        path = []
-
-        for line in inp:
-            xml_record += line
-            if line == "</metabolite>\n" or line == "</drug>\n":
-
-                if sys.version_info[0] == 3:
-                    inp = io.StringIO(xml_record)
-                else:
-                    inp = io.BytesIO(xml_record.encode('utf-8').strip())
-
-                for event, elem in ElementTree.iterparse(inp, events=("start", "end")):
-                    if event == 'end':
-                        path.pop()
-
-                    if event == 'start':
-                        path.append(elem.tag)
-                        if elem.text is not None:
-                            if elem.text.replace(" ", "") != "\n":
-
-                                path_elem = ".".join(map(str, path[1:]))
-                                if path_elem in record_out:
-                                    if type(record_out[path_elem]) != list:
-                                        record_out[path_elem] = [record_out[path_elem]]
-                                    record_out[path_elem].append(elem.text)
-                                else:
-                                    record_out[path_elem] = elem.text
-
-                xml_record = ""
-                yield record_out
-                record_out = OrderedDict()
 
 
 class SubstructureDb:

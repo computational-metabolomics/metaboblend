@@ -20,103 +20,22 @@
 #
 
 import os
-import multiprocessing
 import copy
-import itertools
-from functools import partial
-import networkx as nx
 import numpy
-import sqlite3
-import csv
+import itertools
+import multiprocessing
+import networkx as nx
+from functools import partial
 from operator import itemgetter
 from typing import Sequence, Dict, Union
 
 from rdkit import Chem
 
-from .databases import SubstructureDb, get_elements, calculate_exact_mass
 
-
-def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=[]):
-    """
-    Recursive solution for backtracking through the dynamic programming boolean matrix. All possible subsets are found
-
-    :param mass_list: A list of masses from which to identify subsets.
-
-    :param mass: The target mass of the sum of the substructures.
-
-    :param sum_matrix: The dynamic programming boolean matrix.
-
-    :param n: The size of mass_list.
-
-    :param max_subset_length: The maximum length of subsets to return. Allows the recursive backtracking algorithm to
-        terminate early in many cases, significantly improving runtime.
-
-    :param path: List for keeping track of the current subset.
-
-    :return: Generates of lists containing the masses of valid subsets.
-    """
-
-    # base case - the path has generated a correct solution
-    if mass == 0:
-        yield sorted(path)
-        return
-
-    # stop running when we overshoot the mass
-    elif mass < 0:
-        return
-
-    # can we sum up to the target value using the remaining masses? recursive call
-    elif sum_matrix[n][mass]:
-        yield from find_path(mass_list, sum_matrix, n - 1, mass, max_subset_length, path)
-
-        if len(path) < max_subset_length:
-            path.append(mass_list[n-1])
-
-            yield from find_path(mass_list, sum_matrix, n - 1, mass - mass_list[n - 1], max_subset_length, path)
-            path.pop()
-
-
-def subset_sum(mass_list, mass, max_subset_length=3):
-    """
-    Dynamic programming implementation of subset sum. Note that, whilst this algorithm is pseudo-polynomial, the
-    backtracking algorithm for obtaining all possible subsets has exponential complexity and so remains unsuitable
-    for large input values.  This does, however, tend to perform a lot better than non-sum_matrix implementations, as
-    we're no longer doing sums multiple times and we've cut down the operations performed during the exponential portion
-    of the method.
-
-    :param mass_list: A list of masses from which to identify subsets.
-
-    :param mass: The target mass of the sum of the substructures.
-
-    :param max_subset_length: The maximum length of subsets to return. Allows the recursive backtracking algorithm to
-        terminate early in many cases, significantly improving runtime.
-
-    :return: Generates of lists containing the masses of valid subsets.
-    """
-
-    n = len(mass_list)
-
-    # initialise dynamic programming array
-    sum_matrix = numpy.ndarray([n + 1, mass + 1], bool)
-
-    # subsets can always equal 0
-    for i in range(n+1):
-        sum_matrix[i][0] = True
-
-    # empty subsets do not have non-zero sums
-    for i in range(mass):
-        sum_matrix[0][i + 1] = False
-
-    # fill in the remaining boolean matrix
-    for i in range(n):
-        for j in range(mass+1):
-            if j >= mass_list[i]:
-                sum_matrix[i + 1][j] = sum_matrix[i][j] or sum_matrix[i][j - mass_list[i]]
-            else:
-                sum_matrix[i + 1][j] = sum_matrix[i][j]
-
-    # backtrack through the matrix recursively to obtain all solutions
-    return find_path(mass_list, sum_matrix, n, mass, max_subset_length)
+from .results import ResultsDb
+from .parse import parse_ms_data
+from .algorithms import subset_sum
+from .databases import SubstructureDb
 
 
 def combine_mfs(precise_mass_grp, db, table_name, accuracy):
@@ -275,313 +194,18 @@ def add_bonds(mols, edges, atoms_available, bond_types, bond_enthalpies):
             bt_start.remove(bond_matches[0])
             bt_end.remove(bond_matches[0])
 
-        try:
+        try:  # try forming the specified bond
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bond_matches[0]])
         except KeyError:
             return None, None  # unknown bond type
 
+        # calculate bond dissociation energy of "formed" bonds for the structure
         try:
             total_bde += bond_enthalpies[bond_matches[0]][mols.GetAtomWithIdx(edge[0]).GetSymbol()][mols.GetAtomWithIdx(edge[1]).GetSymbol()]
         except (SyntaxError, TypeError):
             total_bde = None
 
     return mol_edit, total_bde
-
-
-class ResultsDb:
-    """
-    Methods for interacting with the SQLITE3 results database, as created by
-    :py:meth:`metaboblend.build_structures.annotate_msn`.
-
-    :param path_results: Directory to which results will be written.
-    """
-
-    def __init__(self, path_results, msn=True):
-        """Constructor method."""
-
-        self.path_results = path_results
-        self.path_results_db = os.path.join(self.path_results, "metaboblend_results.sqlite")
-        self.msn = msn
-
-        self.conn = None
-        self.cursor = None
-        
-        self.substructure_combo_id = 0
-
-    def connect(self):
-        """Connects to the results database."""
-
-        self.conn = sqlite3.connect(self.path_results_db)
-        self.cursor = self.conn.cursor()
-
-    def create_results_db(self):
-        """Generates a new results database."""
-
-        if os.path.exists(self.path_results_db):
-            os.remove(self.path_results_db)
-
-        self.connect()
-
-        self.cursor.execute("""CREATE TABLE queries (
-                                   ms_id_num INTEGER PRIMARY KEY,
-                                   ms_id TEXT,
-                                   exact_mass NUMERIC,
-                                   C INTEGER,
-                                   H INTEGER,
-                                   N INTEGER,
-                                   O INTEGER,
-                                   P INTEGER,
-                                   S INTEGER,
-                                   ppm INTEGER,
-                                   ha_min INTEGER,
-                                   ha_max INTEGER,
-                                   max_atoms_available INTEGER,
-                                   max_degree INTEGER,
-                                   max_n_substructures INTEGER,
-                                   hydrogenation_allowance INTEGER,
-                                   isomeric_smiles INTEGER)""")
-
-        if self.msn:
-            self.cursor.execute("""CREATE TABLE spectra (
-                                       ms_id_num INTEGER,
-                                       fragment_id INTEGER,
-                                       neutral_mass NUMERIC,
-                                       PRIMARY KEY (ms_id_num, fragment_id))""")
-
-        self.cursor.execute("""CREATE TABLE structures (
-                                   ms_id_num INTEGER,
-                                   structure_smiles TEXT,
-                                   frequency INTEGER,
-                                   PRIMARY KEY (ms_id_num, structure_smiles))""")
-
-        self.cursor.execute("""CREATE TABLE substructures (
-                                           substructure_combo_id INTEGER,
-                                           substructure_position_id INTEGER,
-                                           ms_id_num INTEGER,
-                                           structure_smiles TEXT,
-                                           fragment_id INTEGER,
-                                           substructure_smiles TEXT,
-                                           bde INTEGER,
-                                           PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
-
-        self.cursor.execute("""CREATE TABLE results (
-                                   ms_id_num INTEGER,
-                                   fragment_id INTEGER,
-                                   structure_smiles TEXT,
-                                   bde INTEGER,
-                                   PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
-
-        self.conn.commit()
-
-    def add_ms(self, msn_data, ms_id, ms_id_num, parameters):
-        """
-        Add entries to the `queries` and `spectra` tables.
-
-        :param msn_data: Dictionary in the form
-            `msn_data[id] = {mf: [C, H, N, O, P, S], exact_mass: float, fragment_masses: []}`. id represents a unique
-            identifier for a given spectral tree or fragmentation spectrum, mf is a list of integers referring to the
-            molecular formula of the structure of interest, exact_mass is the mass of this molecular formula to >=4d.p.
-            and fragment_masses are neutral fragment masses generated by this structure used to inform candidate
-            scoring. See :py:meth:`metaboblend.build_structures.annotate_msn`.
-
-        :param ms_id: Unique identifier for the annotation of a single metabolite.
-
-        :param ms_id_num: Unique numeric identifier for the annotation of a single metaoblite.
-
-        :param parameters: List of parameters, in the form: [ppm, ha_min, ha_max, max_atoms_available, max_degree,
-            max_n_substructures, hydrogenation_allowance, isomeric_smiles]. See
-            :py:meth:`metaboblend.build_structures.annotate_msn`.
-        """
-
-        for i, parameter in enumerate(parameters):
-            if parameter is None:
-                parameters[i] = "NULL"
-            elif isinstance(parameter, bool):
-                parameters[i] = int(parameter)
-
-        self.cursor.execute("""INSERT INTO queries (
-                                   ms_id,
-                                   ms_id_num,
-                                   exact_mass,
-                                   C, H, N, O, P, S,
-                                   ppm,
-                                   ha_min,
-                                   ha_max,
-                                   max_atoms_available,
-                                   max_degree,
-                                   max_n_substructures,
-                                   hydrogenation_allowance,
-                                   isomeric_smiles
-                               ) VALUES ('{}', {}, {}, '{}', '{}', '{}', '{}', '{}', '{}', {})""".format(
-                                   ms_id,
-                                   ms_id_num,
-                                   msn_data[ms_id]["exact_mass"],
-                                   msn_data[ms_id]["mf"][0], msn_data[ms_id]["mf"][1],
-                                   msn_data[ms_id]["mf"][2], msn_data[ms_id]["mf"][3],
-                                   msn_data[ms_id]["mf"][4], msn_data[ms_id]["mf"][5],
-                                   ", ".join([str(p) for p in parameters])
-                               ))
-
-        self.conn.commit()
-
-    def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None, retain_substructures=False):
-        """
-        Record which smiles were generated for a given fragment mass.
-
-        :param ms_id_num: Unique identifier for the annotation of a single metabolite.
-
-        :param smi_dict: The fragment and substructure smiles generated by the annotation of a single peak for a single
-            metabolite.
-
-        :param fragment_mass: The neutral fragment mass that has been annotated.
-
-        :param fragment_id: The unique identifier for the fragment mass that has been annotated.
-
-        :param retain_substructures: If True, record substructures in the results DB.
-        """
-
-        if self.msn:
-            self.cursor.execute("""INSERT OR IGNORE INTO spectra (
-                                                       ms_id_num,
-                                                       fragment_id,
-                                                       neutral_mass
-                                                   ) VALUES ('{}', {}, {})""".format(
-                                                       ms_id_num,
-                                                       fragment_id,
-                                                       fragment_mass
-                                                   ))
-        else:
-            fragment_id = "NULL"
-
-        for structure_smiles in smi_dict.keys():
-
-            self.cursor.execute("""INSERT OR IGNORE INTO results (
-                                       ms_id_num,
-                                       fragment_id,
-                                       structure_smiles,
-                                       bde
-                                   ) VALUES ({}, {}, '{}', {})""".format(
-                                       ms_id_num,
-                                       fragment_id,
-                                       structure_smiles,
-                                       min(smi_dict[structure_smiles]["bdes"])
-                                   ))
-
-            if retain_substructures:
-                for i in range(len(smi_dict[structure_smiles]["substructures"])):  # for each combination
-
-                    for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
-
-                        self.cursor.execute("""INSERT INTO substructures (
-                                                           substructure_combo_id,
-                                                           substructure_position_id,
-                                                           ms_id_num,
-                                                           fragment_id,
-                                                           structure_smiles,
-                                                           substructure_smiles,
-                                                           bde
-                                                       ) VALUES ({}, {}, {}, {}, '{}', '{}', {})""".format(
-                                                           self.substructure_combo_id,
-                                                           j,
-                                                           ms_id_num,
-                                                           fragment_id,
-                                                           structure_smiles,
-                                                           substructure,
-                                                           smi_dict[structure_smiles]["bdes"][i]
-                                                       ))
-
-                    self.substructure_combo_id += 1
-
-        self.conn.commit()
-
-    def calculate_frequencies(self, ms_id_num):
-        """
-        Calculates structure frequencies in the SQLite DB.
-
-        :param ms_id_num: Unique identifier for the annotation of a single metabolite.
-        """
-
-        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency) 
-                                   SELECT ms_id_num, structure_smiles, COUNT(*)
-                                   FROM results 
-                                   WHERE ms_id_num = {}
-                                   GROUP BY structure_smiles""".format(ms_id_num))
-
-    def get_structures(self, ms_id_num):
-        """
-        Gets smiles of generated structures. In the case of the MSn annotation workflow, also gets structure
-        frequencies.
-
-        :param ms_id_num: Unique identifier for the annotation of a single metabolite.
-
-        :return: In the case of simple structure generation, returns a set of smiles strings for output structures.
-            For the MSn annotation workflow, returns a dictionary with smiles as keys and the number of peaks for which
-            the smiles were generated as values.
-        """
-
-        if self.msn:
-            msn_str = ", frequency"
-        else:
-            msn_str = ""
-
-        self.cursor.execute("""SELECT structure_smiles{} FROM structures 
-                                   WHERE ms_id_num = {}
-                            """.format(msn_str, ms_id_num))
-
-        if self.msn:
-            return [t for t in self.cursor.fetchall()]
-        else:
-            return [item for t in self.cursor.fetchall() for item in t]
-
-    def generate_csv_output(self):
-        """
-        Generate CSV file output for i) queries and tool parameters and ii) structures generated.
-        """
-
-        with open(os.path.join(self.path_results, "metaboblend_queries.csv"), "w", newline="") as results_file, \
-             open(os.path.join(self.path_results, "metaboblend_structures.csv"), "w", newline="") as ms_file:
-
-            results_writer = csv.writer(results_file, delimiter=",")
-            ms_writer = csv.writer(ms_file, delimiter=",")
-
-            results_writer.writerow(["ms_id", "exact_mass", "C", "H", "N", "O", "P", "S", "ppm", "ha_min", "ha_max",
-                                     "max_atoms_available", "max_degree", "max_n_substructures",
-                                     "hydrogenation_allowance", "isomeric_smiles"])
-
-            self.cursor.execute("SELECT * FROM queries")
-
-            for query in self.cursor.fetchall():
-                results_writer.writerow(query)
-
-            ms_writer.writerow(["ms_id", "smiles", "frequency", "exact_mass", "C", "H", "N", "O", "P", "S"])
-
-            self.cursor.execute("SELECT * FROM structures")
-
-            for structure in self.cursor.fetchall():
-                ms_writer.writerow(structure)
-
-    def close(self):
-        """Close the connection to the SQLITE3 database."""
-
-        self.conn.close()
-
-
-def parse_ms_data(ms_data):
-    """
-    Parse raw data provided by user and yield formatted input data.
-
-    :param ms_data:
-
-    :param annotate_msn:
-
-    :return: None
-    """
-
-    if isinstance(ms_data, dict):
-        for i, ms_id in enumerate(ms_data.keys()):
-            yield [i] + ms_data[ms_id]
-
-    yield None
 
 
 def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int, list]]]],
@@ -692,20 +316,22 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         max_mass=None
     )
 
-    # 0: i, 1: ms_id, 2: mc, 3: exact_mass, 4: fragment_masses
-    for ms in parse_ms_data(msn_data):
+    for i, ms in enumerate(parse_ms_data(msn_data)):
+        
+        if ms is None:
+            continue
 
-        results_db.add_ms(msn_data, ms[1], ms[0],
+        results_db.add_ms(msn_data, ms["ms_id"], i,
                           [ppm, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, hydrogenation_allowance, isomeric_smiles])
 
-        for j, fragment_mass in enumerate(ms[4]):
+        for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
             for k in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
                 hydrogenated_fragment_mass = fragment_mass + (k * 1.007825)  # consider re-arrangements
 
                 smi_dict = build(
-                    mf=ms[2],
-                    exact_mass=ms[3],
+                    mf=ms["mf"],
+                    exact_mass=ms["exact_mass"],
                     max_n_substructures=max_n_substructures,
                     path_connectivity_db=path_connectivity_db,
                     path_substructure_db=path_substructure_db,
@@ -718,13 +344,13 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                     retain_substructures=retain_substructures
                 )
 
-                results_db.add_results(ms[0], smi_dict, fragment_mass, j, retain_substructures)
+                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
                 smi_dict = None
 
-        results_db.calculate_frequencies(ms[0])
+        results_db.calculate_frequencies(i)
 
         if yield_smis:
-            yield {ms[1]: results_db.get_structures(ms[0])}
+            yield {ms["ms_id"]: results_db.get_structures(i)}
 
     if write_csv_output:
         results_db.generate_csv_output()
@@ -807,6 +433,8 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
 
     :param write_csv_output: Whether to extract results from the SQLite3 database for deposition in CSV files.
 
+    :param retain_substructures: Whether to record the substructures used to generate final structures.
+
     :return: For each input molecule, yields unique SMILEs strings (unless `yield_smis = False`).
     """
 
@@ -828,27 +456,26 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
         max_mass=round(max([ms_data[ms_id]["exact_mass"] for ms_id in ms_data.keys()]))
     )
 
-    # 0: i, 1: ms_id, 2: mc, 3: exact_mass, 4: prescribed_mass
-    for ms in parse_ms_data(ms_data):
+    for i, ms in enumerate(parse_ms_data(ms_data, False)):
 
-        results_db.add_ms(ms_data, ms[1], ms[0],
+        results_db.add_ms(ms_data, ms["ms_id"], i,
                           [None, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, None, isomeric_smiles])
 
         ppm = None
 
         try:
-            if ms[4] is not None:
+            if ms["prescribed_mass"] is not None:
                 ppm = 0
-        except IndexError:
-            ms.append(None)
+        except KeyError:
+            ms["prescribed_mass"] = None
 
         smi_dict = build(
-            mf=ms[2],
-            exact_mass=ms[3],
+            mf=ms["mf"],
+            exact_mass=ms["exact_mass"],
             max_n_substructures=max_n_substructures,
             path_connectivity_db=path_connectivity_db,
             path_substructure_db=path_substructure_db,
-            prescribed_mass=ms[4],
+            prescribed_mass=ms["prescribed_mass"],
             ppm=ppm,
             table_name=table_name,
             ncpus=ncpus,
@@ -857,13 +484,13 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
             retain_substructures=retain_substructures
         )
 
-        results_db.add_results(ms[0], smi_dict, ms[4])
+        results_db.add_results(i, smi_dict, ms["prescribed_mass"])
         smi_dict = None
 
-        results_db.calculate_frequencies(ms[0])
+        results_db.calculate_frequencies(i)
 
         if yield_smis:
-            yield {ms[1]: results_db.get_structures(ms[0])}
+            yield {ms["ms_id"]: results_db.get_structures(i)}
 
     if write_csv_output:
         results_db.generate_csv_output()
@@ -1064,13 +691,13 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
         max_mass_statment = ""
     else:
         max_mass_statment = """
-                               exact_mass__1 < %s""" % str(max_mass)
+                               AND exact_mass__1 < %s""" % str(max_mass)
 
     db.cursor.execute("""CREATE TABLE {} AS
-                             SELECT * FROM substructures WHERE
-                                 atoms_available <= {} AND
-                                 valence <= {} AND
-                                 exact_mass__1 < {}{}{}{}
+                             SELECT * 
+                                 FROM substructures
+                                 WHERE atoms_available <= {}
+                                 AND valence <= {}{}{}{}{}
                       """.format(table_name,
                                  max_atoms_available,
                                  max_degree,

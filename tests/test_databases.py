@@ -25,6 +25,7 @@ import unittest
 import shutil
 import pickle
 from metaboblend.databases import *
+from metaboblend.parse import reformat_xml
 
 
 class DatabasesTestCase(unittest.TestCase):

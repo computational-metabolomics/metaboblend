@@ -20,8 +20,8 @@
 #
 
 import itertools
-import networkx as nx
 import pylab as plt
+import networkx as nx
 
 
 def calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
