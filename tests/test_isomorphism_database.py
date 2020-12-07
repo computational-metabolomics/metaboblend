@@ -21,6 +21,7 @@
 
 
 import os
+import sys
 import unittest
 import shutil
 import tempfile
@@ -45,46 +46,50 @@ class IsomorphDbTestCase(unittest.TestCase):
         shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
                         cls.to_test_results("test_data"))
 
-        pkg_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        if sys.platform == "win32" or sys.platform == "win64":  # TODO: add RI as dependency
-            cls.path_ri = os.path.join(pkg_path, "tools", "RI_win", "RI3.6-release", "ri36")
-
-        elif sys.platform == "darwin":
-            cls.path_ri = os.path.join(pkg_path, "tools", "RI_mac", "RI3.6-release", "ri36")
-
-        elif sys.platform == "linux2":
-            if "bb" in "socket.gethostname":
-                cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
-            else:
-                cls.path_ri = os.path.join(pkg_path, "tools", "RI_bb", "RI3.6-release", "ri36")
-
-        elif sys.platform == "linux":
-            cls.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
-
-        create_connectivity_database(cls.to_test_results("connectivity.sqlite"),
-                                    3,  # sizes
-                                    [1, 2],  # boxes
-                                    cls.path_ri
-                                    )
-
     def test_create_connectivity_database(self):
-        ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
-        ref_db_cursor = ref_db.cursor()
-        ref_db_cursor.execute("SELECT * FROM subgraphs")
 
-        test_db = sqlite3.connect(self.to_test_results("connectivity.sqlite"))
-        test_db_cursor = test_db.cursor()
-        test_db_cursor.execute("SELECT * FROM subgraphs")
+        pkg_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-        ref_rows = {}
-        for row in ref_db_cursor.fetchall():
-            ref_rows[row[0]] = row
+        if sys.platform == "win32" or sys.platform == "win64":  # TODO: add RI as dependency
+            self.path_ri = os.path.join(pkg_path, "tools", "RI_win", "RI3.6-release", "ri36")
 
-        for row in test_db_cursor.fetchall():
-            self.assertEqual(row, ref_rows[row[0]])
+        else:
 
-        ref_db.close()
-        test_db.close()
+            if sys.platform == "darwin":
+                self.path_ri = os.path.join(pkg_path, "tools", "RI_mac", "RI3.6-release", "ri36")
+
+            elif sys.platform == "linux2":
+                if "bb" in "socket.gethostname":
+                    self.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
+                else:
+                    self.path_ri = os.path.join(pkg_path, "tools", "RI_bb", "RI3.6-release", "ri36")
+
+            elif sys.platform == "linux":
+                self.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
+
+            create_connectivity_database(self.to_test_results("connectivity.sqlite"),
+                                         3,  # sizes
+                                         [1, 2],  # boxes
+                                         self.path_ri
+                                         )
+
+            ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
+            ref_db_cursor = ref_db.cursor()
+            ref_db_cursor.execute("SELECT * FROM subgraphs")
+
+            test_db = sqlite3.connect(self.to_test_results("connectivity.sqlite"))
+            test_db_cursor = test_db.cursor()
+            test_db_cursor.execute("SELECT * FROM subgraphs")
+
+            test_rows = {}
+            for row in test_db_cursor.fetchall():
+                test_rows[row[0]] = row
+
+            for row in ref_db_cursor.fetchall():
+                self.assertEqual(row, test_rows[row[0]])
+
+            ref_db.close()
+            test_db.close()
 
 
 if __name__ == '__main__':

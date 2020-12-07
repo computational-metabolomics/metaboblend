@@ -202,7 +202,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                            record_dict["O"], record_dict["P"], record_dict["S"]],
                                                     "exact_mass": record_dict["exact_mass"],
-                                                    "prescribed_masses": fragments[i]}}
+                                                    "prescribed_mass": fragments[i]}}
 
                 # test prescribed building
                 returned_smis = list(
@@ -280,7 +280,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                            record_dict["O"], record_dict["P"], record_dict["S"]],
                                                     "exact_mass": record_dict["exact_mass"],
-                                                    "fragment_masses": fragments}}
+                                                    "neutral_fragment_masses": fragments}}
 
                 # test standard building
                 returned_smis = list(annotate_msn(
@@ -307,7 +307,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
                                                    "exact_mass": record_dict["exact_mass"],
-                                                   "fragment_masses": fragments}
+                                                   "neutral_fragment_masses": fragments}
 
             os.mkdir(self.to_test_results("annotate_multi"))
 
@@ -338,7 +338,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                       record_dict["O"], record_dict["P"], record_dict["S"]],
                                                "exact_mass": record_dict["exact_mass"],
-                                               "fragment_masses": fragments}
+                                               "neutral_fragment_masses": fragments}
 
         os.mkdir(self.to_test_results("test_results_db"))
 
