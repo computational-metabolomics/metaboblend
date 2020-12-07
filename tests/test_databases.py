@@ -226,7 +226,7 @@ class DatabasesTestCase(unittest.TestCase):
         test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
-                self.assertEqual(row, ('HMDB0000073', '*:c(:*)CCN'))
+                self.assertEqual(row, ('HMDB0000073', 1))
             total_rows = i
 
         self.assertEqual(total_rows, 1292)
@@ -262,6 +262,8 @@ class DatabasesTestCase(unittest.TestCase):
                                          self.to_test_results("test_db.sqlite"), 4, 8,
                                          method="exhaustive", isomeric_smiles=True)
 
+        shutil.copyfile(self.to_test_data("substructures.sqlite"), self.to_test_results("substructures_copy.sqlite"))
+
         test_db = sqlite3.connect(self.to_test_results("test_db.sqlite"))
         test_db_cursor = test_db.cursor()
 
@@ -296,7 +298,7 @@ class DatabasesTestCase(unittest.TestCase):
         test_db_cursor.execute("SELECT * FROM hmdbid_substructures")
         for i, row in enumerate(test_db_cursor.fetchall()):
             if i == 0:
-                self.assertEqual(row, ('HMDB0000073', '*:c(:*)CCN'))
+                self.assertEqual(row, ('HMDB0000073', 1))
             total_rows = i
 
         self.assertEqual(total_rows, 1292)

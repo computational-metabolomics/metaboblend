@@ -67,55 +67,45 @@ class BuildStructuresTestCase(unittest.TestCase):
                 built_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"],
-                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures",
-                    isomeric_smiles=True
+                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures",
+                    isomeric_smiles=True, retain_substructures=True
                 )
 
                 j = 0
-                unique_smis = set()
-                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
-                    for line in smi_out:
-                        j += 1
-                        unique_smis.add(line.split()[0])
 
-                self.assertEqual(unique_smis, built_smis)
+                for smi in built_smis:
+                    j += 1
+
                 self.assertEqual(j, std_lens[i])
 
                 if smis[i] is not None:
-                    self.assertEqual(unique_smis, smis[i])
+                    self.assertEqual(set(built_smis.keys()), smis[i])
                 else:
-                    self.assertTrue(len(unique_smis) == 51 or len(unique_smis) == 1892)
+                    self.assertTrue(len(built_smis.keys()) == 51 or len(built_smis.keys()) == 1892)
 
                 # test prescribed substructure building
                 built_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"],
-                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + ".smi"), max_n_substructures=3,
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
                     prescribed_mass=fragments[i], ppm=15, clean=True,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    out_mode="w", ncpus=None, table_name="substructures",
-                    isomeric_smiles=True
+                    ncpus=None, table_name="substructures", isomeric_smiles=True,
+                    retain_substructures=False
                 )
 
                 j = 0
-                unique_smis = set()
-                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
-                    for line in smi_out:
-                        j += 1
-                        unique_smis.add(line.split()[0])
-
-                self.assertEqual(unique_smis, built_smis)
+                for smi in built_smis:
+                    j += 1
 
                 if i == 2:
-                    self.assertEqual(unique_smis, {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O'})
+                    self.assertEqual(set(built_smis.keys()), {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O'})
 
-                self.assertEqual(len(unique_smis), exp_lens[i])
+                self.assertEqual(len(built_smis.keys()), exp_lens[i])
 
         db.close()
 
@@ -127,17 +117,19 @@ class BuildStructuresTestCase(unittest.TestCase):
                        ((5, 5, 0, 2, 0, 0), (3, 6, 1, 0, 0, 0)),
                        ((2, 4, 0, 2, 0, 0), (4, 8, 0, 4, 0, 0))]
         configs_iso = db.k_configs()
-        lens = [0, 1, 60]
+        lens = [0, 1, 41]
 
         for i, ec_product in enumerate(ec_products):
             substructure_subset = db.select_substructures(ec_product, "substructures")
             smis = substructure_combination_build(substructure_subset, configs_iso,
-                                                  prescribed_structure=False, isomeric_smiles=True)
+                                                  prescribed_structure=False, isomeric_smiles=True,
+                                                  bond_enthalpies=get_bond_enthalpies(),
+                                                  retain_substructures=False)
 
-            self.assertEqual(len(smis), lens[i])
+            self.assertEqual(len(smis.keys()), lens[i])
 
             if i == 1:
-                self.assertEqual(smis, ['NCCc1ccc(O)c(O)c1'])
+                self.assertEqual(list(smis.keys()), ['NCCc1ccc(O)c(O)c1'])
 
         db.close()
 
@@ -185,33 +177,27 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                     "exact_mass": record_dict["exact_mass"]}}
 
                 # test standard building
-                returned_smis = list(generate_structures(
-                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    path_smi_out=self.to_test_results(),
-                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_set=True,
-                    isomeric_smiles=True
-                ))
+                returned_smis = list(
+                    generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
+                                        write_csv_output=True, path_out=self.to_test_results(),
+                                        max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                                        path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                        retain_substructures=True))
+
+                returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures",
-                    isomeric_smiles=True
+                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True,
+                    retain_substructures=True
                 )
 
-                unique_smis = set()
-                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
-                    for line in smi_out:
-                        unique_smis.add(line.split()[0])
-
-                self.assertEqual(unique_smis, returned_smis[0])
-                self.assertEqual(unique_smis, build_smis)
+                self.assertEqual(set(build_smis.keys()), set(returned_smis))
 
                 ms_data = {record_dict["HMDB_ID"]: {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
                                                            record_dict["O"], record_dict["P"], record_dict["S"]],
@@ -219,34 +205,27 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                     "prescribed_masses": fragments[i]}}
 
                 # test prescribed building
-                returned_smis = list(generate_structures(
-                    ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    path_smi_out=self.to_test_results(),
-                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_set=True,
-                    isomeric_smiles=True
-                ))
+                returned_smis = list(
+                    generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
+                                        write_csv_output=True, path_out=self.to_test_results(),
+                                        max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                                        path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                                        minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                        retain_substructures=False))
+
+                returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"],
-                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"), max_n_substructures=3,
-                    prescribed_mass=fragments[i], ppm=0,
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
+                    prescribed_mass=fragments[i], ppm=0, retain_substructures=False,
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    out_mode="w", ncpus=None, table_name="substructures", clean=True,
-                    isomeric_smiles=True
+                    ncpus=None, table_name="substructures", clean=True, isomeric_smiles=True
                 )
 
-                unique_smis = set()
-                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
-                    for line in smi_out:
-                        unique_smis.add(line.split()[0])
-
-                self.assertEqual(unique_smis, returned_smis[0])
-                self.assertEqual(unique_smis, build_smis)
+                self.assertEqual(set(build_smis.keys()), set(returned_smis))
 
             ms_data = {}
             for i, record_dict in enumerate(record_dicts.values()):
@@ -255,35 +234,27 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                           record_dict["O"], record_dict["P"], record_dict["S"]],
                                                    "exact_mass": record_dict["exact_mass"],
                                                    "prescribed_masses": None}
+
             # test building with multiple inputs
-            returned_smi_list = list(generate_structures(
-                ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                path_smi_out=self.to_test_results(),
-                path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                path_substructure_db=self.to_test_data("substructures.sqlite"),
-                minimum_frequency=None, yield_smi_set=True,
-                isomeric_smiles=True
-            ))
+            returned_smi_list = list(
+                generate_structures(ms_data, path_substructure_db=self.to_test_data("substructures.sqlite"),
+                                    write_csv_output=True, path_out=self.to_test_results(),
+                                    max_degree=6, max_atoms_available=2, max_n_substructures=3,
+                                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+                                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True,
+                                    retain_substructures=False))
 
             for i, record_dict in enumerate(record_dicts.values()):
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"],
-                    path_smi_out=self.to_test_results(record_dict["HMDB_ID"] + "_build.smi"),
+                    exact_mass=record_dict["exact_mass"], retain_substructures=False,
                     max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, out_mode="w", ncpus=None, table_name="substructures",
-                    isomeric_smiles=True
+                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
                 )
 
-                unique_smis = set()
-                with open(self.to_test_results(record_dict["HMDB_ID"] + ".smi"), "r") as smi_out:
-                    for line in smi_out:
-                        unique_smis.add(line.split()[0])
-
-                self.assertEqual(unique_smis, returned_smi_list[i])
-                self.assertEqual(unique_smis, build_smis)
+                self.assertEqual(set(build_smis.keys()), set(returned_smi_list[i][record_dict["HMDB_ID"]]))
 
         db.close()
 
@@ -314,41 +285,21 @@ class BuildStructuresTestCase(unittest.TestCase):
                 # test standard building
                 returned_smis = list(annotate_msn(
                     ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                    path_smi_out=self.to_test_results("annotate"),
+                    write_csv_output=True, retain_substructures=False, path_out=self.to_test_results(),
                     path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                     path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    minimum_frequency=None, yield_smi_dict=True, write_fragment_smis=True,
-                    isomeric_smiles=True
+                    minimum_frequency=None, yield_smis=True, isomeric_smiles=True
                 ))
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
-                peak_smis = set()
-                for prescribed_mass in fragments:
-                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
-                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
-                        for line in smi_out:
-                            peak_smis.add(line.split()[0])
-
-                csv_output_smis = set()
-                for prescribed_mass in fragments:
-                    with open(self.to_test_results("annotate", "1_" + record_dict["HMDB_ID"],
-                                                   str(round(prescribed_mass, 4))) + ".smi", "r") as smi_out:
-                        for line in smi_out:
-                            csv_output_smis.add(line.split()[0])
-
-                self.assertEqual(peak_smis, csv_output_smis)
-                self.assertEqual(peak_smis, set(returned_smis.keys()))
-
-                self.assertEqual(len(peak_smis), overall_lens[i])
-
-                self.assertEqual(len([freq for freq in set(returned_smis.values()) if freq > 1]), freqs[i])
+                self.assertEqual(len([t[1] for t in returned_smis if t[1] > 1]), freqs[i])
 
                 if smis[i] is not None:
-                    self.assertEqual(peak_smis, smis[i])
+                    self.assertEqual(set(t[0] for t in returned_smis), smis[i])
 
                 if i == 0:
-                    self.assertEqual(returned_smis['NCCc1ccc(O)c(O)c1'], 3)
+                    self.assertEqual(returned_smis[2][1], 3)
 
             ms_data = {}
             for i, record_dict in enumerate(record_dicts.values()):
@@ -363,25 +314,58 @@ class BuildStructuresTestCase(unittest.TestCase):
             # test building with multiple inputs
             returned_smi_list = list(annotate_msn(
                 ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
-                path_smi_out=self.to_test_results("annotate_multi"),
+                path_out=self.to_test_results("annotate_multi"), write_csv_output=True,
                 path_connectivity_db=self.to_test_data("connectivity.sqlite"),
                 path_substructure_db=self.to_test_data("substructures.sqlite"),
-                minimum_frequency=None, yield_smi_dict=True,
-                isomeric_smiles=True
+                minimum_frequency=None, yield_smis=True,
+                isomeric_smiles=True, retain_substructures=False
             ))
 
             for i, record_dict in enumerate(record_dicts.values()):
-                unique_smis = set()
-
-                with open(self.to_test_results("annotate_multi",
-                                               record_dict["HMDB_ID"] + "_frequency.csv"), "r") as smi_out:
-                    for line in smi_out:
-                        unique_smis.add(line.split()[0].split(",")[0])
-
-                self.assertEqual(unique_smis, set(returned_smi_list[i][record_dict["HMDB_ID"]].keys()))
-                self.assertEqual(len(unique_smis), overall_lens[i])
-
+                self.assertEqual(len(returned_smi_list[i][record_dict["HMDB_ID"]]), overall_lens[i])
+        
         db.close()
+
+    def test_results_db(self):
+        fragments = [56.05, 60.0211, 68.0262, 56.0262]
+
+        with open(self.to_test_data("test_hmdbs.dictionary"), "rb") as test_hmdbs:
+            record_dicts = pickle.load(test_hmdbs)
+
+        ms_data = {}
+        for i, record_dict in enumerate(record_dicts.values()):
+            record_dict["mol"] = Chem.MolFromSmiles(record_dict["smiles"])
+            ms_data[record_dict["HMDB_ID"]] = {"mf": [record_dict["C"], record_dict["H"], record_dict["N"],
+                                                      record_dict["O"], record_dict["P"], record_dict["S"]],
+                                               "exact_mass": record_dict["exact_mass"],
+                                               "fragment_masses": fragments}
+
+        os.mkdir(self.to_test_results("test_results_db"))
+
+        list(annotate_msn(
+            ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
+            path_out=self.to_test_results("test_results_db"), write_csv_output=True,
+            path_connectivity_db=self.to_test_data("connectivity.sqlite"),
+            path_substructure_db=self.to_test_data("substructures.sqlite"),
+            minimum_frequency=None, yield_smis=True,
+            isomeric_smiles=True, retain_substructures=True
+        ))
+
+        # is the sqlite database the size we expect?
+        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 53248)
+
+        # are the csv files the same as the reference?
+        with open(self.to_test_results("test_results_db", "metaboblend_queries.csv"), "r") as results_file, \
+             open(self.to_test_data("metaboblend_queries.csv"), "r") as test_file:
+
+            for results_line, test_line in zip(results_file, test_file):
+                self.assertEqual(results_line, test_line)
+
+        with open(self.to_test_results("test_results_db", "metaboblend_structures.csv"), "r") as results_file, \
+             open(self.to_test_data("metaboblend_structures.csv"), "r") as test_file:
+
+            for results_line, test_line in zip(results_file, test_file):
+                self.assertEqual(results_line, test_line)
 
     def test_gen_subs_table(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
@@ -463,7 +447,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         mol_out = [None, "*[CH]1(O)OC2**[CH](O)(C(O)C2O)[CH]1(*)O", "*C[CH](N)(C(=O)O)c1(*)ccc(O)cc1"]
 
         for i in range(len(atoms_available)):
-            mol_e = add_bonds(mol_comb[i], edges[i], atoms_available[i], bond_types[i])
+            mol_e, total_bde = add_bonds(mol_comb[i], edges[i], atoms_available[i], bond_types[i], get_bond_enthalpies())
 
             if i == 0:
                 self.assertTrue(mol_e is None)
