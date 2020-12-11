@@ -1,0 +1,2 @@
+[run]
+omit = tests/*,setup.py,metaboblend/__main__.py

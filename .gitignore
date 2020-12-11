@@ -102,6 +102,7 @@ ENV/
 
 *~
 
-# ignore lib files for testing
+# ignore test files
 */libgcc_s_dw2-1.dll
 */libstdc++-6.dll
+tests/test*
