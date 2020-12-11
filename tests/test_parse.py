@@ -28,7 +28,7 @@ import unittest
 from metaboblend.parse import *
 
 
-class IsomorphDbTestCase(unittest.TestCase):
+class ParseTestCase(unittest.TestCase):
     temp_results_dir = None
 
     @classmethod
@@ -159,11 +159,15 @@ class IsomorphDbTestCase(unittest.TestCase):
         self.assertEqual(reformat_msp_input(unformatted_msp_dict), formatted_msp_dict)
 
         unformatted_msp_dict["precursor_mz"] = None
-        self.assertWarns(UserWarning, reformat_msp_input(unformatted_msp_dict))
+
+        with self.assertWarns(UserWarning):
+            reformat_msp_input(unformatted_msp_dict)
 
         unformatted_msp_dict["precursor_mz"] = self.precursor_mz
         unformatted_msp_dict["fragment_mzs"] = []
-        self.assertWarns(UserWarning, reformat_msp_input(unformatted_msp_dict))
+
+        with self.assertWarns(UserWarning):
+            reformat_msp_input(unformatted_msp_dict)
 
     def test_mc_to_list(self):
 
