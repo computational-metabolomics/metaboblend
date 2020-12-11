@@ -8,8 +8,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: [3.7]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.6, 3.7, 3.8]
 
     env:
       OS: ${{ matrix.os }}
@@ -28,6 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
 
+          python --version
           conda env update --file environment.yml --name base
 
       - name: Lint with flake8
