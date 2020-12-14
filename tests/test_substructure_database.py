@@ -27,7 +27,7 @@ import shutil
 from metaboblend.databases import *
 
 
-class DatabasesTestCase(unittest.TestCase):
+class SubstructureDbTestCase(unittest.TestCase):
     temp_results_dir = None
 
     @classmethod

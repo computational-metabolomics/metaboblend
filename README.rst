@@ -1,6 +1,6 @@
 MetaboBlend
 ===========
-|Version| |Py versions| |Git| |Bioconda| |Build Status (Travis)| |Build Status (AppVeyor)| |License| |RTD doc| |codecov| |binder|
+|Version| |Py versions| |Git| |Bioconda| |Build Status| |License| |RTD doc| |codecov| |binder|
 
 Python package for *de novo* structural elucidation of small molecules in mass spectrometry-based Metabolomics
 
@@ -40,11 +40,8 @@ Licenses
 MetaboBlend is licensed under the GNU General Public License v3.0 (see `LICENSE file <https://github.com/computational-metabolomics/metaboblend/blob/master/LICENSE>`_ for licensing information). Copyright © 2019 - 2020 Ralf Weber
 
 
-.. |Build Status (Travis)| image:: https://img.shields.io/travis/computational-metabolomics/metaboblend.svg?style=flat&maxAge=3600&label=Travis-CI
-   :target: https://travis-ci.com/computational-metabolomics/metaboblend
-
-.. |Build Status (AppVeyor)| image:: https://img.shields.io/appveyor/ci/RJMW/metaboblend.svg?style=flat&maxAge=3600&label=AppVeyor
-   :target: https://ci.appveyor.com/project/RJMW/metaboblend/branch/master
+.. |Build Status| image:: https://github.com/computational-metabolomics/metaboblend/workflows/metaboblend/badge.svg
+   :target: https://github.com/computational-metabolomics/metaboblend/actions
 
 .. |Py versions| image:: https://img.shields.io/pypi/pyversions/metaboblend.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/metaboblend/
@@ -63,10 +60,9 @@ MetaboBlend is licensed under the GNU General Public License v3.0 (see `LICENSE 
 
 .. |RTD doc| image:: https://img.shields.io/badge/documentation-RTD-71B360.svg?style=flat&maxAge=3600
    :target: https://metaboblend.readthedocs.io/en/latest/
-   
+
 .. |codecov| image:: https://codecov.io/gh/computational-metabolomics/metaboblend/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/computational-metabolomics/metaboblend
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/computational-metabolomics/metaboblend/master?filepath=notebooks%2Fworkflow.ipynb
-

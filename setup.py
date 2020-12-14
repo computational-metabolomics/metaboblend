@@ -27,7 +27,8 @@ import metaboblend
 
 def main():
 
-    setuptools.setup(name="metaboblend",
+    setuptools.setup(
+        name="metaboblend",
         version=metaboblend.__version__,
         description="",
         long_description=open('README.rst').read(),
