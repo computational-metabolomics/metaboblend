@@ -226,7 +226,8 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                  yield_smis: bool = True,
                  isomeric_smiles: bool = False,
                  write_csv_output: bool = True,
-                 retain_substructures: bool = False
+                 retain_substructures: bool = False,
+                 abs_error: float = 0.0001
                  ) -> Dict[str, Sequence[Dict[str, int]]]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
@@ -299,6 +300,8 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
 
     :param retain_substructures: Whether to record the substructures used to generate final structures.
 
+    :param abs_error: Allowable absolute mz deviation from MS peaks.
+
     :return: For each input molecule yields a dictionary whose keys are SMILEs strings for the generated
         structures and values are the number of `fragment_masses` by which the structure was built (unless
         `yield_smi_dict = False`).
@@ -330,31 +333,29 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         if ms is None:
             continue
 
-        results_db.add_ms(msn_data, ms["ms_id"], i,
-                          [ppm, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, hydrogenation_allowance, isomeric_smiles])
+        results_db.add_ms(msn_data, ms["ms_id"], i, [ppm, ha_min, ha_max, max_atoms_available, max_degree,
+                                                     max_n_substructures, hydrogenation_allowance, isomeric_smiles])
 
         for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
-            for k in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
-                hydrogenated_fragment_mass = fragment_mass + (k * 1.007825)  # consider re-arrangements
+            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, 0.001, table_name)
 
-                smi_dict = build(
-                    mf=ms["mf"],
-                    exact_mass=ms["exact_mass"],
-                    max_n_substructures=max_n_substructures,
-                    path_connectivity_db=path_connectivity_db,
-                    path_substructure_db=path_substructure_db,
-                    prescribed_mass=hydrogenated_fragment_mass,
-                    ppm=ppm,
-                    table_name=table_name,
-                    ncpus=ncpus,
-                    clean=False,
-                    isomeric_smiles=isomeric_smiles,
-                    retain_substructures=retain_substructures
-                )
+            smi_dict = build(
+                db=db,
+                mf=ms["mf"],
+                exact_mass=ms["exact_mass"],
+                max_n_substructures=max_n_substructures,
+                prescribed_substructures=possible_fragment_ions,
+                ppm=ppm,
+                table_name=table_name,
+                ncpus=ncpus,
+                isomeric_smiles=isomeric_smiles,
+                retain_substructures=retain_substructures,
+                tolerance=abs_error
+            )
 
-                results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
-                smi_dict = None
+            results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
+            smi_dict = None
 
         results_db.calculate_frequencies(i)
 
@@ -453,12 +454,13 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
     :return: For each input molecule, yields unique SMILEs strings (unless `yield_smis = False`).
     """
 
-    db = SubstructureDb(path_substructure_db, path_connectivity_db)
-    results_db = ResultsDb(path_out, False)
-    results_db.create_results_db()
-
     if path_connectivity_db is None:
         path_connectivity_db = os.path.join(os.path.realpath(os.path.dirname(__file__)), "data", "connectivity.sqlite")
+
+    db = SubstructureDb(path_substructure_db, path_connectivity_db)
+
+    results_db = ResultsDb(path_out, False)
+    results_db.create_results_db()
 
     # prepare temporary table here - will only be generated once in case of multiple input
     table_name = gen_subs_table(
@@ -473,14 +475,16 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
 
     for i, ms in enumerate(parse_ms_data(ms_data, False)):
 
-        results_db.add_ms(ms_data, ms["ms_id"], i,
-                          [None, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, None, isomeric_smiles])
+        results_db.add_ms(ms_data, ms["ms_id"], i, [None, ha_min, ha_max, max_atoms_available, max_degree, max_n_substructures, None, isomeric_smiles])
 
         ppm = None
+        prescribed_substructures = None
 
         try:
             if ms["prescribed_mass"] is not None:
                 ppm = 0
+                prescribed_substructures = get_possible_fragment_ions(ms["prescribed_mass"], db, table_name=table_name)
+
         except KeyError:
             ms["prescribed_mass"] = None
 
@@ -488,15 +492,14 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
             mf=ms["mf"],
             exact_mass=ms["exact_mass"],
             max_n_substructures=max_n_substructures,
-            path_connectivity_db=path_connectivity_db,
-            path_substructure_db=path_substructure_db,
-            prescribed_mass=ms["prescribed_mass"],
+            prescribed_substructures=prescribed_substructures,
             ppm=ppm,
             table_name=table_name,
             ncpus=ncpus,
-            clean=False,
             isomeric_smiles=isomeric_smiles,
-            retain_substructures=retain_substructures
+            retain_substructures=retain_substructures,
+            db=db,
+            tolerance=0.0001
         )
 
         results_db.add_results(i, smi_dict, ms["prescribed_mass"])
@@ -513,8 +516,124 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
     db.close()
 
 
-def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substructure_db,
-          prescribed_mass, ppm, ncpus, table_name, clean, isomeric_smiles, retain_substructures):
+def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowance=None, ppm=None, tolerance=None, table_name=None):
+    """
+    Get possible fragment ions from a neutral mass. Either matches the mass exactly or does approximate matching
+    (within the allowable absolute or relative tolerance).
+
+    :param neutral_fragment_mass: The neutral mass of the MS fragment.
+
+    :param hydrogenation_allowance: Searches for substructures within `+-hydrogenation_allowance` hydrogen masses for
+        substructures. Substructures that are matched by the neutral fragment mass itself are considered "even" whereas
+        those matched by the modified masses are considered "odd" (i.e. non-standard hydrogen re-arrangements). In the
+        case of exact find, this field is left as None.
+
+    :param db: Connection to the SQLite3 substructure database, :py:meth:`metaboblend.databases.SubstructureDb`.
+
+    :param ppm: The relative (parts per million) tolerance for the neutral fragment mass. In the case of exact find,
+        this field is ignored.
+
+    :param tolerance: The minimum absolute mz tolerance for the neutral fragment mass. In the case of exact find, this
+        field is ignored.
+
+    :param table_name: Name of the substructures and substructure_ions tables to query. If None, uses the main tables.
+
+    :return: A dictionary in the format:
+        {integer_mass (int): {exact_mass (float): {substructure_id (int): substructure (dict)}}}.
+    """
+
+    if table_name is None:
+        subs_table_name = "substructures"
+        subs_ions_table_name = "substructure_ions"
+    else:
+        subs_table_name = table_name + "_substructures"
+        subs_ions_table_name = table_name + "_substructure_ions"
+
+    fragments = {}
+
+    if hydrogenation_allowance is None:  # exact find
+
+        exact_mass__1 = round(neutral_fragment_mass, 0)
+        exact_mass_0_0001 = round(neutral_fragment_mass, 4)
+
+        fragments[exact_mass__1] = {exact_mass_0_0001: {}}
+
+        db.cursor.execute("""SELECT smiles, mol, bond_types, valence_atoms, valence, atoms_available, dummies, 
+                                    C, H, N, O, P, S, substructure_id
+                                 FROM {}
+                                 WHERE exact_mass__0_0001 = {}
+                          """.format(subs_table_name, exact_mass_0_0001))
+
+        for record in db.cursor.fetchall():
+
+            substructure = {
+                "smiles": record[0],
+                "mol": Chem.Mol(record[1]),
+                "bond_types": eval(record[2]),
+                "degree_atoms": eval(record[3]),
+                "valence": record[4],
+                "atoms_available": record[5],
+                "dummies": eval(record[6]),
+                "even": True,
+                "mf": (record[7], record[8], record[9], record[10], record[11], record[12],)
+            }
+
+            fragments[exact_mass__1][exact_mass_0_0001][record[13]] = substructure
+
+    else:  # approximate find +- hydrogens
+
+        for i in range(0 - hydrogenation_allowance, hydrogenation_allowance + 1):
+
+            hydrogenated_fragment_mass = neutral_fragment_mass + (i * 1.007825)  # consider non-standard re-arrangements
+
+            if ((hydrogenated_fragment_mass / 1000000) * ppm) > tolerance:
+                fragment_tolerance = round((hydrogenated_fragment_mass / 1000000) * ppm, 4)
+            else:
+                fragment_tolerance = tolerance
+
+            db.cursor.execute("""SELECT smiles, mol, bond_types, valence_atoms, valence, atoms_available, dummies,
+                                        exact_mass__0_0001, exact_mass__1, C, H, N, O, P, S, substructure_id
+                                     FROM {}
+                                     WHERE substructure_id IN (
+                                         SELECT substructure_id
+                                             FROM {}
+                                             WHERE modified_exact_mass__0_0001 > {} and modified_exact_mass__0_0001 < {})
+                              """.format(
+                                     subs_table_name,
+                                     subs_ions_table_name,
+                                     hydrogenated_fragment_mass - fragment_tolerance,
+                                     hydrogenated_fragment_mass + fragment_tolerance
+                                 ))
+
+            for record in db.cursor.fetchall():
+
+                substructure = {
+                    "smiles": record[0],
+                    "mol": Chem.Mol(record[1]),
+                    "bond_types": eval(record[2]),
+                    "degree_atoms": eval(record[3]),
+                    "valence": record[4],
+                    "atoms_available": record[5],
+                    "dummies": eval(record[6]),
+                    "even": i == 0,
+                    "mf": (record[9], record[10], record[11], record[12], record[13], record[14],)
+                }
+
+                if record[8] not in fragments.keys():
+                    fragments[record[8]] = {record[7]: {record[15]: substructure}}
+
+                elif record[7] not in fragments[record[8]].keys():
+                    fragments[record[8]][record[7]] = {record[15]: substructure}
+
+                # if hydrogenation modifications have been made (i.e. i != 0) do not modify existing record
+                elif record[15] not in fragments[record[8]][record[7]].keys() or i == 0:
+                    fragments[record[8]][record[7]][record[15]] = substructure
+
+    return fragments
+
+
+def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm, ncpus, table_name, isomeric_smiles,
+          retain_substructures, tolerance):
     """
     Core function for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -524,6 +643,8 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     :py:meth:`metaboblend.build_structures.annotate_msn` allows for the generation and scoring of structures using
     information from fragmentation spectra.
 
+    :param db: Connection to the SQLite3 substructure database, :py:meth:`metaboblend.databases.SubstructureDb`.
+
     :param mf: List of integers detailing the molecular formula of the target metabolite, in the format
         [C, H, N, O, P, S].
 
@@ -531,14 +652,8 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
 
     :param max_n_substructures: The maximum number of substructures to be used for building molecules.
 
-    :param path_substructure_db: The path to the SQLite 3 substructure database, as generated by
-        :py:meth:`metaboblend.databases.SubstructureDb`.
-
-    :param path_connectivity_db: The path to the SQLite 3 connectivity database, as generated by
-        :py:meth:`metaboblend.databases.create_isomorphism_database`.
-
-    :param prescribed_mass: A mass by which to filter results; if not provided, all possible structures will be
-        generated.
+    :param prescribed_substructures: Substructures by which to filter results, as generated by
+        :py:meth:`metaboblend.build_structures.get_possible_fragment_ions`.
 
     :param ppm: The maximal tolerated m/z deviation (in parts per million) of the mass of substructures from the
         supplied `fragment_masses`.
@@ -548,81 +663,36 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
     :param table_name: The table specified within the substructure database will be used to generate
         molecules. Will be removed after structures have been built, unless 'clean = False' is set.
 
-    :param clean: Whether to remove the temporary table of substructures, table_name`, after the method is complete.
-
     :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
 
     :param retain_substructures: Whether to record the substructures used to generate final structures.
 
+    :param tolerance: Minimum absolute mz tolerance for the fragment and precursor masses. Only used if
+        `prescribed_substructures` is not None.
+
     :return: Returns a set of unique SMILEs strings.
     """
 
-    db = SubstructureDb(path_substructure_db, path_connectivity_db)
-    tolerance = 0.001
+    configs_iso = db.k_configs()
 
-    if prescribed_mass is None:
-        exact_mass__1 = round(exact_mass)
-
-    else:  # prescribed substructure build method
-        if ((prescribed_mass / 1000000) * ppm) > 0.001:
-            fragment_tolerance = round((prescribed_mass / 1000000) * ppm, 4)
-        else:
-            fragment_tolerance = 0.001
-
-        prescribed_subset = db.select_mass_values("0_0001", [round(prescribed_mass)], table_name)
-        prescribed_subset = [m for m in prescribed_subset[0] if abs(m - prescribed_mass) <= fragment_tolerance]
-
-        if len(prescribed_subset) == 0:
-            return {}
-
-        loss = exact_mass - prescribed_mass
-        exact_mass__1 = round(loss)
-
-        if ((exact_mass / 1000000) * ppm) > 0.001:
-            tolerance = round((exact_mass / 1000000) * ppm, 4)
-
-        max_n_substructures -= 1  # we find sets of mols that add up to the loss, not the precursor mass
+    # select groups of masses at low mass resolution
+    integer_mass_values = [m for m in db.select_mass_values("1", [], table_name) if m <= round(exact_mass, 0)]
 
     if os.name == "nt":  # multiprocessing freeze support on windows
         multiprocessing.freeze_support()
 
-    # select groups of masses at low mass resolution
-    integer_mass_values = [m for m in db.select_mass_values("1", [], table_name) if m <= exact_mass__1]
-    if len(integer_mass_values) == 0:
-        return {}
-
-    integer_subsets = list(subset_sum(integer_mass_values, exact_mass__1, max_n_substructures))
-
-    configs_iso = db.k_configs()
-
     substructure_subsets = []
-    for integer_subset in integer_subsets:
-        if len(integer_subset) > max_n_substructures or len(integer_subset) == 0:
-            continue
 
-        # refine groups of masses to 4dp mass resolution
-        exact_mass_values = db.select_mass_values("0_0001", integer_subset, table_name)
-
-        if prescribed_mass is not None:
-            exact_mass_values = [prescribed_subset] + exact_mass_values
-
-        # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
-        exact_subsets = []
-        for mass_combo in itertools.product(*exact_mass_values):
-            if abs(sum(mass_combo) - exact_mass) <= tolerance:
-                exact_subsets.append(mass_combo)
-
-        if len(exact_subsets) == 0:
-            continue
-
-        # refines groups based on ecs and gets substructures from db (appends to substructure_subsets)
-        for exact_subset in exact_subsets:
-            substructure_subsets += build_from_subsets(exact_subset, mf=mf, table_name=table_name, db=db)
+    if prescribed_substructures is None:
+        substructure_subsets = refine_masses_standard(substructure_subsets, mf, exact_mass, integer_mass_values, max_n_substructures, table_name, db)
+    else:
+        max_n_substructures -= 1
+        refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_substructures, ppm, integer_mass_values, max_n_substructures, table_name, db, tolerance)
 
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
         smi_dicts = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
-                    prescribed_structure=prescribed_mass, isomeric_smiles=isomeric_smiles,
+                    prescribed_method=prescribed_substructures is not None, isomeric_smiles=isomeric_smiles,
                     bond_enthalpies=get_bond_enthalpies(), retain_substructures=retain_substructures),
             substructure_subsets
         )
@@ -639,12 +709,154 @@ def build(mf, exact_mass, max_n_substructures, path_connectivity_db, path_substr
             except KeyError:
                 smi_dict[k] = d[k]
 
-    db.close(clean)
-
     return smi_dict
 
 
-def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass, table_name="subset_substructures",
+def refine_masses_standard(substructure_subsets, mf, exact_mass, integer_mass_values, max_n_substructures, table_name,
+                           db):
+    """
+    Takes a set of masses and applies :py:meth:`metaboblend.algorithms.subset_sum`. Generates a list of subsets of
+    substructures to be combined into candidate target metabolites.
+
+    :param substructure_subsets: List of substructure subsets to be filled, usually empty.
+
+    :param integer_mass_values: List of possible integer masses for all valid substructures.
+
+    :param max_n_substructures: The maximum number of substructures to be combined.
+
+    :param table_name: The name of the table from which to extract substructures - if None, searches the main tables.
+
+    :param db: Connection to the SQLite3 substructure database, :py:meth:`metaboblend.databases.SubstructureDb`.
+
+    :param mf: List of integers detailing the molecular formula of the target metabolite, in the format
+        [C, H, N, O, P, S].
+
+    :param exact_mass: The exact mass (float) of the target metabolite.
+
+    :param max_n_substructures: The maximum number of substructures to be used for building molecules.
+
+    :return: Returns a list of lists - one list for each substructure subset. Each substructure subset list contains
+        a list for each
+    """
+
+    integer_subsets = list(subset_sum(integer_mass_values, int(round(exact_mass, 0)), max_n_substructures))
+
+    for integer_subset in integer_subsets:
+
+        if len(integer_subset) > max_n_substructures or len(integer_subset) == 0:
+            continue
+
+        # refine groups of masses to 4dp mass resolution
+        exact_mass_values = db.select_mass_values("0_0001", integer_subset, table_name)
+
+        # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
+        exact_subsets = []
+        for mass_combo in itertools.product(*exact_mass_values):
+            if round(sum(mass_combo), 4) == round(exact_mass, 4):
+                exact_subsets.append(mass_combo)
+
+        if len(exact_subsets) == 0:
+            continue
+
+        # refines groups based on ecs and gets substructures from db (appends to substructure_subsets)
+        for exact_subset in exact_subsets:
+            substructure_subsets += build_from_subsets(exact_subset, mf=mf, table_name=table_name, db=db)
+
+    return substructure_subsets
+
+
+def refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_substructures, ppm, integer_mass_values,
+                             max_n_substructures, table_name, db, tolerance):
+    """
+    Takes a set of masses and applies :py:meth:`metaboblend.algorithms.subset_sum`. Generates a list of subsets of
+    substructures to be combined with possible fragment substructures to generate candidate target metabolites.
+
+    :param prescribed_substructures: Substructures that may represent the neutral fragment structure, as retrieved
+        by :py:meth:`metaboblend.build_structures.get_possible_fragment_ions`.
+
+    :param substructure_subsets: List of substructure subsets to be filled, usually empty.
+
+    :param integer_mass_values: List of possible integer masses for all valid substructures.
+
+    :param max_n_substructures: The maximum number of substructures to be combined.
+
+    :param table_name: The name of the table from which to extract substructures - if None, searches the main tables.
+
+    :param db: Connection to the SQLite3 substructure database, :py:meth:`metaboblend.databases.SubstructureDb`.
+
+    :param mf: List of integers detailing the molecular formula of the target metabolite, in the format
+        [C, H, N, O, P, S].
+
+    :param exact_mass: The exact mass (float) of the target metabolite.
+
+    :param max_n_substructures: The maximum number of substructures to be used for building molecules.
+
+    :param ppm: The maximal tolerated m/z deviation (in parts per million) of the mass of substructures from the
+        supplied `fragment_masses`.
+
+    :param tolerance: Minimum absolute mz tolerance for the fragment and precursor masses. Only used if
+        `prescribed_substructures` is not None.
+
+    :return: Returns a list of lists - one list for each substructure subset. Each substructure subset list contains
+        a list for each
+    """
+
+    for fragment_mass__1 in prescribed_substructures.keys():
+
+        loss_mass__1 = int(round(round(exact_mass, 0) - fragment_mass__1, 0))
+
+        if ((exact_mass / 1000000) * ppm) > tolerance:
+            tolerance = round((exact_mass / 1000000) * ppm, 4)
+
+        if len(integer_mass_values) == 0:
+            return {}
+
+        integer_subsets = list(subset_sum(integer_mass_values, loss_mass__1, max_n_substructures))
+
+        for integer_subset in integer_subsets:
+
+            if len(integer_subset) > max_n_substructures or len(integer_subset) == 0:
+                continue
+
+            # refine groups of masses to 4dp mass resolution
+            exact_mass_values = db.select_mass_values("0_0001", integer_subset, table_name)
+
+            for fragment_mass_0_0001 in prescribed_substructures[fragment_mass__1].keys():
+
+                # use combinations to get second group of masses instead of subset sum - subset sum is integer mass only
+                exact_subsets = []
+                for mass_combo in itertools.product(*exact_mass_values):
+                    if abs((fragment_mass_0_0001 + sum(mass_combo)) - exact_mass) <= tolerance:
+                        exact_subsets.append(mass_combo)
+
+                if len(exact_subsets) == 0:
+                    continue
+
+                # refines groups based on ecs and gets substructures from db (appends to substructure_subsets)
+                mf_to_substructure_id = {}
+                for substructure_id in prescribed_substructures[fragment_mass__1][fragment_mass_0_0001].keys():
+                    try:
+                        mf_to_substructure_id[tuple(prescribed_substructures[fragment_mass__1][fragment_mass_0_0001][substructure_id]["mf"])].append(substructure_id)
+                    except KeyError:
+                        mf_to_substructure_id[tuple(prescribed_substructures[fragment_mass__1][fragment_mass_0_0001][substructure_id]["mf"])] = [substructure_id]
+
+                for fragment_mf in mf_to_substructure_id.keys():
+                    for exact_subset in exact_subsets:
+
+                        loss_mf = [atom - fragment_atom for atom, fragment_atom in zip(mf, fragment_mf)]
+
+                        substructure_subsets += build_from_subsets(
+                            exact_subset,
+                            mf=loss_mf,
+                            table_name=table_name,
+                            db=db,
+                            fragment_substructures=[prescribed_substructures[fragment_mass__1][fragment_mass_0_0001][substructure_id] for substructure_id in mf_to_substructure_id[fragment_mf]]
+                        )
+
+    return substructure_subsets
+
+
+def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass, table_name="subset",
                    minimum_frequency=None):
     """
     Generate a temporary secondary substructure table restricted by a set of parameters. Generated as an initial step
@@ -677,7 +889,8 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
     :return: The name of the temporary secondary substructure table.
     """
 
-    db.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
+    db.cursor.execute("DROP TABLE IF EXISTS %s" % (table_name + "_substructures"))
+    db.cursor.execute("DROP TABLE IF EXISTS %s" % (table_name + "_substructure_ions"))
 
     if minimum_frequency is None:
         freq_statement = ""
@@ -703,30 +916,81 @@ def gen_subs_table(db, ha_min, ha_max, max_degree, max_atoms_available, max_mass
                               AND heavy_atoms <= %s""" % str(ha_max)
 
     if max_mass is None:
-        max_mass_statment = ""
+        max_mass_statement = ""
     else:
-        max_mass_statment = """
-                               AND exact_mass__1 < %s""" % str(max_mass)
+        max_mass_statement = """
+                                AND exact_mass__1 < %s""" % str(max_mass)
 
-    db.cursor.execute("""CREATE TABLE {} AS
+    db.temporary_table_names.append(table_name + "_substructures")
+
+    db.cursor.execute("""CREATE TABLE {} (
+                               substructure_id INTEGER PRIMARY KEY,
+                               smiles TEXT NOT NULL UNIQUE, 
+                               heavy_atoms INTEGER,
+                               length INTEGER,
+                               exact_mass__1 INTEGER,
+                               exact_mass__0_0001 REAL,
+                               exact_mass REAL,
+                               C INTEGER,
+                               H INTEGER,
+                               N INTEGER,
+                               O INTEGER,
+                               P INTEGER,
+                               S INTEGER,
+                               valence INTEGER,
+                               valence_atoms TEXT,
+                               atoms_available INTEGER,
+                               bond_types TEXT,
+                               dummies TEXT,
+                               mol BLOB)
+                      """.format(
+                               table_name + "_substructures",
+                               table_name + "_substructure_ions"
+                         ))
+
+    db.cursor.execute("""INSERT INTO {}
                              SELECT * 
                                  FROM substructures
                                  WHERE atoms_available <= {}
                                  AND valence <= {}{}{}{}{}
-                      """.format(table_name,
-                                 max_atoms_available,
-                                 max_degree,
-                                 max_mass_statment,
-                                 freq_statement,
-                                 ha_min_statement,
-                                 ha_max_statement))
+                      """.format(
+                             table_name + "_substructures",
+                             max_atoms_available,
+                             max_degree,
+                             max_mass_statement,
+                             freq_statement,
+                             ha_min_statement,
+                             ha_max_statement
+                      ))
 
-    db.create_indexes(table=table_name, selection="gen_subs_table")
+    db.temporary_table_names.append(table_name + "_substructure_ions")
+
+    db.cursor.execute("""CREATE TABLE {}_substructure_ions (
+                               substructure_id INTEGER, 
+                               hydrogen_modification INTEGER, 
+                               ion_mode_positive BOOLEAN,
+                               modified_exact_mass__1 INTEGER, 
+                               modified_exact_mass__0_0001 REAL,
+                               PRIMARY KEY (substructure_id, hydrogen_modification, ion_mode_positive),
+                               FOREIGN KEY (substructure_id) REFERENCES {}_substructures(substructure_id))
+                      """.format(table_name, table_name))
+
+    db.cursor.execute("""INSERT INTO {}
+                             SELECT *
+                                 FROM substructure_ions
+                                 WHERE substructure_id IN (SELECT substructure_id FROM {})
+                      """.format(
+                             table_name + "_substructure_ions",
+                             table_name + "_substructures"
+                         ))
+
+    db.conn.commit()
+    db.create_temp_indexes(table_name)
 
     return table_name
 
 
-def build_from_subsets(exact_subset, mf, table_name, db):
+def build_from_subsets(exact_subset, mf, table_name, db, fragment_substructures=None):
     """
     A stage of the :py:meth:`metaboblend.build_structures.build` workflow for generating molecules to a given mass
     from substructures. At this stage, mass subsets have been identified in the substructure database. Each of these
@@ -746,10 +1010,17 @@ def build_from_subsets(exact_subset, mf, table_name, db):
     :param table_name: The name of the table within the substructure database from which to extract substructures. A
         prefiltered table based on the parameters specified in :py:meth:`metaboblend.build_structures.build`. See
         :py:meth:`metaboblend.build_structures.gen_subs_table`.
+
+    :param fragment_substructures: If None, standard building from the input mass subset is carried out. Else,
+        represents the retrieved candidate fragment substructures to be combined with the substructures of the input
+        mass subset.
+
+    :return: Returns a list in the same format as the input mass subset, `exact_subset`. Instead of masses (floats),
+        the substructures are now represented by dictionaries, as retreived by
+        :py:meth:`metaboblend.build_structures.get_possible_fragment_ions`.
     """
 
     substructure_subsets = []
-
     mf_subset = combine_mfs(exact_subset, db, table_name, "0_0001")
 
     if len(mf_subset) == 0:
@@ -765,12 +1036,16 @@ def build_from_subsets(exact_subset, mf, table_name, db):
         if len(substructure_subset) == 0:
             continue
 
-        substructure_subsets.append(substructure_subset)
+        if fragment_substructures is None:
+            substructure_subsets.append(substructure_subset)
+        else:
+            substructure_subsets.append([fragment_substructures] + substructure_subset)
 
     return substructure_subsets
 
 
 def get_bond_enthalpies():
+    """ Gets predicted bond dissociation energies for each bond type and elemental composition. """
 
     return {1.0: {'C': {'C':  348, 'N':  305, 'O':  360, 'P':  264, 'S':  272},
                   'N': {'C':  305, 'N':  163, 'O':  222, 'P': None, 'S': None},
@@ -789,7 +1064,7 @@ def get_bond_enthalpies():
                   'S': {'C':  573, 'N': None, 'O':  522, 'P':  335, 'S':  425}}}
 
 
-def substructure_combination_build(substructure_subset, configs_iso, prescribed_structure, isomeric_smiles,
+def substructure_combination_build(substructure_subset, configs_iso, prescribed_method, isomeric_smiles,
                                    bond_enthalpies, retain_substructures):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
@@ -800,7 +1075,8 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
     :param configs_iso: Possible substructure combinations extracted from the connectivity database. A tuple containing
         tuples for each substructure; these tuples specify how many bonds each substructure can make.
 
-    :param prescribed_structure: Prescribed fragment mass for building.
+    :param prescribed_method: If True, assumes the first substructure in `substructure_subset` to be the fragment
+        substructure.
 
     :param isomeric_smiles: True/False, should output smiles be written with isomeric information?
 
@@ -819,17 +1095,20 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
         substructure_combination = sorted(substructure_combination, key=itemgetter('atoms_available', 'valence'))
 
         v_a = ()
-        if prescribed_structure is not None:
-            fragment_indexes = []
         j = -1
+
+        if prescribed_method:
+            fragment_indexes = []
+
         for i, d in enumerate(substructure_combination):
+
             v_a += (tuple(d["degree_atoms"].values()),)  # obtain valence configuration of the set of substructures
 
             for atom_available in tuple(d["degree_atoms"].values()):
                 j += 1
 
                 try:
-                    if prescribed_structure is not None and d["fragment"]:
+                    if prescribed_method and d["fragment"]:
                         fragment_indexes.append(j)
                 except KeyError:
                     continue
@@ -843,7 +1122,7 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
             continue  # check that bond types are compatible (imperfect check)
 
         for edges in configs_iso[str(v_a)]:  # build mols for each graph in connectivity db
-            if prescribed_structure is not None:
+            if prescribed_method:
                 non_fragment_edges = False
 
                 for edge in edges:  # check that edges only connect to fragment ion
@@ -853,7 +1132,8 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 if non_fragment_edges:
                     continue
 
-            mol_e, total_bde = add_bonds(mol_comb, edges, atoms_available, bond_types, bond_enthalpies)  # add bonds between substructures
+            # add bonds between substructures
+            mol_e, total_bde = add_bonds(mol_comb, edges, atoms_available, bond_types, bond_enthalpies)
 
             if mol_e is None or total_bde is None:
                 continue
@@ -865,11 +1145,12 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             try:
                 Chem.SanitizeMol(mol_out)  # clean the mol - ensure it is valid & canonical
-            except:
+            except:  # TODO: changeable?
                 continue
 
             try:  # append the canonical smiles of the final structure
                 final_structure = Chem.MolToSmiles(mol_out, isomericSmiles=isomeric_smiles)
+
             except RuntimeError:
                 continue  # bad bond type violation
 
@@ -883,6 +1164,9 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             except KeyError:
                 smis[final_structure] = {"bdes": [total_bde]}
+
+                if prescribed_method:
+                    smis[final_structure]["even"] = substructure_combination[0]["even"]
 
                 if retain_substructures:
                     smis[final_structure]["substructures"] = [final_substructures]

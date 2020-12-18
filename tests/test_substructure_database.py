@@ -120,11 +120,11 @@ class SubstructureDbTestCase(unittest.TestCase):
         self.assertEqual(sum(edge_count), 2048)
 
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        self.assertEqual(len(db.cursor.fetchall()), 5)
+        self.assertEqual(len(db.cursor.fetchall()), 6)
 
         db.cursor.execute("CREATE TABLE subset_substructures AS SELECT * FROM COMPOUNDS")
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        self.assertEqual(len(db.cursor.fetchall()), 6)
+        self.assertEqual(len(db.cursor.fetchall()), 7)
 
         db.close()
 
@@ -132,14 +132,14 @@ class SubstructureDbTestCase(unittest.TestCase):
 
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        self.assertEqual(len(db.cursor.fetchall()), 4)
+        self.assertEqual(len(db.cursor.fetchall()), 7)
 
         db.close()
 
     def test_select_mass_values(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
-        ests = db.select_mass_values("1", [], "substructures")
-        exacts = db.select_mass_values("0_0001", [], "substructures")
+        ests = db.select_mass_values("1", [], None)
+        exacts = db.select_mass_values("0_0001", [], None)
 
         self.assertEqual(len(ests), 71)
         self.assertEqual(len(exacts), 117)
@@ -147,32 +147,31 @@ class SubstructureDbTestCase(unittest.TestCase):
         for exact in exacts:
             self.assertTrue(round(exact) in ests)
 
-        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"),
+        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], None),
                          [[50.0156], [64.0313], [73.029]])
-        self.assertEqual(db.select_mass_values("0_0001", [120, 87, 87], "substructures"),
+        self.assertEqual(db.select_mass_values("0_0001", [120, 87, 87], None),
                          [[120.0423], [87.0082, 87.0446], [87.0082, 87.0446]])
-        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], "substructures"),
+        self.assertEqual(db.select_mass_values("0_0001", [50, 64, 73], None),
                          [[50.0156], [64.0313], [73.029]])
-        self.assertEqual(db.select_mass_values("0_0001", [55, 80, 107], "substructures"),
+        self.assertEqual(db.select_mass_values("0_0001", [55, 80, 107], None),
                          [[55.0184, 55.0422], [80.0262, 80.05], [107.0497, 107.0735]])
-        self.assertEqual(db.select_mass_values("0_0001", [63, 63, 63], "substructures"),
+        self.assertEqual(db.select_mass_values("0_0001", [63, 63, 63], None),
                          [[63.0235], [63.0235], [63.0235]])
 
         self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_mass_values("0_0001", [63, 63, 63], "substrusctures"))
+                          lambda: db.select_mass_values("0_0001", [63, 63, 63], ""))
         db.close()
 
     def test_select_mfs(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
-        self.assertEqual(db.select_mfs(107.0735, "substructures", "0_0001"), [(7, 9, 1, 0, 0, 0)])
-        self.assertEqual(db.select_mfs(107.0735, "substructures", "1"), [])
-        self.assertEqual(db.select_mfs(107, "substructures", "0_0001"), [])
-        self.assertEqual(db.select_mfs(107.0735, "substructures", "1"), [])
-        self.assertEqual(db.select_mfs(107, "substructures", "1"),
-                         [(7, 9, 1, 0, 0, 0), (7, 7, 0, 1, 0, 0)])
+        self.assertEqual(db.select_mfs(107.0735, None, "0_0001"), [(7, 9, 1, 0, 0, 0)])
+        self.assertEqual(db.select_mfs(107.0735, None, "1"), [])
+        self.assertEqual(db.select_mfs(107, None, "0_0001"), [])
+        self.assertEqual(db.select_mfs(107.0735, None, "1"), [])
+        self.assertEqual(db.select_mfs(107, None, "1"),
+                         [(7, 7, 0, 1, 0, 0), (7, 9, 1, 0, 0, 0)])
 
-        self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_mfs(107.0735, "substrusctures", "0_0001"))
+        self.assertRaises(sqlite3.OperationalError, lambda: db.select_mfs(107.0735, "", "0_0001"))
 
         db.close()
 
@@ -193,12 +192,12 @@ class SubstructureDbTestCase(unittest.TestCase):
 
     def test_select_substructures(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
-        self.assertEqual(db.select_substructures([[2, 5, 0, 0, 0, 0]], "substructures"), [])
-        self.assertEqual(len(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0]), 7)
-        self.assertEqual(list(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].keys()),
+        self.assertEqual(db.select_substructures([[2, 5, 0, 0, 0, 0]], None), [])
+        self.assertEqual(len(db.select_substructures([[4, 4, 0, 0, 0, 0]], None)[0]), 7)
+        self.assertEqual(list(db.select_substructures([[4, 4, 0, 0, 0, 0]], None)[0][0].keys()),
                          ['smiles', 'mol', 'bond_types', 'degree_atoms', 'valence', 'atoms_available', 'dummies'])
 
-        substructures = list(db.select_substructures([[4, 4, 0, 0, 0, 0]], "substructures")[0][0].values())
+        substructures = list(db.select_substructures([[4, 4, 0, 0, 0, 0]], None)[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
                          ['*Cc(:*)cc:*',
                           {1: [1.0], 2: [1.5], 5: [1.5]},
@@ -207,10 +206,10 @@ class SubstructureDbTestCase(unittest.TestCase):
                           3,
                           [0, 3, 4]])
 
-        self.assertEqual(len(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0]), 3)
-        self.assertEqual(list(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].keys()),
+        self.assertEqual(len(db.select_substructures([[7, 7, 0, 0, 0, 0]], None)[0]), 3)
+        self.assertEqual(list(db.select_substructures([[7, 7, 0, 0, 0, 0]], None)[0][0].keys()),
                          ['smiles', 'mol', 'bond_types', 'degree_atoms', 'valence', 'atoms_available', 'dummies'])
-        substructures = list(db.select_substructures([[7, 7, 0, 0, 0, 0]], "substructures")[0][0].values())
+        substructures = list(db.select_substructures([[7, 7, 0, 0, 0, 0]], None)[0][0].values())
         self.assertEqual([item for i, item in enumerate(substructures) if i != 1],
                          ['*CCc1c:*:c(*)cc1',
                           {1: [1.0], 4: [1.5], 6: [1.5, 1.0]},
@@ -220,14 +219,14 @@ class SubstructureDbTestCase(unittest.TestCase):
                           [0, 5, 7]])
 
         self.assertRaises(sqlite3.OperationalError,
-                          lambda: db.select_substructures([[2, 5, 0, 0, 0, 0]], "substrusctures"))
+                          lambda: db.select_substructures([[2, 5, 0, 0, 0, 0]], ""))
         db.close()
 
     def test_create_compound_database(self):  # also tests create_indexes
         db = SubstructureDb(self.to_test_results("substructures_new.sqlite"))
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        self.assertEqual(len(db.cursor.fetchall()), 3)
+        self.assertEqual(len(db.cursor.fetchall()), 4)
 
         db.create_indexes()
         db.close()
@@ -238,7 +237,7 @@ class SubstructureDbTestCase(unittest.TestCase):
         db.create_indexes()
         db.create_compound_database()
         db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        self.assertEqual(len(db.cursor.fetchall()), 3)
+        self.assertEqual(len(db.cursor.fetchall()), 4)
 
         db.cursor.execute("SELECT * FROM substructures")
         self.assertEqual(len(db.cursor.fetchall()), 0)

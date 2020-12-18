@@ -46,14 +46,14 @@ class BuildStructuresTestCase(unittest.TestCase):
                         cls.to_test_results("test_data"))
 
     def test_build(self):  # core - all other build functions rely on
-        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), self.to_test_data("connectivity.sqlite"))
 
         # ref data
         smis = [{'NCCc1cc(O)ccc1O', 'NCCc1cccc(O)c1O', 'NCCc1cc(O)cc(O)c1', 'NCCc1ccc(O)c(O)c1'},
                 None,
                 {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@H](Cc1ccc(O)cc1)C(=O)O'},
                 None]
-        std_lens = [4, 51, 3, 1892]
+        std_lens = [4, 47, 3, 1892]
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
         exp_lens = [1, 41, 2, 0]
 
@@ -67,40 +67,24 @@ class BuildStructuresTestCase(unittest.TestCase):
                 built_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
-                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures",
-                    isomeric_smiles=True, retain_substructures=True
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3, db=db, ppm=None, ncpus=None,
+                    table_name=None, isomeric_smiles=True, retain_substructures=True, prescribed_substructures=None,
+                    tolerance=None
                 )
 
-                j = 0
-
-                for smi in built_smis:
-                    j += 1
-
-                self.assertEqual(j, std_lens[i])
+                self.assertEqual(len(built_smis), std_lens[i])
 
                 if smis[i] is not None:
                     self.assertEqual(set(built_smis.keys()), smis[i])
-                else:
-                    self.assertTrue(len(built_smis.keys()) == 51 or len(built_smis.keys()) == 1892)
 
                 # test prescribed substructure building
                 built_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
-                    prescribed_mass=fragments[i], ppm=15, clean=True,
-                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    ncpus=None, table_name="substructures", isomeric_smiles=True,
-                    retain_substructures=False
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3, tolerance=0.0001,
+                    prescribed_substructures=get_possible_fragment_ions(fragments[i], db, 2, 5, 0.0001), ppm=15,
+                    ncpus=None, isomeric_smiles=True, retain_substructures=False, db=db, table_name=None
                 )
-
-                j = 0
-                for smi in built_smis:
-                    j += 1
 
                 if i == 2:
                     self.assertEqual(set(built_smis.keys()), {'N[C@@H](Cc1ccc(O)cc1)C(=O)O', 'N[C@@H](Cc1cccc(O)c1)C(=O)O'})
@@ -120,10 +104,9 @@ class BuildStructuresTestCase(unittest.TestCase):
         lens = [0, 1, 41]
 
         for i, ec_product in enumerate(ec_products):
-            substructure_subset = db.select_substructures(ec_product, "substructures")
-            smis = substructure_combination_build(substructure_subset, configs_iso,
-                                                  prescribed_structure=False, isomeric_smiles=True,
-                                                  bond_enthalpies=get_bond_enthalpies(),
+            substructure_subset = db.select_substructures(ec_product, None)
+            smis = substructure_combination_build(substructure_subset, configs_iso, prescribed_method=False,
+                                                  isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies(),
                                                   retain_substructures=False)
 
             self.assertEqual(len(smis.keys()), lens[i])
@@ -145,7 +128,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         lens = [1, 7, 26, 0, 4, 4, 0]
         
         for i, mc, exact_subset in zip(range(len(mcs)), mcs, exact_subsets):
-            substructure_subsets = build_from_subsets(exact_subset, mc, "substructures", db)
+            substructure_subsets = build_from_subsets(exact_subset, mc, None, db)
 
             if i == 3 or i == 6:
                 self.assertEqual(len(substructure_subsets), 0)
@@ -165,7 +148,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         db.close()
 
     def test_generate_structures(self):  # tests vs build
-        db = SubstructureDb(self.to_test_data("substructures.sqlite"))
+        db = SubstructureDb(self.to_test_data("substructures.sqlite"), self.to_test_data("connectivity.sqlite"))
 
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
 
@@ -191,10 +174,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
-                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True,
-                    retain_substructures=True
+                    max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
+                    retain_substructures=True, db=db, tolerance=0.0001, prescribed_substructures=None
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -215,14 +196,14 @@ class BuildStructuresTestCase(unittest.TestCase):
 
                 returned_smis = returned_smis[0][record_dict["HMDB_ID"]]
 
+                prescribed_substructures = get_possible_fragment_ions(fragments[i], db)
+
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"], max_n_substructures=3,
-                    prescribed_mass=fragments[i], ppm=0, retain_substructures=False,
-                    path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"),
-                    ncpus=None, table_name="substructures", clean=True, isomeric_smiles=True
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3, ppm=0, retain_substructures=False,
+                    ncpus=None, table_name=None, isomeric_smiles=True, db=db, tolerance=0.0001,
+                    prescribed_substructures=prescribed_substructures
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -249,9 +230,8 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], retain_substructures=False,
-                    max_n_substructures=3, path_connectivity_db=self.to_test_data("connectivity.sqlite"),
-                    path_substructure_db=self.to_test_data("substructures.sqlite"), clean=True,
-                    prescribed_mass=None, ppm=None, ncpus=None, table_name="substructures", isomeric_smiles=True
+                    max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
+                    prescribed_substructures=None, db=db, tolerance=0.0001
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smi_list[i][record_dict["HMDB_ID"]]))
@@ -262,10 +242,10 @@ class BuildStructuresTestCase(unittest.TestCase):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
         overall_lens = [3, 41, 2, 0]
-        smis = [{'NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)cc(O)c1'},
+        smis = [{'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)ccc1O', 'NCCc1cc(O)cc(O)c1'},
                 None,
                 {'N[C@@H](Cc1cccc(O)c1)C(=O)O', 'N[C@@H](Cc1ccc(O)cc1)C(=O)O'},
-                None]
+                set()]
         freqs = [1, 0, 0, 0]
 
         fragments = [56.05, 60.0211, 68.0262, 56.0262]
@@ -372,7 +352,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         table_name = gen_subs_table(db, 5, 6, 4, 2, 500)
 
         i = 0
-        db.cursor.execute("SELECT heavy_atoms, valence, atoms_available FROM %s" % table_name)
+        db.cursor.execute("SELECT heavy_atoms, valence, atoms_available FROM %s" % table_name + "_substructures")
         for row in db.cursor.fetchall():
             i += 1
 
@@ -392,11 +372,11 @@ class BuildStructuresTestCase(unittest.TestCase):
 
     def test_combine_ecs(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"), "")
-        self.assertEqual(combine_mfs([54.0106, 69.0578], db, "substructures", "0_0001"),
+        self.assertEqual(combine_mfs([54.0106, 69.0578], db, None, "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
-        self.assertEqual(combine_mfs([54, 69], db, "substructures", "1"),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0), (4, 5, 0, 1, 0, 0)]])
-        self.assertEqual(combine_mfs([54.0101, 69.0580], db, "substructures", "0_0001"), [])
+        self.assertEqual(combine_mfs([54, 69], db, None, "1"),
+                         [[(3, 2, 0, 1, 0, 0)], [(4, 5, 0, 1, 0, 0), (4, 7, 1, 0, 0, 0)]])
+        self.assertEqual(combine_mfs([54.0101, 69.0580], db, None, "0_0001"), [])
 
         db.close()
 

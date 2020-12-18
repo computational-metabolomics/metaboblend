@@ -24,6 +24,7 @@ import os
 import pickle
 import sqlite3
 import tempfile
+import itertools
 import subprocess
 import networkx as nx
 from typing import Sequence, Dict, Union
@@ -63,6 +64,8 @@ class SubstructureDb:
 
         if self.path_connectivity_db is not None:
             self.cursor.execute("ATTACH DATABASE '%s' as 'graphs';" % self.path_connectivity_db)
+
+        self.temporary_table_names = []
 
     def select_compounds(self, cpds=[]):
         """
@@ -247,28 +250,35 @@ class SubstructureDb:
         :return: Sorted list of mass values from the substructure database, filtered by the supplied parameters.
         """
 
-        if type(masses) == list:
-            if len(masses) > 0:
-                mass_values = []
+        if table_name is None:
+            table_name = "substructures"
+        else:
+            table_name += "_substructures"
 
-                for m in masses:
-                    self.cursor.execute("""SELECT DISTINCT exact_mass__{} 
+        if type(masses) == list and len(masses) > 0:
+
+            mass_values = []
+
+            for m in masses:
+                self.cursor.execute("""SELECT DISTINCT exact_mass__{} 
                                            FROM {}
                                            WHERE exact_mass__1 = {}
-                                        """.format(accuracy, table_name, m))
+                                    """.format(accuracy, table_name, m))
 
-                    m_values = [record[0] for record in self.cursor.fetchall()]
-                    m_values.sort()
+                m_values = [record[0] for record in self.cursor.fetchall()]
+                m_values.sort()
 
-                    mass_values.append(m_values)
+                mass_values.append(m_values)
 
-                return mass_values
+            return mass_values
 
-        self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}".format(accuracy, table_name))
-        mass_values = [record[0] for record in self.cursor.fetchall()]
-        mass_values.sort()
+        else:
 
-        return mass_values
+            self.cursor.execute("SELECT DISTINCT exact_mass__{} FROM {}".format(accuracy, table_name))
+            mass_values = [record[0] for record in self.cursor.fetchall()]
+            mass_values.sort()
+
+            return mass_values
 
     def select_mfs(self, exact_mass, table_name, accuracy):
         """
@@ -288,10 +298,19 @@ class SubstructureDb:
             of each row (C, H, N, O, P, S).
         """
 
+        if table_name is None:
+            table_name = "substructures"
+        else:
+            table_name += "_substructures"
+
         self.cursor.execute("""SELECT DISTINCT C, H, N, O, P, S
-                                   FROM {} 
+                                   FROM {}
                                    WHERE exact_mass__{} = {}
-                            """.format(table_name, accuracy, str(exact_mass)))
+                            """.format(
+                                   table_name,
+                                   accuracy,
+                                   str(exact_mass)
+                               ))
 
         return self.cursor.fetchall()
 
@@ -314,7 +333,7 @@ class SubstructureDb:
             configs[str(record[1])] = []
 
             for path in self.paths(pickle.loads(record[0])):
-                    configs[str(record[1])].append(path)
+                configs[str(record[1])].append(path)
 
         return configs
 
@@ -353,6 +372,11 @@ class SubstructureDb:
             :py:meth:`metaboblend.databases.get_substructure`.
         """
 
+        if table_name is None:
+            table_name = "substructures"
+        else:
+            table_name += "_substructures"
+
         subsets = []
         for i in range(len(l_atoms)):
 
@@ -371,7 +395,8 @@ class SubstructureDb:
                                        AND O = {}
                                        AND P = {}
                                        AND S = {}
-                                """.format(table_name, l_atoms[i][0], l_atoms[i][1], l_atoms[i][2],
+                                """.format(table_name,
+                                           l_atoms[i][0], l_atoms[i][1], l_atoms[i][2],
                                            l_atoms[i][3], l_atoms[i][4], l_atoms[i][5]))
             records = self.cursor.fetchall()
             if len(records) == 0:
@@ -393,15 +418,59 @@ class SubstructureDb:
 
         return subsets
 
+    def calculate_possible_hydrogenations(self):
+        """
+        Calculate likely hydrogen re-arrangements, as per
+        :py:meth:`metaboblend.databases.calculate_hydrogen_rearrangements`. Inserts these into the substructure ions
+        table.
+        """
+
+        self.cursor.execute("SELECT ROWID, smiles, mol, valence_atoms, exact_mass FROM substructures")
+
+        for substructure in self.cursor.fetchall():
+
+            mol = Chem.Mol(substructure[2])
+            fragment_ions = [mol.GetAtomWithIdx(fragment_ion).GetSymbol() for fragment_ion in
+                             eval(substructure[3]).keys()]
+
+            positive_hydrogenations = set()
+            negative_hydrogenations = set()
+
+            for fragment_ion_permutation in itertools.permutations(fragment_ions):
+                positive_hydrogenations.update(calculate_hydrogen_rearrangements(fragment_ion_permutation, "+"))
+                negative_hydrogenations.update(calculate_hydrogen_rearrangements(fragment_ion_permutation, "-"))
+
+            self.insert_substructure_ion(substructure, positive_hydrogenations, 1)
+            self.insert_substructure_ion(substructure, negative_hydrogenations, 0)
+
+        self.conn.commit()
+
+    def insert_substructure_ion(self, substructure, possible_hydrogenations, ion_mode):
+        """ Insert substructure ions into the substructure_ions table. """
+
+        for possible_hydrogenation in possible_hydrogenations:
+
+            self.cursor.execute("""INSERT INTO substructure_ions (
+                                       substructure_id, 
+                                       hydrogen_modification, 
+                                       ion_mode_positive,
+                                       modified_exact_mass__1, 
+                                       modified_exact_mass__0_0001)
+                                   values ({}, {}, {}, {}, {})""".format(
+                                       substructure[0],
+                                       possible_hydrogenation,
+                                       ion_mode,
+                                       round(substructure[4] + (possible_hydrogenation * 1.007825), 0),
+                                       round(substructure[4] + (possible_hydrogenation * 1.007825), 4)
+                                   ))
+
     def create_compound_database(self):
         """Generates a substructure database, removing previously existing tables if they are present."""
 
         self.cursor.execute("DROP TABLE IF EXISTS compounds")
         self.cursor.execute("DROP TABLE IF EXISTS substructures")
+        self.cursor.execute("DROP TABLE IF EXISTS substructure_ions")
         self.cursor.execute("DROP TABLE IF EXISTS hmdbid_substructures")
-        self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
-        self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
-        self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
 
         self.cursor.execute("""CREATE TABLE compounds (
                                    hmdbid TEXT PRIMARY KEY,
@@ -436,42 +505,71 @@ class SubstructureDb:
                                    dummies TEXT,
                                    mol BLOB)""")
 
+        self.cursor.execute("""CREATE TABLE substructure_ions (
+                                   substructure_id INTEGER, 
+                                   hydrogen_modification INTEGER, 
+                                   ion_mode_positive BOOLEAN,
+                                   modified_exact_mass__1 INTEGER, 
+                                   modified_exact_mass__0_0001 REAL,
+                                   PRIMARY KEY (substructure_id, hydrogen_modification, ion_mode_positive),
+                                   FOREIGN KEY (substructure_id) REFERENCES substructures(substructure_id))""")
+
         self.cursor.execute("""CREATE TABLE hmdbid_substructures (
                                    hmdbid TEXT,
                                    substructure_id INTEGER,
                                    PRIMARY KEY (hmdbid, substructure_id),
-                                   FOREIGN KEY (substructure_id) REFERENCES substructures(substructure_id))""")
+                                   FOREIGN KEY (substructure_id) REFERENCES substructures(substructure_id),
+                                   FOREIGN KEY (hmdbid) REFERENCES compounds(hmdbid))""")
 
-    def create_indexes(self, table="substructures", selection="all"):
+    def create_indexes(self):
         """Creates indexes for the `substructures` table for use by the build method."""
 
-        self.cursor.execute("DROP INDEX IF EXISTS mass__1")
-        self.cursor.execute("DROP INDEX IF EXISTS mass__0_0001")
+        self.cursor.execute("DROP INDEX IF EXISTS modified_exact_mass__1")
+        self.cursor.execute("DROP INDEX IF EXISTS modified_exact_mass__0_0001")
         self.cursor.execute("DROP INDEX IF EXISTS atoms")
 
-        if selection != "gen_subs_table":
-            self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
-            self.cursor.execute("DROP INDEX IF EXISTS smiles__heavy_atoms__valence__atoms_available__exact_mass__1")
+        self.cursor.execute("""CREATE INDEX modified_exact_mass__1
+                               ON %s (modified_exact_mass__1)""" % "substructure_ions")
 
-        self.cursor.execute("""CREATE INDEX mass__1
-                               ON %s (exact_mass__1)""" % table)
-        self.cursor.execute("""CREATE INDEX mass__0_0001
-                               ON %s (exact_mass__0_0001)""" % table)
-        self.cursor.execute("""CREATE INDEX atoms 
-                               ON %s (C, H, N, O, P, S);""" % table)
+        self.cursor.execute("""CREATE INDEX modified_exact_mass__0_0001
+                               ON %s (modified_exact_mass__0_0001)""" % "substructure_ions")
 
-        if selection != "gen_subs_table":
-            self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
-                                   ON %s (heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
-            self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
-                                       ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1);""" % table)
+        self.cursor.execute("""CREATE INDEX atoms ON %s (C, H, N, O, P, S);""" % "substructures")
 
-    def close(self, clean=True):
-        if clean:
-            self.cursor.execute("DROP TABLE IF EXISTS unique_hmdbid")
-            self.cursor.execute("DROP TABLE IF EXISTS filtered_hmdbid_substructures")
-            self.cursor.execute("DROP TABLE IF EXISTS subset_substructures")
+        self.cursor.execute("DROP INDEX IF EXISTS heavy_atoms__valence__atoms_available__exact_mass__1")
+        self.cursor.execute("DROP INDEX IF EXISTS smiles__heavy_atoms__valence__atoms_available__exact_mass__1")
 
+        self.cursor.execute("""CREATE INDEX heavy_atoms__valence__atoms_available__exact_mass__1
+                               ON %s (heavy_atoms, atoms_available, valence, exact_mass__1)""" % "substructures")
+
+        self.cursor.execute("""CREATE INDEX smiles__heavy_atoms__valence__atoms_available__exact_mass__1
+                                   ON %s (smiles, heavy_atoms, atoms_available, valence, exact_mass__1)""" % "substructures")
+
+    def create_temp_indexes(self, table_name):
+        """ Creates indexes for a temporary substructure tables. """
+
+        self.cursor.execute("DROP INDEX IF EXISTS %s_modified_exact_mass__1" % table_name)
+        self.cursor.execute("DROP INDEX IF EXISTS %s_modified_exact_mass__0_0001" % table_name)
+        self.cursor.execute("DROP INDEX IF EXISTS %s_atoms" % table_name)
+
+        self.cursor.execute("""CREATE INDEX {}_modified_exact_mass__1
+                               ON {} (modified_exact_mass__1)
+                            """.format(table_name, table_name + "_substructure_ions"))
+
+        self.cursor.execute("""CREATE INDEX {}_modified_exact_mass__0_0001
+                               ON {} (modified_exact_mass__0_0001)
+                            """.format(table_name, table_name + "_substructure_ions"))
+
+        self.cursor.execute("""CREATE INDEX {}_atoms ON {} (C, H, N, O, P, S)
+                            """.format(table_name, table_name + "_substructures"))
+
+    def close(self):
+        """ Remove temporary tables from the database and close the connection. """
+
+        for temporary_table_name in self.temporary_table_names:
+            self.cursor.execute("DROP TABLE IF EXISTS %s" % temporary_table_name)
+
+        self.temporary_table_names = []
         self.conn.close()
 
 
@@ -914,6 +1012,7 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
                                      isomeric_smiles=isomeric_smiles)
 
     db = SubstructureDb(path_substructure_db)
+    db.calculate_possible_hydrogenations()
     db.create_indexes()
     db.close()
 
@@ -986,8 +1085,6 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike, None]
 
     if ha_min is None:
         ha_min = 0
-
-    substructure_id = 0
 
     for record_dict in filter_records(records, isomeric_smiles=isomeric_smiles):
         if not substructures_only:
@@ -1156,6 +1253,35 @@ def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_
                               hmdbid, 
                               substructure_id) 
                           VALUES ('{}', {})""".format(record_dict['HMDB_ID'], cursor.fetchall()[0][0]))
+
+
+def calculate_hydrogen_rearrangements(fragment_ions, ion_mode):
+    """ Calculate MS-FINDER re-arrangement possibilities. """
+
+    which_rule = {"+": {True:  {"C": ["P1"], "N": ["P2"], "O": ["P2"], "P": ["P1", "P2"], "S": ["P1", "P2"]},
+                        False: {"C": ["P3", "P4"], "N": ["P3", "P4"], "O": ["P3", "P4"], "P": ["P3", "P4"], "S": ["P3", "P4"]}},
+                  "-": {True:  {"C": ["N1", "N2"], "N": ["N1"], "O": ["N1"], "P": ["N2"], "S": ["N1", "N3"]},
+                        False: {"C": ["N4", "N5"], "N": ["N4", "N5"], "O": ["N4", "N5"], "P": ["N4", "N5"], "S": ["N4", "N5"]}}
+                  }
+
+    fragment_ion_rules = []
+    for i, fragment_ion in enumerate(fragment_ions):
+        fragment_ion_rules.append(which_rule[ion_mode][i == 0][fragment_ion])
+
+    return get_hydrogenation_modifiers(fragment_ion_rules)
+
+
+def get_hydrogenation_modifiers(rules_list):
+
+    rule_hydrogenations = {"P1": +0, "P2": +2, "P3": +1, "P4": -1,
+                           "N1": +0, "N2": -2, "N3": -1, "N4": +1, "N5": -1}
+
+    possible_hydrogenations = set()
+    for rule_set in itertools.product(*rules_list):
+
+        possible_hydrogenations.add(sum([rule_hydrogenations[rule] for rule in rule_set]))
+
+    return possible_hydrogenations
 
 
 def create_connectivity_database(path_connectivity_db: Union[str, bytes, os.PathLike], max_n_substructures: int = 3,
