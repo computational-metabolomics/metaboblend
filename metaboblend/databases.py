@@ -1295,8 +1295,9 @@ def calculate_hydrogen_rearrangements(fragment_ions, ion_mode):
 
 def get_hydrogenation_modifiers(rules_list):
 
-    rule_hydrogenations = {"P1": +0, "P2": +2, "P3": +1, "P4": -1,
-                           "N1": +0, "N2": -2, "N3": -1, "N4": +1, "N5": -1}
+    # the rules modified to account for the fact we are using the neutralised peak mass and don't add the mass of hydrogen
+    rule_hydrogenations = {"P1": -1, "P2": +1, "P3": +1, "P4": -1,
+                           "N1": +1, "N2": -1, "N3": +0, "N4": +1, "N5": -1}
 
     possible_hydrogenations = set()
     for rule_set in itertools.product(*rules_list):
