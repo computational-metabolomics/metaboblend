@@ -454,7 +454,15 @@ class SubstructureDb:
         self.conn.commit()
 
     def insert_substructure_ion(self, substructure, possible_hydrogenations, ion_mode):
-        """ Insert substructure ions into the substructure_ions table. """
+        """
+        Insert substructure ions into the substructure_ions table.
+
+        :param substructure: List, [ROWID (int), smiles (str), mol (RDKit Mol), bond_types (Dict), exact_mass (float]
+
+        :param possible_hydrogenations: Number of hydrogens to add compared to the mass of the neutral substructure.
+
+        :param ion_mode: If True, assumes positive ion mode, else is configured for negative ion mode.
+        """
 
         for possible_hydrogenation in possible_hydrogenations:
 
@@ -1278,7 +1286,16 @@ def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_
 
 
 def calculate_hydrogen_rearrangements(fragment_ions, ion_mode):
-    """ Calculate MS-FINDER re-arrangement possibilities. """
+    """
+    Calculate MS-FINDER re-arrangement possibilities.
+
+    :param fragment_ions: The element symbol of the assumed ionised atom.
+
+    :param ion_mode: If True, assumes positive ion mode, else is configured for negative ion mode.
+
+    :return: A set of integers referring to likely hydrogenation modifiers; i.e. if the set contains 1, this means that
+        the substructure could have one less hydrogen than expected.
+    """
 
     which_rule = {"+": {True:  {"C": ["P1"], "N": ["P2"], "O": ["P2"], "P": ["P1", "P2"], "S": ["P1", "P2"]},
                         False: {"C": ["P3", "P4"], "N": ["P3", "P4"], "O": ["P3", "P4"], "P": ["P3", "P4"], "S": ["P3", "P4"]}},
@@ -1298,15 +1315,27 @@ def calculate_hydrogen_rearrangements(fragment_ions, ion_mode):
 
 
 def get_hydrogenation_modifiers(rules_list):
+    """
+    Convert rule names to hydrogen modifiers.
 
-    # the rules modified to account for the fact we are using the neutralised peak mass and don't add the mass of hydrogen
+    :param: A list of list of rules. E.g. `[["P1"], ["P3", P4"]]`.
+
+    :return: A set of integers referring to likely hydrogenation modifiers; i.e. if the set contains 1, this means that
+        the substructure could have one less hydrogen than expected. If the example above (`[["P1"], ["P3", P4"]]`)
+        was given as input, the output would be a set containing
+        `sum([rule_hydrogenations["P1"], rule_hydrogenations["P3"]])` and
+        `sum([rule_hydrogenations["P1"], rule_hydrogenations["P4"]])`.
+    """
+
+    # the rules modified to account for the fact we are using the neutralised peak mass
     rule_hydrogenations = {"P1": -1, "P2": +1, "P3": +1, "P4": -1,
                            "N1": +1, "N2": -1, "N3": +0, "N4": +1, "N5": -1}
 
     possible_hydrogenations = set()
     for rule_set in itertools.product(*rules_list):
 
-        # note that "*" is already counted as having the mass of 1 hydrogens
+        # note that we don't consider dummy atoms ("*") to have mass, so we do not have to account for these
+        # in the hydrogenation modifier (as MS-FINDER do)
         possible_hydrogenations.add(sum([rule_hydrogenations[rule] for rule in rule_set]))
 
     return possible_hydrogenations
