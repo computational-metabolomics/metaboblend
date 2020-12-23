@@ -97,53 +97,54 @@ class BuildStructuresTestCase(unittest.TestCase):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"),
                             self.to_test_data("connectivity.sqlite"))
 
-        ec_products = [((4, 5, 0, 0, 0, 0), (4, 6, 1, 2, 0, 0)),
-                       ((5, 5, 0, 2, 0, 0), (3, 6, 1, 0, 0, 0)),
-                       ((2, 4, 0, 2, 0, 0), (4, 8, 0, 4, 0, 0))]
+        ec_products = [[(3, 3, 0, 1, 0, 0), (5, 8, 1, 1, 0, 0)],
+                       [(3, 5, 0, 1, 0, 0), (2, 4, 1, 1, 0, 0), (4, 2, 0, 1, 0, 0)],
+                       [(3, 5, 1, 0, 0, 0), (2, 3, 0, 2, 0, 0)],
+                       [(3, 6, 0, 4, 0, 0), (5, 9, 0, 3, 0, 0), (4, 7, 0, 4, 0, 0)]]
         configs_iso = db.k_configs()
-        lens = [0, 1, 41]
+        lens = [3, 0, 0, 44]
 
         for i, ec_product in enumerate(ec_products):
             substructure_subset = db.select_substructures(ec_product, None)
+
             smis = substructure_combination_build(substructure_subset, configs_iso, prescribed_method=False,
                                                   isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies(),
                                                   retain_substructures=False)
 
             self.assertEqual(len(smis.keys()), lens[i])
 
-            if i == 1:
-                self.assertEqual(list(smis.keys()), ['NCCc1ccc(O)c(O)c1'])
+            if i == 0:
+                self.assertEqual(list(smis.keys()), ['NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)ccc1O', 'NCCc1cc(O)cc(O)c1'])
 
         db.close()
 
     def test_build_from_subsets(self):
         db = SubstructureDb(self.to_test_data("substructures.sqlite"))
 
-        mcs = [[8, 11, 1, 2, 0, 0], [8, 11, 1, 2, 0, 0], [12, 22, 0, 11, 0, 0], [10, 0, 0, 0, 0, 0],
-               [9, 11, 1, 3, 0, 0], [9, 11, 1, 3, 0, 0], [8, 11, 1, 2, 0, 0]]
-        exact_subsets = [(74.0242, 79.0548), (65.0391, 88.0399), (103.0395, 119.0344, 120.0423),
-                         (84.0449, 97.029), (50.0156, 57.0215, 74.0368), (50.0156, 57.034, 74.0242),
-                         (50.0156, 57.0215, 74.0368)]
+        mcs = [[12, 22, 0, 11, 0, 0], [10, 0, 0, 0, 0, 0],
+               [9, 11, 1, 3, 0, 0], [9, 11, 1, 3, 0, 0]]
+        exact_subsets = [(103.0395, 119.0344, 120.0423),
+                         (84.0449, 97.029), (50.0156, 57.0215, 74.0368), (50.0156, 57.034, 74.0242)]
 
-        lens = [1, 7, 26, 0, 4, 4, 0]
+        lens = [13, 0, 1, 1]
         
         for i, mc, exact_subset in zip(range(len(mcs)), mcs, exact_subsets):
             substructure_subsets = build_from_subsets(exact_subset, mc, None, db)
 
-            if i == 3 or i == 6:
+            if i == 1:
                 self.assertEqual(len(substructure_subsets), 0)
             else:
                 self.assertEqual(len(substructure_subsets[0][0]), lens[i])
 
-            if i == 0:
+            if i == 2:
                 del substructure_subsets[0][0][0]["mol"]
                 self.assertEqual(substructure_subsets[0][0],
-                                 [{'smiles': '*[C@H](N)C(=O)O',
-                                   'bond_types': {1: [1.0]},
-                                   'degree_atoms': {1: 1},
-                                   'valence': 1,
-                                   'atoms_available': 1,
-                                   'dummies': [2]}])
+                                 [{'atoms_available': 2,
+                                   'bond_types': {1: [1.0, 1.5], 4: [1.5, 1.0]},
+                                   'degree_atoms': {1: 2, 4: 2},
+                                   'dummies': [0, 2, 3, 5],
+                                   'smiles': '*c1:*:*:c(*)cc1',
+                                   'valence': 4}])
 
         db.close()
 
@@ -360,7 +361,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             self.assertTrue(row[1] <= 4)
             self.assertTrue(row[2] <= 2)
 
-        self.assertEqual(i, 58)
+        self.assertEqual(i, 57)
 
         db.close()
 
@@ -375,7 +376,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         self.assertEqual(combine_mfs([54.0106, 69.0578], db, None, "0_0001"),
                          [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_mfs([54, 69], db, None, "1"),
-                         [[(3, 2, 0, 1, 0, 0)], [(4, 5, 0, 1, 0, 0), (4, 7, 1, 0, 0, 0)]])
+                         [[(3, 2, 0, 1, 0, 0)], [(4, 7, 1, 0, 0, 0)]])
         self.assertEqual(combine_mfs([54.0101, 69.0580], db, None, "0_0001"), [])
 
         db.close()
