@@ -256,7 +256,7 @@ class SubstructureDbTestCase(unittest.TestCase):
         db.create_indexes()
         db.close()
 
-    def test_calculate_possible_hydrogenations(self):
+    def test_calculate_possible_hydrogenations(self):  # also tests insert_substructure_ion
 
         records = [self.to_test_data(r + ".xml") for r in ["HMDB0001245", "HMDB0000263"]]
 

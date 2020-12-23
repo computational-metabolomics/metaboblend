@@ -365,11 +365,24 @@ class DatabasesTestCase(unittest.TestCase):
 
         test_db.close()
 
-    def test_calculate_possible_hydrogenations(self):
-        return  # TODO: implement test
+    def test_calculate_hydrogen_rearrangements(self):
 
-    def test_insert_substructure_ion(self):
-        return  # TODO: implement test
+        fragment_ions = [(('C', False), ('C', False)), (('C', False), ('C', False), ('C', False), ('C', True)),
+                         (('P', False), ('C', False), ('P', False), ('P', True)),
+                         (('C', True), ('C', False), ('C', False), ('C', False)),
+                         (('C', False), ('P', False), ('P', True), ('P', False)),
+                         (('C', False), ('N', False), ('C', False), ('N', False)),
+                         (('N', False), ('C', False), ('N', False), ('C', False)),
+                         (),
+                         (('C', False),)]
+        positive_results = [{0, -2}, {1, 3, -5, -3, -1}, {1, 3, 5, -5, -3, -1}, {1, 3, -5, -3, -1},
+                            {1, 3, -5, -3, -1}, {0, 2, -4, -2}, {0, 2, 4, -2}, {0}, {-1}]
+        negative_results = [{0, 2, -2}, {1, 3, 5, -5, -3, -1}, {1, 3, -5, -3, -1}, {1, 3, 5, -5, -3, -1},
+                            {1, 3, 5, -5, -3, -1}, {0, 2, 4, -4, -2}, {0, 2, 4, -2}, {0}, {1, -1}]
+
+        for fragment_ion, positive_result, negative_result in zip(fragment_ions, positive_results, negative_results):
+            self.assertEqual(calculate_hydrogen_rearrangements(fragment_ion, "+"), positive_result)
+            self.assertEqual(calculate_hydrogen_rearrangements(fragment_ion, "-"), negative_result)
 
 
 if __name__ == '__main__':
