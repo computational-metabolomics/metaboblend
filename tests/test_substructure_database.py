@@ -256,6 +256,71 @@ class SubstructureDbTestCase(unittest.TestCase):
         db.create_indexes()
         db.close()
 
+    def test_calculate_possible_hydrogenations(self):
+
+        records = [self.to_test_data(r + ".xml") for r in ["HMDB0001245", "HMDB0000263"]]
+
+        create_substructure_database(records, self.to_test_results("substructures.sqlite"), 3, 20, method="exhaustive",
+                                     isomeric_smiles=True, max_degree=6, max_atoms_available=2)
+
+        db = SubstructureDb(self.to_test_results("substructures.sqlite"))
+
+        search_statement = """SELECT smiles, hydrogen_modification, valence, substructure_ions.substructure_id
+                                  FROM substructure_ions 
+                                  LEFT JOIN substructures ON substructure_ions.substructure_id = substructures.substructure_id 
+                                  WHERE modified_exact_mass__0_0001 > ({} {} 1.007276) - 0.01 
+                                  AND modified_exact_mass__0_0001 < ({} {} 1.007276) + 0.01 
+                                  AND ion_mode_positive = {}
+                           """
+
+        # HMDB0001245 - 2'-deoxycytidine 5'-diphosphate
+        mzs = [256.9616, 158.9248, 96.9691, 78.9585]
+        h_mods = [-2, -1, 1, -1]
+        valences = [2, 1, 1, 1]
+        smiles = ["*[C@H]1C[C@H](O)[C@@H](COP(=O)(O)OP(*)(=O)O)O1", "*P(=O)(O)OP(=O)(O)O", "*OP(=O)(O)O", "*P(=O)(O)O"]
+
+        for mz, h_mod, valence, smile in zip(mzs, h_mods, valences, smiles):
+
+            db.cursor.execute(search_statement.format(mz, "+", mz, "+", 0))
+            substructure_found = False
+
+            for substructure in db.cursor.fetchall():
+
+                if substructure[0] == smile:
+
+                    substructure_found = True
+
+                    self.assertEqual(substructure[1], h_mod)
+                    self.assertEqual(substructure[2], valence)
+
+            self.assertTrue(substructure_found)
+
+        # HMDB0000263 - Phospho(enol)pyruvic acid
+        mzs = [62.9628, 64.9785, 80.9734, 89.0233, 94.9892, 98.9841, 104.9735, 116.973611, 122.9842, 140.9947, 150.9791]
+        h_mods = [-1, 1, -1, 1, 2, 1, -2, -1, -1, 3, -1]
+        valences = [3, 3, 1, 1, 4, 1, 2, 3, 1, 3, 1]
+        smiles = ['*OP(*)(*)=O', '*OP(*)(*)=O', "*P(=O)(O)O", "*OC(=C)C(=O)O", "*C(=*)OP(*)(=O)O", "*OP(=O)(O)O",
+                  "*C(=C)OP(*)(=O)O", "*C(=O)C(=C)OP(*)(*)=O", "*C(=C)OP(=O)(O)O",
+                  "*P(=O)(O)OC(=*)C(=O)O", "*P(=O)(O)OC(=C)C(=O)O"]
+
+        for mz, h_mod, valence, smile in zip(mzs, h_mods, valences, smiles):
+
+            db.cursor.execute(search_statement.format(mz, "-", mz, "-", 1))
+            substructure_found = False
+
+            for substructure in db.cursor.fetchall():
+
+                if substructure[0] == smile:
+
+                    substructure_found = True
+
+                    self.assertEqual(substructure[1], h_mod)
+                    self.assertEqual(substructure[2], valence)
+
+                    break
+
+            self.assertTrue(substructure_found)
+
 
 if __name__ == '__main__':
     unittest.main()
