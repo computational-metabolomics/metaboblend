@@ -680,14 +680,17 @@ def get_substructure(mol, idxs_edges_subgraph, isomeric_smiles=False):
 
     for b in mol_out.GetBonds():
 
+        begin_atom = mol_out.GetAtomWithIdx(b.GetBeginAtomIdx())
+        end_atom = mol_out.GetAtomWithIdx(b.GetEndAtomIdx())
+
         # use bond types to dummy atoms to inform future structure building from compatible substructures
-        if mol_out.GetAtomWithIdx(b.GetBeginAtomIdx()).GetSymbol() == "*":
+        if begin_atom.GetSymbol() == "*" and end_atom.GetSymbol() != "*":  # do not count dummy-dummy bonds for valence calculations
             if b.GetEndAtomIdx() not in bond_types:
                 bond_types[b.GetEndAtomIdx()] = [b.GetBondTypeAsDouble()]
             else:
                 bond_types[b.GetEndAtomIdx()].append(b.GetBondTypeAsDouble())
 
-        elif mol_out.GetAtomWithIdx(b.GetEndAtomIdx()).GetSymbol() == "*":
+        elif end_atom.GetSymbol() == "*" and begin_atom.GetSymbol() != "*":
             if b.GetBeginAtomIdx() not in bond_types:
                 bond_types[b.GetBeginAtomIdx()] = [b.GetBondTypeAsDouble()]
             else:
