@@ -1288,7 +1288,11 @@ def calculate_hydrogen_rearrangements(fragment_ions, ion_mode):
 
     fragment_ion_rules = []
     for i, fragment_ion in enumerate(fragment_ions):
-        fragment_ion_rules.append(which_rule[ion_mode][i == 0][fragment_ion])
+
+        fragment_ion_rules.append(which_rule[ion_mode][i == 0][fragment_ion[0]])
+
+        if fragment_ion[1]:  # double bond (i.e. two hydrogens displaced)
+            fragment_ion_rules.append(which_rule[ion_mode][False][fragment_ion[0]])
 
     return get_hydrogenation_modifiers(fragment_ion_rules)
 
@@ -1302,6 +1306,7 @@ def get_hydrogenation_modifiers(rules_list):
     possible_hydrogenations = set()
     for rule_set in itertools.product(*rules_list):
 
+        # note that "*" is already counted as having the mass of 1 hydrogens
         possible_hydrogenations.add(sum([rule_hydrogenations[rule] for rule in rule_set]))
 
     return possible_hydrogenations
