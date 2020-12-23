@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hmdb xmlns="http://www.hmdb.ca"> 
+<metabolite>
+  <version>4.0</version>
+  <creation_date>2005-11-16 15:48:42 UTC</creation_date>
+  <update_date>2020-02-26 21:23:06 UTC</update_date>
+  <accession>HMDB0001245</accession>
+  <status>expected</status>
+  <secondary_accessions>
+    <accession>HMDB01245</accession>
+  </secondary_accessions>
+  <name>dCDP</name>
+  <description>dCDP is a substrate for Uridine-cytidine kinase 1, Nucleoside diphosphate kinase (mitochondrial), Nucleoside diphosphate kinase homolog 5, Ribonucleoside-diphosphate reductase large subunit, Nucleoside diphosphate kinase A, Nucleoside diphosphate kinase 7, Ribonucleoside-diphosphate reductase M2 chain, Nucleoside diphosphate kinase B, Nucleoside diphosphate kinase 3, Nucleoside diphosphate kinase 6 and UMP-CMP kinase.</description>
+  <synonyms>
+    <synonym>2'-Deoxycytidine 5'-diphosphate</synonym>
+    <synonym>2'-Deoxycytidine diphosphate</synonym>
+    <synonym>D-1beta-Ribofuranosylcytosine diphosphate</synonym>
+    <synonym>Deoxycytidine diphosphate</synonym>
+    <synonym>2'-Deoxycytidine 5'-diphosphoric acid</synonym>
+    <synonym>2'-Deoxycytidine diphosphoric acid</synonym>
+    <synonym>D-1b-Ribofuranosylcytosine diphosphate</synonym>
+    <synonym>D-1b-Ribofuranosylcytosine diphosphoric acid</synonym>
+    <synonym>D-1beta-Ribofuranosylcytosine diphosphoric acid</synonym>
+    <synonym>D-1Β-ribofuranosylcytosine diphosphate</synonym>
+    <synonym>D-1Β-ribofuranosylcytosine diphosphoric acid</synonym>
+    <synonym>Deoxycytidine diphosphoric acid</synonym>
+    <synonym>2'-Deoxy-cytidine 5'-pyrophosphate</synonym>
+    <synonym>2'-Deoxy-cytidine pyrophosphate</synonym>
+    <synonym>2'-Deoxycytidine-5'-diphosphate</synonym>
+    <synonym>4-Amino-1-[2-deoxy-5-O-[hydroxy(phosphonooxy)phosphinyl]-beta-D-erythro-pentofuranosyl]-2(1H)-pyrimidinone</synonym>
+    <synonym>4-Amino-1-[2-deoxy-5-O-[hydroxy(phosphonooxy)phosphinyl]-beta-delta-erythro-pentofuranosyl]-2(1H)-pyrimidinone</synonym>
+    <synonym>delta-1beta-Ribofuranosylcytosine diphosphate</synonym>
+    <synonym>Deoxy-CDP</synonym>
+    <synonym>Deoxycytidine 5'-diphosphate</synonym>
+  </synonyms>
+  <chemical_formula>C9H15N3O10P2</chemical_formula>
+  <average_molecular_weight>387.177</average_molecular_weight>
+  <monisotopic_molecular_weight>387.023266739</monisotopic_molecular_weight>
+  <iupac_name>[({[(2R,3S,5R)-5-(4-amino-2-oxo-1,2-dihydropyrimidin-1-yl)-3-hydroxyoxolan-2-yl]methoxy}(hydroxy)phosphoryl)oxy]phosphonic acid</iupac_name>
+  <traditional_iupac>dCDP</traditional_iupac>
+  <cas_registry_number>800-73-7</cas_registry_number>
+  <smiles>NC1=NC(=O)N(C=C1)[C@H]1C[C@H](O)[C@@H](COP(O)(=O)OP(O)(O)=O)O1</smiles>
+  <inchi>InChI=1S/C9H15N3O10P2/c10-7-1-2-12(9(14)11-7)8-3-5(13)6(21-8)4-20-24(18,19)22-23(15,16)17/h1-2,5-6,8,13H,3-4H2,(H,18,19)(H2,10,11,14)(H2,15,16,17)/t5-,6+,8+/m0/s1</inchi>
+  <inchikey>FTDHDKPUHBLBTL-SHYZEUOFSA-N</inchikey>
+  <taxonomy>
+    <description> belongs to the class of organic compounds known as organic pyrophosphates. These are organic compounds containing the pyrophosphate oxoanion, with the structure OP([O-])(=O)OP(O)([O-])=O.</description>
+    <direct_parent>Organic pyrophosphates</direct_parent>
+    <kingdom>Organic compounds</kingdom>
+    <super_class>Organic oxygen compounds</super_class>
+    <class>Organic oxoanionic compounds</class>
+    <sub_class>Organic pyrophosphates</sub_class>
+    <molecular_framework>Aromatic heteromonocyclic compounds</molecular_framework>
+    <alternative_parents>
+      <alternative_parent>Aminopyrimidines and derivatives</alternative_parent>
+      <alternative_parent>Azacyclic compounds</alternative_parent>
+      <alternative_parent>Heteroaromatic compounds</alternative_parent>
+      <alternative_parent>Hydrocarbon derivatives</alternative_parent>
+      <alternative_parent>Hydropyrimidines</alternative_parent>
+      <alternative_parent>Imidolactams</alternative_parent>
+      <alternative_parent>Monoalkyl phosphates</alternative_parent>
+      <alternative_parent>Organic oxides</alternative_parent>
+      <alternative_parent>Organopnictogen compounds</alternative_parent>
+      <alternative_parent>Oxacyclic compounds</alternative_parent>
+      <alternative_parent>Primary amines</alternative_parent>
+      <alternative_parent>Pyrimidones</alternative_parent>
+      <alternative_parent>Secondary alcohols</alternative_parent>
+      <alternative_parent>Tetrahydrofurans</alternative_parent>
+    </alternative_parents>
+    <substituents>
+      <substituent>Alcohol</substituent>
+      <substituent>Alkyl phosphate</substituent>
+      <substituent>Amine</substituent>
+      <substituent>Aminopyrimidine</substituent>
+      <substituent>Aromatic heteromonocyclic compound</substituent>
+      <substituent>Azacycle</substituent>
+      <substituent>Heteroaromatic compound</substituent>
+      <substituent>Hydrocarbon derivative</substituent>
+      <substituent>Hydropyrimidine</substituent>
+      <substituent>Imidolactam</substituent>
+      <substituent>Monoalkyl phosphate</substituent>
+      <substituent>Organic nitrogen compound</substituent>
+      <substituent>Organic oxide</substituent>
+      <substituent>Organic phosphoric acid derivative</substituent>
+      <substituent>Organic pyrophosphate</substituent>
+      <substituent>Organoheterocyclic compound</substituent>
+      <substituent>Organonitrogen compound</substituent>
+      <substituent>Organooxygen compound</substituent>
+      <substituent>Organopnictogen compound</substituent>
+      <substituent>Oxacycle</substituent>
+      <substituent>Phosphoric acid ester</substituent>
+      <substituent>Primary amine</substituent>
+      <substituent>Pyrimidine</substituent>
+      <substituent>Pyrimidone</substituent>
+      <substituent>Secondary alcohol</substituent>
+      <substituent>Tetrahydrofuran</substituent>
+    </substituents>
+    <external_descriptors>
+      <external_descriptor>2'-deoxycytidine phosphate</external_descriptor>
+      <external_descriptor>Deoxyribonucleotides</external_descriptor>
+      <external_descriptor>pyrimidine 2'-deoxyribonucleoside 5'-diphosphate</external_descriptor>
+    </external_descriptors>
+  </taxonomy>
+  <ontology>
+    <root>
+      <term>Disposition</term>
+      <definition>A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Route of exposure</term>
+          <definition>A mean by which a chemical agent comes in contact with an organism, either under intended or unintended circumstances.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Enteral</term>
+              <definition>Chemical exposure via the alimentary canal (mouth to anus).</definition>
+              <parent_id>7743</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Ingestion</term>
+                  <definition>Chemical exposure facilitated by entry through the mouth.</definition>
+                  <parent_id>7744</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Digestion</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Source</term>
+          <definition>Natural or synthetic origin of a chemical.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Endogenous</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Food</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Biological</term>
+              <definition>A living organism (species or a higher taxonomy rank), in which a chemical can be found.</definition>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Plant</term>
+                  <definition>A living organism belonging to the kingdom plantea. typically, it grows in a permanent site, absorbs water and inorganic substances through its roots, and synthesizes nutrients in its leaves by photosynthesis using the green pigment chlorophyll. examples incude trees, shrubs, herbs, grasses, ferns, and mosses.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                    <synonym>Flora</synonym>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Poaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Gramineae</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fabaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Papilionoideae</synonym>
+                        <synonym>Legume</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Glycine max</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Soy</synonym>
+                        <synonym>Soya</synonym>
+                        <synonym>Soybean</synonym>
+                        <synonym>Soya bean</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Cucurbitaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Cucurbits</synonym>
+                        <synonym>Gourds</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Theobroma cacao</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+                <descendant>
+                  <term>Animal</term>
+                  <definition>A living organism belonging to the kingdom animalia. it feeds on organic matter, typically having specialized sense organs and nervous system and able to respond rapidly to stimuli.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fauna</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Biological location</term>
+          <definition>The physiological origin within an organism, including anatomical compnents, biofluids and excreta.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Subcellular</term>
+              <definition>An anatomical organizational level including a component within a biological cell .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Mitochondria</term>
+                  <definition/>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Nucleus</term>
+                  <definition>A body within the cell, surrounded by a membrane, within which lie the chromosomes, one or more nucleoli, combined with proteins, and exhibits mitosis. (NCI)</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Cell nucleus</synonym>
+                    <synonym>Nucleic</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Cytoplasm</term>
+                  <definition>The portion of the cell contained within the plasma membrane but excluding the nucleus.</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Cytoplasma</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Process</term>
+      <definition>Biological or chemical events, or a series thereof, leading to a known function or end-product.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Naturally occurring process</term>
+          <definition>Naturally-occurring molecular events or a series thereof, leading to a known function or end-product.</definition>
+          <parent_id>7659</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Biological process</term>
+              <definition>Biological or chemical events or a series thereof, leading to a known function or end-product within an organism.</definition>
+              <parent_id>7660</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Biochemical pathway</term>
+                  <definition>A linked series of chemical reactions that occur in a defined order within or between organism cells, and lead to a known function or end product.</definition>
+                  <parent_id>7661</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>MNGIE (Mitochondrial Neurogastrointestinal Encephalopathy)</term>
+                      <definition> mngie causes accumulation of thymidine and deoxyuridine in the urine. symptoms of mngie include ptosis, progressive external ophthalmoplegia, gastrointestinal dysmotility (often pseudoobstruction), diffuse leukoencephalopathy, peripheral neuropathy, and myopathy.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Pyrimidine Metabolism</term>
+                      <definition> cytosine, thymine, and uracil are pyrimidine derivatives. synthesis of the pyrimidines is less complex than that of the purines, since the base is much simpler this pathway depicts a number of processes including pyrimidine nucleotide biosynthesis, pyrimidine degradation and pyrimidine salvage.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+  </ontology>
+  <state>Solid</state>
+  <experimental_properties>
+  </experimental_properties>
+  <predicted_properties>
+    <property>
+      <kind>logp</kind>
+      <value>-1.48</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logs</kind>
+      <value>-1.53</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>solubility</kind>
+      <value>11.3 g/L</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logp</kind>
+      <value>-3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_acidic</kind>
+      <value>1.78</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_basic</kind>
+      <value>-0.005</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>iupac</kind>
+      <value>[({[(2R,3S,5R)-5-(4-amino-2-oxo-1,2-dihydropyrimidin-1-yl)-3-hydroxyoxolan-2-yl]methoxy}(hydroxy)phosphoryl)oxy]phosphonic acid</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>average_mass</kind>
+      <value>387.177</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mono_mass</kind>
+      <value>387.023266739</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>smiles</kind>
+      <value>NC1=NC(=O)N(C=C1)[C@H]1C[C@H](O)[C@@H](COP(O)(=O)OP(O)(O)=O)O1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formula</kind>
+      <value>C9H15N3O10P2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchi</kind>
+      <value>InChI=1S/C9H15N3O10P2/c10-7-1-2-12(9(14)11-7)8-3-5(13)6(21-8)4-20-24(18,19)22-23(15,16)17/h1-2,5-6,8,13H,3-4H2,(H,18,19)(H2,10,11,14)(H2,15,16,17)/t5-,6+,8+/m0/s1</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchikey</kind>
+      <value>FTDHDKPUHBLBTL-SHYZEUOFSA-N</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polar_surface_area</kind>
+      <value>201.44</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>refractivity</kind>
+      <value>74.78</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polarizability</kind>
+      <value>30.77</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rotatable_bond_count</kind>
+      <value>6</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>acceptor_count</kind>
+      <value>10</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>donor_count</kind>
+      <value>5</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>physiological_charge</kind>
+      <value>-2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formal_charge</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>number_of_rings</kind>
+      <value>2</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>bioavailability</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rule_of_five</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>ghose_filter</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>veber_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mddr_like_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+  </predicted_properties>
+  <spectra>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>25964</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>37992</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>27746</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>27747</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>27748</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>34304</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>34305</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>34306</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>439044</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>440125</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>447974</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>447975</spectrum_id>
+    </spectrum>
+  </spectra>
+  <biological_properties>
+    <cellular_locations>
+      <cellular>Mitochondria</cellular>
+      <cellular>Nucleus</cellular>
+    </cellular_locations>
+    <biospecimen_locations>
+    </biospecimen_locations>
+    <tissue_locations>
+    </tissue_locations>
+    <pathways>
+      <pathway>
+        <name>Beta Ureidopropionase Deficiency</name>
+        <smpdb_id>SMP00172</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Dihydropyrimidinase Deficiency</name>
+        <smpdb_id>SMP00178</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>MNGIE (Mitochondrial Neurogastrointestinal Encephalopathy)</name>
+        <smpdb_id>SMP00202</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pyrimidine Metabolism</name>
+        <smpdb_id>SMP00046</smpdb_id>
+        <kegg_map_id>map00240</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>UMP Synthase Deficiency (Orotic Aciduria)</name>
+        <smpdb_id>SMP00219</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+    </pathways>
+  </biological_properties>
+  <normal_concentrations>
+  </normal_concentrations>
+  <abnormal_concentrations>
+  </abnormal_concentrations>
+  <diseases>
+  </diseases>
+  <kegg_id>C00705</kegg_id>
+  <foodb_id>FDB022510</foodb_id>
+  <drugbank_id/>
+  <pubchem_compound_id>150855</pubchem_compound_id>
+  <chemspider_id>132961</chemspider_id>
+  <pdb_id/>
+  <chebi_id>28846</chebi_id>
+  <biocyc_id>DCDP</biocyc_id>
+  <phenol_explorer_compound_id/>
+  <knapsack_id/>
+  <bigg_id>50858</bigg_id>
+  <wikipedia_id>Deoxycytidine_diphosphate</wikipedia_id>
+  <metlin_id>6105</metlin_id>
+  <synthesis_reference>Nara, Takashi; Misawa, Masanaru.  Bacterial phosphorylation of 5'-deoxycytidine monophosphate to di-or triphosphate.    Jpn. Tokkyo Koho  (1971),     2 pp.</synthesis_reference>
+  <general_references>
+    <reference>
+      <reference_text>Chiu TH, Morimoto H, Baker JJ: Biosynthesis and characterization of phosphatidylglycerophosphoglycerol, a possible intermediate in lipoteichoic acid biosynthesis in Streptococcus sanguis. Biochim Biophys Acta. 1993 Feb 24;1166(2-3):222-8.</reference_text>
+      <pubmed_id>8443240</pubmed_id>
+    </reference>
+  </general_references>
+  <protein_associations>
+    <protein>
+      <protein_accession>HMDBP00003</protein_accession>
+      <name>UMP-CMP kinase</name>
+      <uniprot_id>P30085</uniprot_id>
+      <gene_name>CMPK1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00105</protein_accession>
+      <name>Uridine-cytidine kinase 1</name>
+      <uniprot_id>Q9HA47</uniprot_id>
+      <gene_name>UCK1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00106</protein_accession>
+      <name>Nucleoside diphosphate kinase, mitochondrial</name>
+      <uniprot_id>O00746</uniprot_id>
+      <gene_name>NME4</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00108</protein_accession>
+      <name>Ribonucleoside-diphosphate reductase large subunit</name>
+      <uniprot_id>P23921</uniprot_id>
+      <gene_name>RRM1</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00109</protein_accession>
+      <name>Nucleoside diphosphate kinase A</name>
+      <uniprot_id>P15531</uniprot_id>
+      <gene_name>NME1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00110</protein_accession>
+      <name>Nucleoside diphosphate kinase 7</name>
+      <uniprot_id>Q9Y5B8</uniprot_id>
+      <gene_name>NME7</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00111</protein_accession>
+      <name>Ribonucleoside-diphosphate reductase subunit M2</name>
+      <uniprot_id>P31350</uniprot_id>
+      <gene_name>RRM2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00112</protein_accession>
+      <name>Nucleoside diphosphate kinase B</name>
+      <uniprot_id>P22392</uniprot_id>
+      <gene_name>NME2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00113</protein_accession>
+      <name>Nucleoside diphosphate kinase 3</name>
+      <uniprot_id>Q13232</uniprot_id>
+      <gene_name>NME3</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00114</protein_accession>
+      <name>Nucleoside diphosphate kinase 6</name>
+      <uniprot_id>O75414</uniprot_id>
+      <gene_name>NME6</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP02576</protein_accession>
+      <name>Uridine-cytidine kinase 2</name>
+      <uniprot_id>Q9BZX2</uniprot_id>
+      <gene_name>UCK2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07407</protein_accession>
+      <name>Ribonucleoside-diphosphate reductase subunit M2 B</name>
+      <uniprot_id>Q7LG56</uniprot_id>
+      <gene_name>RRM2B</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07409</protein_accession>
+      <name>UMP-CMP kinase 2, mitochondrial</name>
+      <uniprot_id>Q5EBM0</uniprot_id>
+      <gene_name>CMPK2</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP07410</protein_accession>
+      <name>Uridine-cytidine kinase-like 1</name>
+      <uniprot_id>Q9NWZ5</uniprot_id>
+      <gene_name>UCKL1</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP11852</protein_accession>
+      <name>Nucleoside diphosphate kinase homolog 5</name>
+      <uniprot_id>P56597</uniprot_id>
+      <gene_name>NME5</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+  </protein_associations>
+</metabolite>
+</hmdb>
