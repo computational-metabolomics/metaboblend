@@ -701,11 +701,19 @@ def get_substructure(mol, idxs_edges_subgraph, isomeric_smiles=False):
     except:
         return
 
+    valence = 0
+    for atom_available in bond_types.values():
+        for bond_type in atom_available:
+            if bond_type == 2:
+                valence += 2
+            else:
+                valence += 1
+
     return {"smiles": Chem.MolToSmiles(mol_out, isomericSmiles=isomeric_smiles),  # REORDERED ATOM INDEXES
             "mol": mol_out,
             "bond_types": bond_types,
             "degree_atoms": degree_atoms,
-            "valence": sum(degree_atoms.values()),
+            "valence": valence,
             "atoms_available": len(degree_atoms.keys()),
             "dummies": dummies}
 
@@ -727,6 +735,7 @@ def get_elements(mol, elements=None):
 
     mol = Chem.AddHs(mol)
     for atom in mol.GetAtoms():
+
         elements[atom.GetSymbol()] += 1
 
     return elements
@@ -746,13 +755,15 @@ def calculate_exact_mass(mol, exact_mass_elements=None):
     """
 
     if not exact_mass_elements:
-        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072,
-                               "*": -1.007825}
+        exact_mass_elements = {"C": 12.0, "H": 1.007825, "N": 14.003074, "O": 15.994915, "P": 30.973763, "S": 31.972072}
 
     exact_mass = 0.0
     mol = Chem.AddHs(mol)
+
     for atom in mol.GetAtoms():
+
         atom_symbol = atom.GetSymbol()
+
         if atom_symbol != "*":
             exact_mass += exact_mass_elements[atom_symbol]
 
