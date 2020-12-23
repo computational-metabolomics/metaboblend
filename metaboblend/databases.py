@@ -425,18 +425,26 @@ class SubstructureDb:
         table.
         """
 
-        self.cursor.execute("SELECT ROWID, smiles, mol, valence_atoms, exact_mass FROM substructures")
+        self.cursor.execute("SELECT ROWID, smiles, mol, bond_types, exact_mass FROM substructures")
 
         for substructure in self.cursor.fetchall():
 
             mol = Chem.Mol(substructure[2])
-            fragment_ions = [mol.GetAtomWithIdx(fragment_ion).GetSymbol() for fragment_ion in
-                             eval(substructure[3]).keys()]
+            bond_types = eval(substructure[3])
+
+            fragment_ions = []
+            for i, fragment_ion in enumerate(bond_types.keys()):
+
+                atom_symbol = mol.GetAtomWithIdx(fragment_ion).GetSymbol()
+
+                for bond_type in bond_types[fragment_ion]:
+                    fragment_ions.append((atom_symbol, bond_type == 2))
 
             positive_hydrogenations = set()
             negative_hydrogenations = set()
 
             for fragment_ion_permutation in itertools.permutations(fragment_ions):
+
                 positive_hydrogenations.update(calculate_hydrogen_rearrangements(fragment_ion_permutation, "+"))
                 negative_hydrogenations.update(calculate_hydrogen_rearrangements(fragment_ion_permutation, "-"))
 

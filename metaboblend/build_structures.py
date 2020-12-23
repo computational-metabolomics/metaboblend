@@ -1145,7 +1145,7 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             try:
                 Chem.SanitizeMol(mol_out)  # clean the mol - ensure it is valid & canonical
-            except:  # TODO: changeable?
+            except:
                 continue
 
             try:  # append the canonical smiles of the final structure
