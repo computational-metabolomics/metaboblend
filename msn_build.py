@@ -8,6 +8,7 @@ import networkx as nx
 from rdkit import Chem
 from shutil import rmtree
 import pickle
+import cProfile, pstats, io
 from rdkit.Chem import Descriptors
 
 sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
@@ -41,24 +42,6 @@ def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2,
     :param max_atoms_available: Maximum atoms available for substructures used for building.
     """
 
-    with open(os.path.join(out_dir, "results.csv"), newline="", mode="w") as overall_results:
-        results_csv = csv.writer(overall_results)
-
-        if test_type == "ind_exp":
-            results_csv.writerow([
-                "category",
-                "HMDB_ID",
-                "SMILES",
-                "Precursor_Mass",
-                "Num_Peaks",
-                "True_Recurrence",
-                "Structure_Ranking",
-                "Maximal_Recurrence",
-                "Total_Structures",
-                "Fragment_Masses",
-                "ppm"
-            ])
-
     if test_type == "ind_exp":
         C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available)
     else:
@@ -78,21 +61,26 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
 
         annot_msn_data = {}
         for hmdb in ms_data[category].keys():
-            ms_data[category][hmdb]["neutral_precursor_ion_mass"] \
-                = ms_data[category][hmdb]["precursor_ion_mass"] - 1.007276
-            ms_data[category][hmdb]["neutral_peaks"] = [peak - 1.007276 for peak in ms_data[category][hmdb]["peaks"]]
 
             annot_msn_data[hmdb] = {}
             annot_msn_data[hmdb]["mf"] = ms_data[category][hmdb]["mc"]
-            annot_msn_data[hmdb]["exact_mass"] = ms_data[category][hmdb]["neutral_precursor_ion_mass"]
-            annot_msn_data[hmdb]["fragment_masses"] = ms_data[category][hmdb]["neutral_peaks"]
+            annot_msn_data[hmdb]["precursor_mz"] = ms_data[category][hmdb]["precursor_ion_mass"]
+            annot_msn_data[hmdb]["fragment_mzs"] = ms_data[category][hmdb]["peaks"]
+            annot_msn_data[hmdb]["precursor_type"] = "[M+H]+"
 
-        annotate_msn(
+        pr = cProfile.Profile()
+        pr.enable()
+        annotations = list(annotate_msn(
                 path_out=os.path.join(out_dir, category),
                 msn_data=annot_msn_data,
                 path_substructure_db=db_path,
                 path_connectivity_db="../../data/databases/k_graphs.sqlite",
                 ha_min=None, ha_max=None, max_degree=max_valence,
                 ppm=ppm, write_csv_output=True,
-                max_atoms_available=max_atoms_available
-        )
+                max_atoms_available=max_atoms_available,
+                yield_smis=False, isomeric_smiles=False,
+                retain_substructures=True
+        ))
+        pr.disable()
+        pr.print_stats(sort='cumtime')
+        pr.dump_stats(os.path.join(out_dir, category, hmdb + "_stats.profile"))
