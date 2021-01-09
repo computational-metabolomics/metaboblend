@@ -98,6 +98,7 @@ class ResultsDb:
                                            fragment_id INTEGER,
                                            substructure_smiles TEXT,
                                            bde INTEGER,
+                                           even BOOLEAN,
                                            PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
 
         self.cursor.execute("""CREATE TABLE results (
@@ -105,6 +106,7 @@ class ResultsDb:
                                    fragment_id INTEGER,
                                    structure_smiles TEXT,
                                    bde INTEGER,
+                                   even BOOLEAN,
                                    PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
 
         self.conn.commit()
@@ -191,16 +193,21 @@ class ResultsDb:
 
         for structure_smiles in smi_dict.keys():
 
+            if not self.msn:
+                smi_dict[structure_smiles]["even"] = 1
+
             self.cursor.execute("""INSERT OR IGNORE INTO results (
                                        ms_id_num,
                                        fragment_id,
                                        structure_smiles,
-                                       bde
-                                   ) VALUES ({}, {}, '{}', {})""".format(
+                                       bde,
+                                       even
+                                   ) VALUES ({}, {}, '{}', {}, {})""".format(
                 ms_id_num,
                 fragment_id,
                 structure_smiles,
-                min(smi_dict[structure_smiles]["bdes"])
+                min(smi_dict[structure_smiles]["bdes"]),
+                int(smi_dict[structure_smiles]["even"])
             ))
 
             if retain_substructures:
@@ -214,15 +221,17 @@ class ResultsDb:
                                                            fragment_id,
                                                            structure_smiles,
                                                            substructure_smiles,
-                                                           bde
-                                                       ) VALUES ({}, {}, {}, {}, '{}', '{}', {})""".format(
+                                                           bde,
+                                                           even
+                                                       ) VALUES ({}, {}, {}, {}, '{}', '{}', {}, {})""".format(
                             self.substructure_combo_id,
                             j,
                             ms_id_num,
                             fragment_id,
                             structure_smiles,
                             substructure,
-                            smi_dict[structure_smiles]["bdes"][i]
+                            smi_dict[structure_smiles]["bdes"][i],
+                            int(smi_dict[structure_smiles]["even"])
                         ))
 
                     self.substructure_combo_id += 1
