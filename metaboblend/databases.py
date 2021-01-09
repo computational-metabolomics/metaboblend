@@ -1114,7 +1114,10 @@ def update_substructure_database(hmdb_path: Union[str, bytes, os.PathLike, None]
         records = parse_xml(hmdb_path, reformat=False)
 
     if ha_min is None:
-        ha_min = 0
+        ha_min = 1
+
+    if ha_max is None:
+        ha_max = 9999
 
     for record_dict in filter_records(records, isomeric_smiles=isomeric_smiles):
         if not substructures_only:

@@ -1091,7 +1091,11 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
     smis = {}
 
     for substructure_combination in itertools.product(*substructure_subset):
-        substructure_combination[0]["fragment"] = True
+
+        if prescribed_method:
+            substructure_combination[0]["fragment"] = True
+            even_fragment = substructure_combination[0]["even"]
+
         substructure_combination = sorted(substructure_combination, key=itemgetter('atoms_available', 'valence'))
 
         v_a = ()
@@ -1108,8 +1112,10 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 j += 1
 
                 try:
-                    if prescribed_method and d["fragment"]:
-                        fragment_indexes.append(j)
+                    if prescribed_method:
+                        if d["fragment"]:
+                            fragment_indexes.append(j)
+
                 except KeyError:
                     continue
 
@@ -1166,7 +1172,7 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 smis[final_structure] = {"bdes": [total_bde]}
 
                 if prescribed_method:
-                    smis[final_structure]["even"] = substructure_combination[0]["even"]
+                    smis[final_structure]["even"] = even_fragment
 
                 if retain_substructures:
                     smis[final_structure]["substructures"] = [final_substructures]
