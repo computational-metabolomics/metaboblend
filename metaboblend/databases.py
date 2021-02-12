@@ -542,6 +542,8 @@ class SubstructureDb:
 
         self.cursor.execute("DROP INDEX IF EXISTS modified_exact_mass__1")
         self.cursor.execute("DROP INDEX IF EXISTS modified_exact_mass__0_0001")
+        self.cursor.execute("DROP INDEX IF EXISTS exact_mass__1")
+        self.cursor.execute("DROP INDEX IF EXISTS exact_mass__0_0001")
         self.cursor.execute("DROP INDEX IF EXISTS atoms")
 
         self.cursor.execute("""CREATE INDEX modified_exact_mass__1
@@ -549,6 +551,12 @@ class SubstructureDb:
 
         self.cursor.execute("""CREATE INDEX modified_exact_mass__0_0001
                                ON %s (modified_exact_mass__0_0001)""" % "substructure_ions")
+
+        self.cursor.execute("""CREATE INDEX exact_mass__1
+                               ON %s (exact_mass__1)""" % "substructures")
+
+        self.cursor.execute("""CREATE INDEX exact_mass__0_0001
+                               ON %s (exact_mass__0_0001)""" % "substructures")
 
         self.cursor.execute("""CREATE INDEX atoms ON %s (C, H, N, O, P, S);""" % "substructures")
 
@@ -567,6 +575,8 @@ class SubstructureDb:
         self.cursor.execute("DROP INDEX IF EXISTS %s_modified_exact_mass__1" % table_name)
         self.cursor.execute("DROP INDEX IF EXISTS %s_modified_exact_mass__0_0001" % table_name)
         self.cursor.execute("DROP INDEX IF EXISTS %s_atoms" % table_name)
+        self.cursor.execute("DROP INDEX IF EXISTS %s_exact_mass__1" % table_name)
+        self.cursor.execute("DROP INDEX IF EXISTS %s_exact_mass__0_0001" % table_name)
 
         self.cursor.execute("""CREATE INDEX {}_modified_exact_mass__1
                                ON {} (modified_exact_mass__1)
@@ -575,6 +585,14 @@ class SubstructureDb:
         self.cursor.execute("""CREATE INDEX {}_modified_exact_mass__0_0001
                                ON {} (modified_exact_mass__0_0001)
                             """.format(table_name, table_name + "_substructure_ions"))
+
+        self.cursor.execute("""CREATE INDEX {}_exact_mass__1
+                               ON {} (exact_mass__1)
+                            """.format(table_name, table_name + "_substructures"))
+
+        self.cursor.execute("""CREATE INDEX {}_exact_mass__0_0001
+                               ON {} (exact_mass__0_0001)
+                            """.format(table_name, table_name + "_substructures"))
 
         self.cursor.execute("""CREATE INDEX {}_atoms ON {} (C, H, N, O, P, S)
                             """.format(table_name, table_name + "_substructures"))
