@@ -22,6 +22,7 @@
 import os
 import csv
 import sqlite3
+from math import sqrt
 
 
 class ResultsDb:
@@ -41,11 +42,12 @@ class ResultsDb:
 
         self.conn = None
         self.cursor = None
+        self.open()
 
         self.substructure_combo_id = 0
 
-    def connect(self):
-        """ Connects to the results database. """
+    def open(self):
+        """ Opens connection to the SQLite3 database and creates custom functions. """
 
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
@@ -53,10 +55,12 @@ class ResultsDb:
     def create_results_db(self):
         """ Generates a new results database. """
 
+        self.close()
+
         if os.path.exists(self.path_results_db):
             os.remove(self.path_results_db)
 
-        self.connect()
+        self.open()
 
         self.cursor.execute("""CREATE TABLE queries (
                                    ms_id_num INTEGER PRIMARY KEY,
@@ -84,32 +88,42 @@ class ResultsDb:
                                        neutral_mass NUMERIC,
                                        PRIMARY KEY (ms_id_num, fragment_id))""")
 
-        self.cursor.execute("""CREATE TABLE structures (
-                                   ms_id_num INTEGER,
-                                   structure_smiles TEXT,
-                                   frequency INTEGER,
-                                   PRIMARY KEY (ms_id_num, structure_smiles))""")
-
-        self.cursor.execute("""CREATE TABLE substructures (
-                                           substructure_combo_id INTEGER,
-                                           substructure_position_id INTEGER,
-                                           ms_id_num INTEGER,
-                                           structure_smiles TEXT,
-                                           fragment_id INTEGER,
-                                           substructure_smiles TEXT,
-                                           bde INTEGER,
-                                           even BOOLEAN,
-                                           PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
+        self.create_structures_table()
 
         self.cursor.execute("""CREATE TABLE results (
                                    ms_id_num INTEGER,
                                    fragment_id INTEGER,
                                    structure_smiles TEXT,
-                                   bde INTEGER,
                                    even BOOLEAN,
+                                   result_score NUMERIC,
                                    PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
 
+        self.cursor.execute("""CREATE TABLE substructure_combos (
+                                           substructure_combo_id INTEGER,
+                                           ms_id_num INTEGER,
+                                           fragment_id INTEGER,
+                                           structure_smiles TEXT,
+                                           bde INTEGER,
+                                           bde_score NUMERIC,
+                                           PRIMARY KEY (substructure_combo_id))""")
+
+        self.cursor.execute("""CREATE TABLE substructures (
+                                           substructure_combo_id INTEGER,
+                                           substructure_position_id INTEGER,
+                                           substructure_smiles TEXT,
+                                           PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
+
         self.conn.commit()
+
+    def create_structures_table(self):
+        """ Create structures table. """
+
+        self.cursor.execute("""CREATE TABLE structures (
+                                   ms_id_num INTEGER,
+                                   structure_smiles TEXT,
+                                   frequency INTEGER,
+                                   frequency_score NUMERIC,
+                                   PRIMARY KEY (ms_id_num, structure_smiles))""")
 
     def add_ms(self, msn_data, ms_id, ms_id_num, parameters):
         """
@@ -151,14 +165,14 @@ class ResultsDb:
                                    hydrogenation_allowance,
                                    isomeric_smiles
                                ) VALUES ('{}', {}, {}, '{}', '{}', '{}', '{}', '{}', '{}', {})""".format(
-            ms_id,
-            ms_id_num,
-            msn_data[ms_id]["exact_mass"],
-            msn_data[ms_id]["mf"][0], msn_data[ms_id]["mf"][1],
-            msn_data[ms_id]["mf"][2], msn_data[ms_id]["mf"][3],
-            msn_data[ms_id]["mf"][4], msn_data[ms_id]["mf"][5],
-            ", ".join([str(p) for p in parameters])
-        ))
+                                   ms_id,
+                                   ms_id_num,
+                                   msn_data[ms_id]["exact_mass"],
+                                   msn_data[ms_id]["mf"][0], msn_data[ms_id]["mf"][1],
+                                   msn_data[ms_id]["mf"][2], msn_data[ms_id]["mf"][3],
+                                   msn_data[ms_id]["mf"][4], msn_data[ms_id]["mf"][5],
+                                   ", ".join([str(p) for p in parameters])
+                               ))
 
         self.conn.commit()
 
@@ -178,78 +192,144 @@ class ResultsDb:
         :param retain_substructures: If True, record substructures in the results DB.
         """
 
+        # if annotating msn spectra, fill the spectra table
         if self.msn:
+
+            # get the maximum BDE across all structures generated for this particular fragment ion
+            max_bde = 0
+
+            for structure_smiles in smi_dict.keys():
+                max_bde = max(max_bde, max(smi_dict[structure_smiles]["bdes"]))
+
             self.cursor.execute("""INSERT OR IGNORE INTO spectra (
-                                                       ms_id_num,
-                                                       fragment_id,
-                                                       neutral_mass
-                                                   ) VALUES ('{}', {}, {})""".format(
-                ms_id_num,
-                fragment_id,
-                fragment_mass
-            ))
+                                       ms_id_num,
+                                       fragment_id,
+                                       neutral_mass,
+                                       max_bde
+                                   ) VALUES ('{}', {}, {}, {})
+                                """.format(
+                                       ms_id_num,
+                                       fragment_id,
+                                       fragment_mass,
+                                       max_bde
+                                   ))
         else:
             fragment_id = "NULL"
 
+        # unique smiles candidates for this fragment
         for structure_smiles in smi_dict.keys():
 
             if not self.msn:
                 smi_dict[structure_smiles]["even"] = 1
 
-            self.cursor.execute("""INSERT OR IGNORE INTO results (
+            # for each combination of substructures that generated the candidate
+            for i in range(len(smi_dict[structure_smiles]["substructures"])):
+
+                self.cursor.execute("""INSERT INTO substructure_combos (
+                                           substructure_combo_id,
+                                           ms_id_num,
+                                           fragment_id,
+                                           structure_smiles,
+                                           bde
+                                       ) VALUES ({}, {}, {}, '{}', {})
+                                    """.format(
+                                           self.substructure_combo_id,
+                                           ms_id_num,
+                                           fragment_id,
+                                           structure_smiles,
+                                           smi_dict[structure_smiles]["bdes"][i]
+                                    ))
+
+                if retain_substructures:
+                    for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
+
+                        self.cursor.execute("""INSERT INTO substructures (
+                                                   substructure_combo_id,
+                                                   substructure_position_id,
+                                                   substructure_smiles
+                                               ) VALUES ({}, {}, '{}')
+                                            """.format(
+                                                   self.substructure_combo_id,
+                                                   j,
+                                                   substructure
+                                            ))
+
+                self.substructure_combo_id += 1
+
+            self.cursor.execute("""INSERT INTO results (
                                        ms_id_num,
                                        fragment_id,
                                        structure_smiles,
-                                       bde,
                                        even
-                                   ) VALUES ({}, {}, '{}', {}, {})""".format(
-                ms_id_num,
-                fragment_id,
-                structure_smiles,
-                min(smi_dict[structure_smiles]["bdes"]),
-                int(smi_dict[structure_smiles]["even"])
-            ))
-
-            if retain_substructures:
-                for i in range(len(smi_dict[structure_smiles]["substructures"])):  # for each combination
-
-                    for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
-                        self.cursor.execute("""INSERT INTO substructures (
-                                                           substructure_combo_id,
-                                                           substructure_position_id,
-                                                           ms_id_num,
-                                                           fragment_id,
-                                                           structure_smiles,
-                                                           substructure_smiles,
-                                                           bde,
-                                                           even
-                                                       ) VALUES ({}, {}, {}, {}, '{}', '{}', {}, {})""".format(
-                            self.substructure_combo_id,
-                            j,
-                            ms_id_num,
-                            fragment_id,
-                            structure_smiles,
-                            substructure,
-                            smi_dict[structure_smiles]["bdes"][i],
-                            int(smi_dict[structure_smiles]["even"])
-                        ))
-
-                    self.substructure_combo_id += 1
+                                   ) VALUES ({}, {}, '{}', {})
+                                """.format(
+                                       ms_id_num,
+                                       fragment_id,
+                                       structure_smiles,
+                                       int(smi_dict[structure_smiles]["even"])
+                                ))
 
         self.conn.commit()
 
-    def calculate_frequencies(self, ms_id_num):
+    def calculate_scores(self, ms_id_num):
         """
-        Calculates structure frequencies in the SQLite DB.
+        Scores cannot be calculated while generating the various tables. Must be completed after the entire structure
+        generation process of a metabolite. For instance, the maximum BDE across all sets of substructures generated
+        for a metabolite can only be ascertained once all these sets of substructures have been recorded.
+
+        Does the calculations for aggregating structure candidate scores within SQL by updating columns that have been
+        ignored thus far. More complex calculations are written in python as SQL functions, as defined in
+        py:meth:`metaboblend.results.open`.
 
         :param ms_id_num: Unique identifier for the annotation of a single metabolite.
         """
 
-        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency) 
-                                   SELECT ms_id_num, structure_smiles, COUNT(*)
-                                   FROM results 
+        self.cursor.execute("SELECT COUNT(*), MAX(max_bde) FROM spectra WHERE ms_id_num = %s" % ms_id_num)
+        num_fragments, max_bde = list(self.cursor.fetchall())[0]
+
+        # calculate the BDE score for each combination of substructures
+        self.cursor.execute("""UPDATE substructure_combos
+                                   SET bde_score = CALC_BDE_SCORE(bde, {})
                                    WHERE ms_id_num = {}
-                                   GROUP BY structure_smiles""".format(ms_id_num))
+                            """.format(max_bde, ms_id_num))
+
+        # aggregate bde scores for each peak/candidate structure
+        # updates results by aggregating the BDE scores (selects the max score for the peak/candidate structure)
+        # then correlating the result of this query with the results table
+        self.cursor.execute("""UPDATE results
+                                   SET result_score = CALC_RESULT_SCORE(even, (
+                                       SELECT max_bde_score FROM (                                   
+                                           SELECT fragment_id, structure_smiles, MAX(bde_score) AS max_bde_score
+                                               FROM substructure_combos
+                                               WHERE ms_id_num = {} 
+                                               GROUP BY fragment_id, structure_smiles
+                                           )
+                                           WHERE fragment_id = results.fragment_id 
+                                               AND structure_smiles = results.structure_smiles
+                                       ))
+                                   WHERE ms_id_num = {}
+                            """.format(ms_id_num, ms_id_num))
+
+        # aggregate results scores across the spectrum for each unique structure candidate
+        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency, frequency_score)
+                                   SELECT ms_id_num, structure_smiles, COUNT(*), SUM(result_score) / {}
+                                       FROM results
+                                       WHERE ms_id_num = {}
+                                       GROUP BY structure_smiles""".format(num_fragments, ms_id_num))
+
+        self.conn.commit()
+
+    def recalculate_scores(self):
+        """ Re-calculates scores for the results DB. """
+
+        self.cursor.execute("DROP TABLE IF EXISTS structures")
+        self.create_structures_table()
+
+        self.cursor.execute("SELECT DISTINCT ms_id_num FROM queries")
+        ms_id_nums = [row[0] for row in self.cursor.fetchall()]
+
+        for i in ms_id_nums:
+            self.calculate_scores(i)
 
     def get_structures(self, ms_id_num):
         """

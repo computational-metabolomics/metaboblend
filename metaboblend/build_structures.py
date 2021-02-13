@@ -338,6 +338,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
 
         for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
+            # start off by getting the substructures that could represent the fragment ion
             possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, 0.001, table_name)
 
             smi_dict = build(
@@ -357,7 +358,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
             results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
             smi_dict = None
 
-        results_db.calculate_frequencies(i)
+        results_db.calculate_scores(i)
 
         if yield_smis:
             yield {ms["ms_id"]: results_db.get_structures(i)}
@@ -505,7 +506,7 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
         results_db.add_results(i, smi_dict, ms["prescribed_mass"])
         smi_dict = None
 
-        results_db.calculate_frequencies(i)
+        results_db.calculate_scores(i)
 
         if yield_smis:
             yield {ms["ms_id"]: results_db.get_structures(i)}
@@ -683,11 +684,12 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
 
     substructure_subsets = []
 
-    if prescribed_substructures is None:
+    if prescribed_substructures is None:  # standard build method, does not require knowledge of a substructure of the target metabolite
         substructure_subsets = refine_masses_standard(substructure_subsets, mf, exact_mass, integer_mass_values, max_n_substructures, table_name, db)
-    else:
-        max_n_substructures -= 1
-        refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_substructures, ppm, integer_mass_values, max_n_substructures, table_name, db, tolerance)
+
+    else:  # MSn build method - requires a list of possible substructures (prescribed_substructures)
+
+        substructure_subsets = refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_substructures, ppm, integer_mass_values, max_n_substructures - 1, table_name, db, tolerance)
 
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
         smi_dicts = pool.map(
@@ -789,7 +791,8 @@ def refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_su
 
     :param exact_mass: The exact mass (float) of the target metabolite.
 
-    :param max_n_substructures: The maximum number of substructures to be used for building molecules.
+    :param max_n_substructures: The maximum number of substructures to be used for building molecules. Note that this
+        does not include the fragment substructure itself.
 
     :param ppm: The maximal tolerated m/z deviation (in parts per million) of the mass of substructures from the
         supplied `fragment_masses`.
@@ -801,8 +804,10 @@ def refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_su
         a list for each
     """
 
+    # for each fragment peak in the MS2 spectrum
     for fragment_mass__1 in prescribed_substructures.keys():
 
+        # work out the corresponding neutral loss
         loss_mass__1 = int(round(round(exact_mass, 0) - fragment_mass__1, 0))
 
         if ((exact_mass / 1000000) * ppm) > tolerance:
@@ -811,6 +816,7 @@ def refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_su
         if len(integer_mass_values) == 0:
             return {}
 
+        # get subsets of masses at integer level that could build up to the loss mass (i.e. can be combined with fragment substructure(s))
         integer_subsets = list(subset_sum(integer_mass_values, loss_mass__1, max_n_substructures))
 
         for integer_subset in integer_subsets:
@@ -818,7 +824,7 @@ def refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_su
             if len(integer_subset) > max_n_substructures or len(integer_subset) == 0:
                 continue
 
-            # refine groups of masses to 4dp mass resolution
+            # refine groups of (loss) masses to 4dp mass resolution
             exact_mass_values = db.select_mass_values("0_0001", integer_subset, table_name)
 
             for fragment_mass_0_0001 in prescribed_substructures[fragment_mass__1].keys():
