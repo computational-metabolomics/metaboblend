@@ -52,6 +52,22 @@ class ResultsDb:
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
+        # MS-FINDER method of calculating bde scores
+        self.conn.create_function("CALC_BDE_SCORE", 2, lambda bde, max_bde: sqrt(1 - (bde / max_bde)))
+
+        def calc_result_score(even, bde_score):
+
+            # doesn't follow hydrogenation rules (MS-FINDER)
+            if even == 0:
+                bde_score *= 0.5
+
+            # add some base weight to peaks such that: scores >= 0.5
+            bde_score = (0.5 + bde_score) / 1.5
+
+            return bde_score
+
+        self.conn.create_function("CALC_RESULT_SCORE", 2, calc_result_score)
+
     def create_results_db(self):
         """ Generates a new results database. """
 
