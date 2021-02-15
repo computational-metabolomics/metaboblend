@@ -271,8 +271,14 @@ class ResultsDb:
             for i in range(len(smi_dict[structure_smiles]["substructures"])):
 
                 if self.msn:
-                    even_structure = smi_dict[structure_smiles]["even"][i]
+
+                    if smi_dict[structure_smiles]["even"][i]:
+                        even_structure = 1
+                    else:
+                        even_structure = 0
+
                     ppm_error = smi_dict[structure_smiles]["ppm_error"][i]
+
                 else:
                     even_structure = "NULL"
                     ppm_error = "NULL"
