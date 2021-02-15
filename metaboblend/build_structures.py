@@ -1094,8 +1094,16 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
     for substructure_combination in itertools.product(*substructure_subset):
 
+        total_valence = substructure_combination[0]["valence"]
+
         if prescribed_method:
             substructure_combination[0]["fragment"] = True
+            even_fragment = substructure_combination[0]["even"]
+
+            if "ppm_error" in substructure_combination[0].keys():
+                ppm_error = substructure_combination[0]["ppm_error"]
+            else:
+                ppm_error = None
 
         substructure_combination = sorted(substructure_combination, key=itemgetter('atoms_available', 'valence'))
 
@@ -1173,13 +1181,13 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 assert substructure_combination[0]["valence"] == smis[final_structure]["valence"]
 
             except KeyError:
-                smis[final_structure] = {"bdes": [total_bde], "valence": substructure_combination[0]["valence"]}
+                smis[final_structure] = {"bdes": [total_bde], "valence": total_valence}
 
                 if prescribed_method:
-                    smis[final_structure]["even"] = substructure_combination[0]["even"]
+                    smis[final_structure]["even"] = even_fragment
 
-                if "ppm_error" in substructure_combination[0].keys():
-                    smis[final_structure]["ppm_error"] = substructure_combination[0]["ppm_error"]
+                    if ppm_error is not None:
+                        smis[final_structure]["ppm_error"] = ppm_error
 
                 smis[final_structure]["substructures"] = [final_substructures]
 
