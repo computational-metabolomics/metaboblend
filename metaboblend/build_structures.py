@@ -351,7 +351,6 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                 table_name=table_name,
                 ncpus=ncpus,
                 isomeric_smiles=isomeric_smiles,
-                retain_substructures=retain_substructures,
                 tolerance=abs_error
             )
 
@@ -498,7 +497,6 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
             table_name=table_name,
             ncpus=ncpus,
             isomeric_smiles=isomeric_smiles,
-            retain_substructures=retain_substructures,
             db=db,
             tolerance=0.0001
         )
@@ -634,7 +632,7 @@ def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowanc
 
 
 def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm, ncpus, table_name, isomeric_smiles,
-          retain_substructures, tolerance):
+          tolerance):
     """
     Core function for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -695,7 +693,7 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
         smi_dicts = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
                     prescribed_method=prescribed_substructures is not None, isomeric_smiles=isomeric_smiles,
-                    bond_enthalpies=get_bond_enthalpies(), retain_substructures=retain_substructures),
+                    bond_enthalpies=get_bond_enthalpies()),
             substructure_subsets
         )
 
@@ -705,8 +703,7 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
             try:
                 smi_dict[k]["bdes"] += d[k]["bdes"]
 
-                if retain_substructures:
-                    smi_dict[k]["substructures"] += d[k]["substructures"]
+                smi_dict[k]["substructures"] += d[k]["substructures"]
 
             except KeyError:
                 smi_dict[k] = d[k]
@@ -1071,7 +1068,7 @@ def get_bond_enthalpies():
 
 
 def substructure_combination_build(substructure_subset, configs_iso, prescribed_method, isomeric_smiles,
-                                   bond_enthalpies, retain_substructures):
+                                   bond_enthalpies):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -1170,9 +1167,7 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             try:
                 smis[final_structure]["bdes"].append(total_bde)
-
-                if retain_substructures:
-                    smis[final_structure]["substructures"].append(final_substructures)
+                smis[final_structure]["substructures"].append(final_substructures)
 
             except KeyError:
                 smis[final_structure] = {"bdes": [total_bde]}
@@ -1180,7 +1175,6 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 if prescribed_method:
                     smis[final_structure]["even"] = even_fragment
 
-                if retain_substructures:
-                    smis[final_structure]["substructures"] = [final_substructures]
+                smis[final_structure]["substructures"] = [final_substructures]
 
     return smis

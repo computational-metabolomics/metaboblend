@@ -68,7 +68,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3, db=db, ppm=None, ncpus=None,
-                    table_name=None, isomeric_smiles=True, retain_substructures=True, prescribed_substructures=None,
+                    table_name=None, isomeric_smiles=True, prescribed_substructures=None,
                     tolerance=None
                 )
 
@@ -83,7 +83,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3, tolerance=0.0001,
                     prescribed_substructures=get_possible_fragment_ions(fragments[i], db, 2, 5, 0.0001), ppm=15,
-                    ncpus=None, isomeric_smiles=True, retain_substructures=False, db=db, table_name=None
+                    ncpus=None, isomeric_smiles=True, db=db, table_name=None
                 )
 
                 if i == 2:
@@ -108,8 +108,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             substructure_subset = db.select_substructures(ec_product, None)
 
             smis = substructure_combination_build(substructure_subset, configs_iso, prescribed_method=False,
-                                                  isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies(),
-                                                  retain_substructures=False)
+                                                  isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies())
 
             self.assertEqual(len(smis.keys()), lens[i])
 
@@ -176,7 +175,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
                     max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
-                    retain_substructures=True, db=db, tolerance=0.0001, prescribed_substructures=None
+                    db=db, tolerance=0.0001, prescribed_substructures=None
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -202,7 +201,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"], max_n_substructures=3, ppm=0, retain_substructures=False,
+                    exact_mass=record_dict["exact_mass"], max_n_substructures=3, ppm=0,
                     ncpus=None, table_name=None, isomeric_smiles=True, db=db, tolerance=0.0001,
                     prescribed_substructures=prescribed_substructures
                 )
@@ -230,7 +229,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                 build_smis = build(
                     mf=[record_dict["C"], record_dict["H"], record_dict["N"],
                         record_dict["O"], record_dict["P"], record_dict["S"]],
-                    exact_mass=record_dict["exact_mass"], retain_substructures=False,
+                    exact_mass=record_dict["exact_mass"],
                     max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
                     prescribed_substructures=None, db=db, tolerance=0.0001
                 )
@@ -331,7 +330,6 @@ class BuildStructuresTestCase(unittest.TestCase):
             minimum_frequency=None, yield_smis=True,
             isomeric_smiles=True, retain_substructures=True
         ))
-
         # is the sqlite database the size we expect?
         self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 53248)
 
