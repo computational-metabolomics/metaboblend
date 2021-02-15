@@ -1175,10 +1175,14 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 smis[final_structure]["bdes"].append(total_bde)
                 smis[final_structure]["substructures"].append(final_substructures)
 
-                # TODO: check implemented here, remove at some point following testing
-                assert substructure_combination[0]["even"] == smis[final_structure]["even"]
-                assert substructure_combination[0]["ppm_error"] == smis[final_structure]["ppm_error"]
-                assert substructure_combination[0]["valence"] == smis[final_structure]["valence"]
+                # TODO: remove temporary structure checks
+                assert smis[final_structure]["valence"] == total_valence
+
+                if prescribed_method:
+                    assert smis[final_structure]["even"] == even_fragment
+
+                    if ppm_error is not None:
+                        assert smis[final_structure]["ppm_error"] == ppm_error
 
             except KeyError:
                 smis[final_structure] = {"bdes": [total_bde], "valence": total_valence}
