@@ -52,10 +52,7 @@ class ResultsDb:
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
-        # MS-FINDER method of calculating bde scores
-        self.conn.create_function("CALC_BDE_SCORE", 2, lambda bde, max_bde: sqrt(1 - (bde / max_bde)))
-
-        def calc_result_score(even_score, valence, ppm_error, bde_score, combo_count):
+        def calc_substructure_combo_score(bde, max_bde, even_score, valence, ppm_error):
             """
             SQL function for the calculation of scores at the results table level.
 
@@ -63,20 +60,42 @@ class ResultsDb:
             - base peak score
             - bde_score: previously calculated BDE score
             - even_score: logical, 0 if doesn't follow hydrogenation rules (MS-FINDER)
+            - valence: an integer with a value of greater than 0
+            - ppm_error: a real number (should be 0 to 5)
 
             Each score should be normalised between 0 and 1
             The sum of all weights should sum to 1
             Therefore, the final returned score should be between 0 and 1
+
+            There are other scores that take place at results level (`calc_results_score`, below).
             """
 
+            # MS-FINDER method of calculating bde scores
+            bde_score = sqrt(1 - (bde / max_bde))
+
+            # the base value of a peak match for the structure
             base_peak_score = 1
+
+            # the valence of the fragment substructure
             valence_score = sqrt(1 / valence)
+
+            # the ppm error of the fragment substructure
+            ppm_score = sqrt(1 / (ppm_error + 1))
+
+            # calculate the score at substructure combination level, weights should add up to 1 when summed with the scoring at results level
+            return 0.3 * base_peak_score + 0.3 * bde_score + 0.2 * even_score + 0.05 * valence_score + 0.1 * ppm_score
+
+        self.conn.create_function("CALC_SUBSTRUCTURE_COMBO_SCORE", 5, calc_substructure_combo_score)
+
+        def calc_results_score(substructure_combo_score, combo_count):
+            """ Calculate scores at the results table level. See `calc_substructure_combo_score`. """
+
+            # the number of combinations of substructures that generated the structure for this peak
             combo_count_score = 1 - (1 / combo_count)
-            ppm_score = 1 + 0 * ppm_error
 
-            return 0.3 * base_peak_score + 0.3 * bde_score + 0.2 * even_score + 0.05 * valence_score + 0.05 * combo_count_score + 0.1 * ppm_score
+            return substructure_combo_score + 0.05 * combo_count_score
 
-        self.conn.create_function("CALC_RESULT_SCORE", 5, calc_result_score)
+        self.conn.create_function("CALC_RESULT_SCORE", 2, calc_results_score)
 
     def create_results_db(self):
         """ Generates a new results database. """
@@ -121,9 +140,6 @@ class ResultsDb:
                                    ms_id_num INTEGER,
                                    fragment_id INTEGER,
                                    structure_smiles TEXT,
-                                   even BOOLEAN,
-                                   valence INTEGER,
-                                   ppm_error NUMERIC,
                                    result_score NUMERIC,
                                    PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
 
@@ -133,8 +149,10 @@ class ResultsDb:
                                            fragment_id INTEGER,
                                            structure_smiles TEXT,
                                            bde INTEGER,
-                                           bde_score NUMERIC,
-                                           fragment_valence INTEGER,
+                                           valence INTEGER,
+                                           even BOOLEAN,
+                                           ppm_error NUMERIC,
+                                           substructure_combo_score NUMERIC,
                                            PRIMARY KEY (substructure_combo_id))""")
 
         self.cursor.execute("""CREATE TABLE substructures (
@@ -229,7 +247,7 @@ class ResultsDb:
             max_bde = 0
 
             for structure_smiles in smi_dict.keys():
-                max_bde = max(max_bde, max(smi_dict[structure_smiles]["bdes"]))
+                max_bde = max(max_bde, max(smi_dict[structure_smiles]["bde"]))
 
             self.cursor.execute("""INSERT OR IGNORE INTO spectra (
                                        ms_id_num,
@@ -249,26 +267,35 @@ class ResultsDb:
         # unique smiles candidates for this fragment
         for structure_smiles in smi_dict.keys():
 
-            if not self.msn:
-                smi_dict[structure_smiles]["even"] = 1
-                smi_dict[structure_smiles]["ppm_error"] = 0
-
             # for each combination of substructures that generated the candidate
             for i in range(len(smi_dict[structure_smiles]["substructures"])):
+
+                if self.msn:
+                    even_structure = smi_dict[structure_smiles]["even"][i]
+                    ppm_error = smi_dict[structure_smiles]["ppm_error"][i]
+                else:
+                    even_structure = "NULL"
+                    ppm_error = "NULL"
 
                 self.cursor.execute("""INSERT INTO substructure_combos (
                                            substructure_combo_id,
                                            ms_id_num,
                                            fragment_id,
                                            structure_smiles,
-                                           bde
-                                       ) VALUES ({}, {}, {}, '{}', {})
+                                           bde,
+                                           valence,
+                                           even,
+                                           ppm_error
+                                       ) VALUES ({}, {}, {}, '{}', {}, {}, {}, {})
                                     """.format(
                                            self.substructure_combo_id,
                                            ms_id_num,
                                            fragment_id,
                                            structure_smiles,
-                                           smi_dict[structure_smiles]["bdes"][i]
+                                           smi_dict[structure_smiles]["bde"][i],
+                                           smi_dict[structure_smiles]["valence"][i],
+                                           even_structure,
+                                           ppm_error
                                     ))
 
                 if retain_substructures:
@@ -290,18 +317,12 @@ class ResultsDb:
             self.cursor.execute("""INSERT INTO results (
                                        ms_id_num,
                                        fragment_id,
-                                       structure_smiles,
-                                       even,
-                                       valence,
-                                       ppm_error
-                                   ) VALUES ({}, {}, '{}', {}, {}, {})
+                                       structure_smiles
+                                   ) VALUES ({}, {}, '{}')
                                 """.format(
                                        ms_id_num,
                                        fragment_id,
-                                       structure_smiles,
-                                       int(smi_dict[structure_smiles]["even"]),
-                                       int(smi_dict[structure_smiles]["valence"]),
-                                       smi_dict[structure_smiles]["ppm_error"]
+                                       structure_smiles
                                 ))
 
         self.conn.commit()
@@ -331,17 +352,18 @@ class ResultsDb:
         self.cursor.execute("SELECT COUNT(*), MAX(max_bde) FROM spectra WHERE ms_id_num = %s" % ms_id_num)
         num_fragments, max_bde = list(self.cursor.fetchall())[0]
 
-        # calculate the BDE score for each combination of substructures
+        # calculate the BDE score for each combination of substructures, args = bde, max_bde, even_score, valence, ppm_error
         self.cursor.execute("""UPDATE substructure_combos
-                                   SET bde_score = CALC_BDE_SCORE(bde, {})
+                                   SET substructure_combo_score = CALC_SUBSTRUCTURE_COMBO_SCORE(bde, {}, even, valence, ppm_error)
                                    WHERE ms_id_num = {}
                             """.format(max_bde, ms_id_num))
 
-        # aggregate bde scores for each peak/candidate structure
-        # updates results by aggregating the BDE scores (selects the max score for the peak/candidate structure)
+        # aggregate substructure combination scores for each peak/candidate structure
+        # updates results by aggregating the scores (selects the max score for the peak/candidate structure)
         # then correlating the result of this query with the results table
-        self.cursor.execute("""WITH substructure_combo_aggregated AS (SELECT max_bde_score, combo_count FROM (                                   
-                                    SELECT fragment_id, structure_smiles, MAX(bde_score) AS max_bde_score, valence, COUNT(*) AS combo_count
+        # also gets the number of different combinations for the result which can be used for scoring
+        self.cursor.execute("""WITH substructure_combo_aggregated AS (SELECT max_substructure_combo_score, combo_count FROM (                                   
+                                    SELECT MAX(substructure_combo_score) AS max_substructure_combo_score, COUNT(*) AS combo_count
                                         FROM substructure_combos
                                         WHERE ms_id_num = {} 
                                         GROUP BY fragment_id, structure_smiles
@@ -351,8 +373,7 @@ class ResultsDb:
                                 )
                                 
                                UPDATE results
-                                  SET result_score = CALC_RESULT_SCORE(even, valence, ppm_error, 
-                                                                       (SELECT max_bde_score FROM substructure_combo_aggregated), 
+                                  SET result_score = CALC_RESULT_SCORE((SELECT max_substructure_combo_score FROM substructure_combo_aggregated), 
                                                                        (SELECT combo_count FROM substructure_combo_aggregated))
                                   WHERE ms_id_num = {}
                             """.format(ms_id_num, ms_id_num))

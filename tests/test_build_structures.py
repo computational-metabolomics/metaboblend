@@ -331,7 +331,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         ))
 
         # is the sqlite database the size we expect?
-        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 53248)
+        self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 61440)
 
         # are the csv files the same as the reference?
         with open(self.to_test_results("test_results_db", "metaboblend_queries.csv"), "r") as results_file, \

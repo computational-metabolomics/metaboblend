@@ -591,12 +591,11 @@ def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowanc
                 fragment_tolerance = tolerance
 
             db.cursor.execute("""SELECT smiles, mol, bond_types, valence_atoms, valence, atoms_available, dummies,
-                                        exact_mass__0_0001, exact_mass__1, C, H, N, O, P, S, substructure_id
-                                     FROM {}
-                                     WHERE substructure_id IN (
-                                         SELECT substructure_id
-                                             FROM {}
-                                             WHERE modified_exact_mass__0_0001 > {} and modified_exact_mass__0_0001 < {})
+                                        exact_mass__0_0001, exact_mass__1, C, H, N, O, P, S, unmodified_substructures.substructure_id,
+                                        modified_masses.modified_exact_mass__0_0001
+                                     FROM {} AS unmodified_substructures
+                                     LEFT JOIN {} AS modified_masses ON unmodified_substructures.substructure_id = modified_masses.substructure_id
+                                     WHERE modified_masses.modified_exact_mass__0_0001 > {} AND modified_masses.modified_exact_mass__0_0001 < {}
                               """.format(
                                      subs_table_name,
                                      subs_ions_table_name,
@@ -616,7 +615,7 @@ def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowanc
                     "dummies": eval(record[6]),
                     "even": i == 0,
                     "mf": (record[9], record[10], record[11], record[12], record[13], record[14],),
-                    "ppm_error": abs(((hydrogenated_fragment_mass - record[7]) / hydrogenated_fragment_mass) * 1000000)
+                    "ppm_error": abs(((hydrogenated_fragment_mass - record[16]) / hydrogenated_fragment_mass) * 1000000)
                 }
 
                 if record[8] not in fragments.keys():
@@ -696,13 +695,18 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
             substructure_subsets
         )
 
+    # recombine the output of pool.map into a single dictionary
     smi_dict = {}
     for d in smi_dicts:
         for k in d.keys():
             try:
-                smi_dict[k]["bdes"] += d[k]["bdes"]
-
+                smi_dict[k]["bde"] += d[k]["bde"]
+                smi_dict[k]["valence"] += d[k]["valence"]
                 smi_dict[k]["substructures"] += d[k]["substructures"]
+
+                if prescribed_substructures is not None:
+                    smi_dict[k]["even"] += d[k]["even"]
+                    smi_dict[k]["ppm_error"] += d[k]["ppm_error"]
 
             except KeyError:
                 smi_dict[k] = d[k]
@@ -1171,27 +1175,27 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             final_substructures = [subs["smiles"] for subs in substructure_combination]
 
+            # add required information to a dictionary
             try:
-                smis[final_structure]["bdes"].append(total_bde)
+                smis[final_structure]["bde"].append(total_bde)
+                smis[final_structure]["valence"].append(total_valence)
+
                 smis[final_structure]["substructures"].append(final_substructures)
 
-                # TODO: remove temporary structure checks
-                assert smis[final_structure]["valence"] == total_valence
-
                 if prescribed_method:
-                    assert smis[final_structure]["even"] == even_fragment
+                    smis[final_structure]["even"].append(even_fragment)
 
                     if ppm_error is not None:
-                        assert smis[final_structure]["ppm_error"] == ppm_error
+                        smis[final_structure]["ppm_error"].append(ppm_error)
 
             except KeyError:
-                smis[final_structure] = {"bdes": [total_bde], "valence": total_valence}
+                smis[final_structure] = {"bde": [total_bde], "valence": [total_valence]}
 
                 if prescribed_method:
-                    smis[final_structure]["even"] = even_fragment
+                    smis[final_structure]["even"] = [even_fragment]
 
                     if ppm_error is not None:
-                        smis[final_structure]["ppm_error"] = ppm_error
+                        smis[final_structure]["ppm_error"] = [ppm_error]
 
                 smis[final_structure]["substructures"] = [final_substructures]
 
