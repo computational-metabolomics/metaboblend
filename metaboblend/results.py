@@ -102,6 +102,7 @@ class ResultsDb:
                                        ms_id_num INTEGER,
                                        fragment_id INTEGER,
                                        neutral_mass NUMERIC,
+                                       max_bde NUMERIC,
                                        PRIMARY KEY (ms_id_num, fragment_id))""")
 
         self.create_structures_table()
