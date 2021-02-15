@@ -301,6 +301,15 @@ class ResultsDb:
         :param ms_id_num: Unique identifier for the annotation of a single metabolite.
         """
 
+        if not self.msn:
+            self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency)
+                                       SELECT ms_id_num, structure_smiles, COUNT(*)
+                                           FROM results
+                                           WHERE ms_id_num = {}
+                                           GROUP BY structure_smiles""".format(ms_id_num))
+
+            return
+
         self.cursor.execute("SELECT COUNT(*), MAX(max_bde) FROM spectra WHERE ms_id_num = %s" % ms_id_num)
         num_fragments, max_bde = list(self.cursor.fetchall())[0]
 
