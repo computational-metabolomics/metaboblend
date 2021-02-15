@@ -321,7 +321,6 @@ class BuildStructuresTestCase(unittest.TestCase):
                                                "neutral_fragment_masses": fragments}
 
         os.mkdir(self.to_test_results("test_results_db"))
-
         list(annotate_msn(
             ms_data, max_degree=6, max_atoms_available=2, max_n_substructures=3,
             path_out=self.to_test_results("test_results_db"), write_csv_output=True,
@@ -330,6 +329,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             minimum_frequency=None, yield_smis=True,
             isomeric_smiles=True, retain_substructures=True
         ))
+
         # is the sqlite database the size we expect?
         self.assertEqual(os.path.getsize(self.to_test_results("test_results_db", "metaboblend_results.sqlite")), 53248)
 

@@ -615,7 +615,8 @@ def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowanc
                     "atoms_available": record[5],
                     "dummies": eval(record[6]),
                     "even": i == 0,
-                    "mf": (record[9], record[10], record[11], record[12], record[13], record[14],)
+                    "mf": (record[9], record[10], record[11], record[12], record[13], record[14],),
+                    "ppm_error": abs(((hydrogenated_fragment_mass - record[7]) / hydrogenated_fragment_mass) * 1000000)
                 }
 
                 if record[8] not in fragments.keys():
@@ -663,8 +664,6 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
         molecules. Will be removed after structures have been built, unless 'clean = False' is set.
 
     :param isomeric_smiles:  If True, writes smiles with non-structural isomeric information.
-
-    :param retain_substructures: Whether to record the substructures used to generate final structures.
 
     :param tolerance: Minimum absolute mz tolerance for the fragment and precursor masses. Only used if
         `prescribed_substructures` is not None.
@@ -1097,7 +1096,6 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
         if prescribed_method:
             substructure_combination[0]["fragment"] = True
-            even_fragment = substructure_combination[0]["even"]
 
         substructure_combination = sorted(substructure_combination, key=itemgetter('atoms_available', 'valence'))
 
@@ -1169,11 +1167,19 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
                 smis[final_structure]["bdes"].append(total_bde)
                 smis[final_structure]["substructures"].append(final_substructures)
 
+                # TODO: check implemented here, remove at some point following testing
+                assert substructure_combination[0]["even"] == smis[final_structure]["even"]
+                assert substructure_combination[0]["ppm_error"] == smis[final_structure]["ppm_error"]
+                assert substructure_combination[0]["valence"] == smis[final_structure]["valence"]
+
             except KeyError:
-                smis[final_structure] = {"bdes": [total_bde]}
+                smis[final_structure] = {"bdes": [total_bde], "valence": substructure_combination[0]["valence"]}
 
                 if prescribed_method:
-                    smis[final_structure]["even"] = even_fragment
+                    smis[final_structure]["even"] = substructure_combination[0]["even"]
+
+                if "ppm_error" in substructure_combination[0].keys():
+                    smis[final_structure]["ppm_error"] = substructure_combination[0]["ppm_error"]
 
                 smis[final_structure]["substructures"] = [final_substructures]
 
