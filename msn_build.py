@@ -15,7 +15,7 @@ sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from build_structures import annotate_msn
 
 
-def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2, test_type="ind_exp"):
+def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2, test_type="ind_exp", ncpus=None):
     """
     Wrapper for running tests for the MS2 structure generation & ranking method.
 
@@ -43,12 +43,12 @@ def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2,
     """
 
     if test_type == "ind_exp":
-        C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available)
+        C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus=ncpus)
     else:
         raise NotImplementedError
 
 
-def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
+def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus):
     """Run a test on MS2 data. See run_test."""
 
     for category in ms_data.keys():
@@ -71,15 +71,19 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available):
         pr = cProfile.Profile()
         pr.enable()
         annotations = list(annotate_msn(
-                path_out=os.path.join(out_dir, category),
-                msn_data=annot_msn_data,
-                path_substructure_db=db_path,
-                path_connectivity_db="../../data/databases/k_graphs.sqlite",
-                ha_min=None, ha_max=None, max_degree=max_valence,
-                ppm=ppm, write_csv_output=True,
-                max_atoms_available=max_atoms_available,
-                yield_smis=False, isomeric_smiles=False,
-                retain_substructures=True
+            path_out=os.path.join(out_dir, category),
+            msn_data=annot_msn_data,
+            path_substructure_db=db_path,
+            ha_min=None,
+            ha_max=None,
+            max_degree=max_valence,
+            ppm=ppm,
+            write_csv_output=True,
+            max_atoms_available=max_atoms_available,
+            yield_smis=False,
+            isomeric_smiles=False,
+            retain_substructures=False,
+            ncpus=ncpus
         ))
         pr.disable()
         pr.print_stats(sort='cumtime')
