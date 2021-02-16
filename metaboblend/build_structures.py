@@ -314,7 +314,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         path_connectivity_db = os.path.join(os.path.realpath(os.path.dirname(__file__)), "data", "connectivity.sqlite")
 
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
-    results_db = ResultsDb(path_out)
+    results_db = ResultsDb(path_out, retain_substructures=retain_substructures)
     results_db.create_results_db()
 
     # prepare temporary table here - will only be generated once in case of multiple input
@@ -354,7 +354,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                 tolerance=abs_error
             )
 
-            results_db.add_results(i, smi_dict, fragment_mass, j, retain_substructures)
+            results_db.add_results(i, smi_dict, fragment_mass, j)
             smi_dict = None
 
         results_db.calculate_scores(i)
@@ -459,7 +459,7 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
 
     db = SubstructureDb(path_substructure_db, path_connectivity_db)
 
-    results_db = ResultsDb(path_out, False)
+    results_db = ResultsDb(path_out, False, retain_substructures=retain_substructures)
     results_db.create_results_db()
 
     # prepare temporary table here - will only be generated once in case of multiple input

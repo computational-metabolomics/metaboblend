@@ -33,11 +33,13 @@ class ResultsDb:
     :param path_results: Directory to which results will be written.
     """
 
-    def __init__(self, path_results, msn=True):
+    def __init__(self, path_results, msn=True, retain_substructures=False):
         """Constructor method."""
 
         self.path_results = path_results
         self.path_results_db = os.path.join(self.path_results, "metaboblend_results.sqlite")
+
+        self.retain_substructures = retain_substructures
         self.msn = msn
 
         self.conn = None
@@ -141,7 +143,9 @@ class ResultsDb:
                                    fragment_id INTEGER,
                                    structure_smiles TEXT,
                                    result_score NUMERIC,
-                                   PRIMARY KEY(ms_id_num, fragment_id, structure_smiles))""")
+                                   PRIMARY KEY(ms_id_num, fragment_id, structure_smiles)
+                                   FOREIGN KEY (ms_id_num, structure_smiles)
+                                       REFERENCES structures(ms_id_num, structure_smiles))""")
 
         self.cursor.execute("""CREATE TABLE substructure_combos (
                                            substructure_combo_id INTEGER,
@@ -153,15 +157,20 @@ class ResultsDb:
                                            even BOOLEAN,
                                            ppm_error NUMERIC,
                                            substructure_combo_score NUMERIC,
-                                           PRIMARY KEY (substructure_combo_id))""")
+                                           PRIMARY KEY (substructure_combo_id),
+                                           FOREIGN KEY (ms_id_num, fragment_id, structure_smiles) 
+                                               REFERENCES results(ms_id_num, fragment_id, structure_smiles))""")
 
-        self.cursor.execute("""CREATE TABLE substructures (
-                                           substructure_combo_id INTEGER,
-                                           substructure_position_id INTEGER,
-                                           substructure_smiles TEXT,
-                                           PRIMARY KEY (substructure_combo_id, substructure_position_id))""")
+        if self.retain_substructures:
+            self.cursor.execute("""CREATE TABLE substructures (
+                                               substructure_combo_id INTEGER,
+                                               substructure_position_id INTEGER,
+                                               substructure_smiles TEXT,
+                                               PRIMARY KEY (substructure_combo_id, substructure_position_id)
+                                               FOREIGN KEY (substructure_combo_id) REFERENCES substructure_combos(substructure_combo_id))""")
 
         self.conn.commit()
+        self.create_indexes()
 
     def create_structures_table(self):
         """ Create structures table. """
@@ -172,6 +181,23 @@ class ResultsDb:
                                    frequency INTEGER,
                                    frequency_score NUMERIC,
                                    PRIMARY KEY (ms_id_num, structure_smiles))""")
+
+    def create_indexes(self):
+        """ Create indexes for results DB query optimisation. """
+
+        self.cursor.execute("""DROP INDEX IF EXISTS substructure_combos_results_reference""")
+        self.cursor.execute("""DROP INDEX IF EXISTS substructure_combos_ms_id_num""")
+        self.cursor.execute("""DROP INDEX IF EXISTS results_ms_id_num""")
+
+        # for correlated querying if substructure combos table based on results
+        self.cursor.execute("""CREATE INDEX substructure_combos_results_reference 
+                               ON substructure_combos(ms_id_num, fragment_id, structure_smiles)""")
+
+        self.cursor.execute("""CREATE INDEX substructure_combos_ms_id_num 
+                               ON substructure_combos(ms_id_num)""")
+
+        self.cursor.execute("""CREATE INDEX results_ms_id_num 
+                               ON results(ms_id_num)""")
 
     def add_ms(self, msn_data, ms_id, ms_id_num, parameters):
         """
@@ -224,7 +250,7 @@ class ResultsDb:
 
         self.conn.commit()
 
-    def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None, retain_substructures=False):
+    def add_results(self, ms_id_num, smi_dict, fragment_mass=None, fragment_id=None):
         """
         Record which smiles were generated for a given fragment mass.
 
@@ -304,7 +330,7 @@ class ResultsDb:
                                            ppm_error
                                     ))
 
-                if retain_substructures:
+                if self.retain_substructures:
                     for j, substructure in enumerate(smi_dict[structure_smiles]["substructures"][i]):
 
                         self.cursor.execute("""INSERT INTO substructures (
