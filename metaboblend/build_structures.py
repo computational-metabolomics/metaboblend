@@ -90,35 +90,36 @@ def reindex_atoms(records):
         detailing their bond types. See :py:meth:`metaboblend.build_structures.add_bonds`.
     """
 
-    atoms_available, atoms_to_remove, bond_types = [], [], {}
-    mol_comb = Chem.Mol()
-    index_atoms, all_bond_types = [], {}
+    atoms_available, atoms_to_remove, index_atoms = [], [], []
+    bond_types, all_bond_types = {}, {}
     c = 0
 
     for i, record in enumerate(records):
+
         idxs = []
         all_bond_types[i] = []
+
         for atom in record["mol"].GetAtoms():
 
-            new_idx = atom.GetIdx() + c
+            atom_idx = atom.GetIdx()
+
+            new_idx = atom_idx + c
             idxs.append(new_idx)
 
-            if atom.GetIdx() in record["degree_atoms"]:
+            if atom_idx in record["degree_atoms"]:
                 atoms_available.append(new_idx)
 
-            if atom.GetIdx() in record["dummies"]:
+            if atom_idx in record["dummies"]:
                 atoms_to_remove.append(new_idx)
 
-            if atom.GetIdx() in record["bond_types"]:
-                bond_types[new_idx] = record["bond_types"][atom.GetIdx()]
-                all_bond_types[i] += record["bond_types"][atom.GetIdx()]
+            if atom_idx in record["bond_types"]:
+                bond_types[new_idx] = record["bond_types"][atom_idx]
+                all_bond_types[i] += record["bond_types"][atom_idx]
 
-        mol_comb = Chem.CombineMols(mol_comb, record["mol"])
         index_atoms.append(idxs)
         c = idxs[-1] + 1
 
     # check that bond types add up - removes some mismatched configurations
-    bond_mismatch = False
     for i in range(len(records)):
         other_bonds = []
         for j in range(len(records)):
@@ -127,9 +128,13 @@ def reindex_atoms(records):
 
         for bond in all_bond_types[i]:
             if bond not in other_bonds:
-                bond_mismatch = True
+                return None, atoms_available, atoms_to_remove, bond_types, True
 
-    return mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch
+    mol_comb = Chem.Mol()
+    for record in records:
+        mol_comb = Chem.CombineMols(mol_comb, record["mol"])
+
+    return mol_comb, atoms_available, atoms_to_remove, bond_types, False
 
 
 def add_bonds(mols, edges, atoms_available, bond_types, bond_enthalpies):
@@ -192,9 +197,8 @@ def add_bonds(mols, edges, atoms_available, bond_types, bond_enthalpies):
         if len(bond_matches) == 0:
             return None, None
 
-        else:
-            bt_start.remove(bond_matches[0])
-            bt_end.remove(bond_matches[0])
+        bt_start.remove(bond_matches[0])
+        bt_end.remove(bond_matches[0])
 
         try:  # try forming the specified bond
             mol_edit.AddBond(edge[0], edge[1], rdkit_bond_types[bond_matches[0]])
@@ -695,6 +699,8 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
                                            prescribed_method=prescribed_substructures is not None,
                                            isomeric_smiles=isomeric_smiles,
                                            bond_enthalpies=get_bond_enthalpies()))
+
+    substructure_subsets = None
 
     # recombine the output of pool.map into a single dictionary
     smi_dict = {}

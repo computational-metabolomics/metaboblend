@@ -396,7 +396,7 @@ class BuildStructuresTestCase(unittest.TestCase):
         ]
 
         reindexed = [
-            ["*C(*)C(=O)O.NCCc1c:*:*:cc1", [1, 10, 13], [0, 2, 11, 12],
+            [None, [1, 10, 13], [0, 2, 11, 12],
              {1: [1.0, 1.0], 10: [1.5], 12: [1.5], 13: [1.5]}],
             ["*[C@@H](O)[C@@H](*)O.OC1**[C@@H](O)[C@H](O)[C@H]1O", [1, 3, 6, 10], [0, 5, 8, 9],
              {1: [1.0], 3: [1.0], 6: [1.0], 9: [1.0], 10: [1.0]}],
@@ -408,7 +408,13 @@ class BuildStructuresTestCase(unittest.TestCase):
             substructure_combination[1]["mol"] = Chem.MolFromSmiles(substructure_combination[1]["smiles"], False)
 
             mol_comb, atoms_available, atoms_to_remove, bond_types, bond_mismatch = reindex_atoms(substructure_combination)
-            self.assertEqual([Chem.MolToSmiles(mol_comb), atoms_available, atoms_to_remove, bond_types], reindex)
+
+            if mol_comb is None:
+                mol_comb_smiles = None
+            else:
+                mol_comb_smiles = Chem.MolToSmiles(mol_comb)
+
+            self.assertEqual([mol_comb_smiles, atoms_available, atoms_to_remove, bond_types], reindex)
 
     def test_add_bonds(self):
         mol_comb = [Chem.MolFromSmiles("*C(*)C(=O)O.NCCc1c:*:*:cc1", False),
