@@ -692,13 +692,12 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
         substructure_subsets = refine_masses_prescribed(substructure_subsets, mf, exact_mass, prescribed_substructures, ppm, integer_mass_values, max_n_substructures - 1, table_name, db, tolerance)
 
     with multiprocessing.Pool(processes=ncpus) as pool:  # send sets of substructures for building
-        smi_dicts = []
-        for substructure_subset in substructure_subsets:
-            smi_dicts.append(substructure_combination_build(substructure_subset,
-                                           configs_iso=configs_iso,
-                                           prescribed_method=prescribed_substructures is not None,
-                                           isomeric_smiles=isomeric_smiles,
-                                           bond_enthalpies=get_bond_enthalpies()))
+        smi_dicts = pool.map(
+            partial(substructure_combination_build, configs_iso=configs_iso,
+                    prescribed_method=prescribed_substructures is not None, isomeric_smiles=isomeric_smiles,
+                    bond_enthalpies=get_bond_enthalpies()),
+            substructure_subsets
+        )
 
     substructure_subsets = None
 
