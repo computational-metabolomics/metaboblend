@@ -231,7 +231,8 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                  isomeric_smiles: bool = False,
                  write_csv_output: bool = True,
                  retain_substructures: bool = False,
-                 abs_error: float = 0.0001
+                 abs_error_peak: float = 0.001,
+                 abs_error_precursor: float = 0.0001,
                  ) -> Dict[str, Sequence[Dict[str, int]]]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
@@ -304,7 +305,9 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
 
     :param retain_substructures: Whether to record the substructures used to generate final structures.
 
-    :param abs_error: Allowable absolute mz deviation from MS peaks.
+    :param abs_error_peak: Allowable absolute mz deviation from MSn peaks.
+
+    :param abs_error_precursor: Allowable absolute mz deviation of final structure from precursor mass.
 
     :return: For each input molecule yields a dictionary whose keys are SMILEs strings for the generated
         structures and values are the number of `fragment_masses` by which the structure was built (unless
@@ -343,7 +346,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
             # start off by getting the substructures that could represent the fragment ion
-            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, abs_error, table_name)
+            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, abs_error_precursor_peak, table_name)
 
             smi_dict = build(
                 db=db,
@@ -355,7 +358,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                 table_name=table_name,
                 ncpus=ncpus,
                 isomeric_smiles=isomeric_smiles,
-                tolerance=abs_error
+                tolerance=abs_error_precursor
             )
 
             results_db.add_results(i, smi_dict, fragment_mass, j)
