@@ -343,7 +343,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
             # start off by getting the substructures that could represent the fragment ion
-            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, 0.001, table_name)
+            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, abs_error, table_name)
 
             smi_dict = build(
                 db=db,
