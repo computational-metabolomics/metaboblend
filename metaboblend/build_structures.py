@@ -232,7 +232,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                  write_csv_output: bool = True,
                  retain_substructures: bool = False,
                  abs_error_peak: float = 0.001,
-                 abs_error_precursor: float = 0.0001,
+                 abs_error_precursor: float = 0.0005,
                  ) -> Dict[str, Sequence[Dict[str, int]]]:
     """
     Generate molecules of a given mass using chemical substructures, connectivity graphs and spectral trees or
@@ -346,7 +346,7 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
         for j, fragment_mass in enumerate(ms["neutral_fragment_masses"]):
 
             # start off by getting the substructures that could represent the fragment ion
-            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, abs_error_precursor_peak, table_name)
+            possible_fragment_ions = get_possible_fragment_ions(fragment_mass, db, hydrogenation_allowance, ppm, abs_error_peak, table_name)
 
             smi_dict = build(
                 db=db,
