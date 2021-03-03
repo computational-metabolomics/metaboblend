@@ -170,7 +170,6 @@ class ResultsDb:
                                                FOREIGN KEY (substructure_combo_id) REFERENCES substructure_combos(substructure_combo_id))""")
 
         self.conn.commit()
-        self.create_indexes()
 
     def create_structures_table(self):
         """ Create structures table. """
@@ -182,12 +181,17 @@ class ResultsDb:
                                    frequency_score NUMERIC,
                                    PRIMARY KEY (ms_id_num, structure_smiles))""")
 
-    def create_indexes(self):
-        """ Create indexes for results DB query optimisation. """
+    def drop_indexes(self):
+        """ Drop indexes to improve insert performance. """
 
         self.cursor.execute("""DROP INDEX IF EXISTS substructure_combos_results_reference""")
         self.cursor.execute("""DROP INDEX IF EXISTS substructure_combos_ms_id_num""")
         self.cursor.execute("""DROP INDEX IF EXISTS results_ms_id_num""")
+
+    def create_indexes(self):
+        """ Create indexes for results DB query optimisation. """
+
+        self.drop_indexes()
 
         # for correlated querying if substructure combos table based on results
         self.cursor.execute("""CREATE INDEX substructure_combos_results_reference 
@@ -265,6 +269,8 @@ class ResultsDb:
 
         :param retain_substructures: If True, record substructures in the results DB.
         """
+
+        self.drop_indexes()
 
         # if annotating msn spectra, fill the spectra table
         if self.msn:
@@ -372,6 +378,8 @@ class ResultsDb:
         :param ms_id_num: Unique identifier for the annotation of a single metabolite.
         """
 
+        self.create_indexes()
+
         if not self.msn:
             self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency)
                                        SELECT ms_id_num, structure_smiles, COUNT(*)
@@ -421,6 +429,8 @@ class ResultsDb:
 
     def recalculate_scores(self):
         """ Re-calculates scores for the results DB. """
+
+        self.create_indexes()
 
         self.cursor.execute("DROP TABLE IF EXISTS structures")
         self.create_structures_table()
