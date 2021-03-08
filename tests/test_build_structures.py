@@ -279,7 +279,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                     self.assertEqual(set(t[0] for t in returned_smis), smis[i])
 
                 if i == 0:
-                    self.assertEqual(returned_smis[2][1], 3)
+                    self.assertEqual(returned_smis[0][1], 3)
 
             ms_data = {}
             for i, record_dict in enumerate(record_dicts.values()):

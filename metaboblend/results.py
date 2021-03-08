@@ -54,7 +54,7 @@ class ResultsDb:
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
-        def calc_substructure_combo_score(bde, max_bde, even_score, valence, ppm_error):
+        def calc_substructure_combo_score(bde, max_bde, even_score, valence):
             """
             SQL function for the calculation of scores at the results table level.
 
@@ -81,23 +81,10 @@ class ResultsDb:
             # the valence of the fragment substructure
             valence_score = sqrt(1 / valence)
 
-            # the ppm error of the fragment substructure
-            ppm_score = sqrt(1 / (ppm_error + 1))
-
             # calculate the score at substructure combination level, weights should add up to 1 when summed with the scoring at results level
-            return 0.3 * base_peak_score + 0.3 * bde_score + 0.2 * even_score + 0.05 * valence_score + 0.1 * ppm_score
+            return 0.3 * base_peak_score + 0.4 * bde_score + 0.2 * even_score + 0.1 * valence_score
 
-        self.conn.create_function("CALC_SUBSTRUCTURE_COMBO_SCORE", 5, calc_substructure_combo_score)
-
-        def calc_results_score(substructure_combo_score, combo_count):
-            """ Calculate scores at the results table level. See `calc_substructure_combo_score`. """
-
-            # the number of combinations of substructures that generated the structure for this peak
-            combo_count_score = 1 - (1 / combo_count)
-
-            return substructure_combo_score + 0.05 * combo_count_score
-
-        self.conn.create_function("CALC_RESULT_SCORE", 2, calc_results_score)
+        self.conn.create_function("CALC_SUBSTRUCTURE_COMBO_SCORE", 4, calc_substructure_combo_score)
 
     def create_results_db(self):
         """ Generates a new results database. """
@@ -136,30 +123,36 @@ class ResultsDb:
                                        max_bde NUMERIC,
                                        PRIMARY KEY (ms_id_num, fragment_id))""")
 
+        self.cursor.execute("""CREATE TABLE structure_smiles (
+                                   structure_id INTEGER PRIMARY KEY,
+                                   smiles TEXT UNIQUE NOT NULL
+                           )""")
+
         self.create_structures_table()
 
         self.cursor.execute("""CREATE TABLE results (
                                    ms_id_num INTEGER,
                                    fragment_id INTEGER,
-                                   structure_smiles TEXT,
+                                   structure_id TEXT,
                                    result_score NUMERIC,
-                                   PRIMARY KEY(ms_id_num, fragment_id, structure_smiles)
-                                   FOREIGN KEY (ms_id_num, structure_smiles)
-                                       REFERENCES structures(ms_id_num, structure_smiles))""")
+                                   PRIMARY KEY(ms_id_num, fragment_id, structure_id)
+                                   FOREIGN KEY (ms_id_num, structure_id)
+                                       REFERENCES structures(ms_id_num, structure_id)
+                                   FOREIGN KEY (ms_id_num, fragment_id)
+                                       REFERENCES spectra(ms_id_num, fragment_id))""")
 
         self.cursor.execute("""CREATE TABLE substructure_combos (
                                            substructure_combo_id INTEGER,
                                            ms_id_num INTEGER,
                                            fragment_id INTEGER,
-                                           structure_smiles TEXT,
+                                           structure_id TEXT,
                                            bde INTEGER,
                                            valence INTEGER,
                                            even BOOLEAN,
-                                           ppm_error NUMERIC,
                                            substructure_combo_score NUMERIC,
                                            PRIMARY KEY (substructure_combo_id),
-                                           FOREIGN KEY (ms_id_num, fragment_id, structure_smiles) 
-                                               REFERENCES results(ms_id_num, fragment_id, structure_smiles))""")
+                                           FOREIGN KEY (ms_id_num, fragment_id, structure_id) 
+                                               REFERENCES results(ms_id_num, fragment_id, structure_id))""")
 
         if self.retain_substructures:
             self.cursor.execute("""CREATE TABLE substructures (
@@ -176,10 +169,11 @@ class ResultsDb:
 
         self.cursor.execute("""CREATE TABLE structures (
                                    ms_id_num INTEGER,
-                                   structure_smiles TEXT,
+                                   structure_id INTEGER,
                                    frequency INTEGER,
                                    frequency_score NUMERIC,
-                                   PRIMARY KEY (ms_id_num, structure_smiles))""")
+                                   PRIMARY KEY (ms_id_num, structure_id)
+                                   FOREIGN KEY (structure_id) REFERENCES structure_smiles(structure_id))""")
 
     def add_ms(self, msn_data, ms_id, ms_id_num, parameters):
         """
@@ -275,6 +269,13 @@ class ResultsDb:
         # unique smiles candidates for this fragment
         for structure_smiles in smi_dict.keys():
 
+            # insert structure smiles
+            self.cursor.execute("INSERT OR IGNORE INTO structure_smiles (smiles) VALUES ('{}')".format(structure_smiles))
+
+            # get structure smiles row id
+            self.cursor.execute("SELECT structure_id FROM structure_smiles WHERE smiles = '{}'".format(structure_smiles))
+            structure_id = self.cursor.fetchone()[0]
+
             # for each combination of substructures that generated the candidate
             for i in range(len(smi_dict[structure_smiles]["substructures"])):
 
@@ -285,31 +286,26 @@ class ResultsDb:
                     else:
                         even_structure = 0
 
-                    ppm_error = smi_dict[structure_smiles]["ppm_error"][i]
-
                 else:
                     even_structure = "NULL"
-                    ppm_error = "NULL"
 
                 self.cursor.execute("""INSERT INTO substructure_combos (
                                            substructure_combo_id,
                                            ms_id_num,
                                            fragment_id,
-                                           structure_smiles,
+                                           structure_id,
                                            bde,
                                            valence,
-                                           even,
-                                           ppm_error
-                                       ) VALUES ({}, {}, {}, '{}', {}, {}, {}, {})
+                                           even
+                                       ) VALUES ({}, {}, {}, '{}', {}, {}, {})
                                     """.format(
                                            self.substructure_combo_id,
                                            ms_id_num,
                                            fragment_id,
-                                           structure_smiles,
+                                           structure_id,
                                            smi_dict[structure_smiles]["bde"][i],
                                            smi_dict[structure_smiles]["valence"][i],
-                                           even_structure,
-                                           ppm_error
+                                           even_structure
                                     ))
 
                 if self.retain_substructures:
@@ -331,12 +327,12 @@ class ResultsDb:
             self.cursor.execute("""INSERT INTO results (
                                        ms_id_num,
                                        fragment_id,
-                                       structure_smiles
+                                       structure_id
                                    ) VALUES ({}, {}, '{}')
                                 """.format(
                                        ms_id_num,
                                        fragment_id,
-                                       structure_smiles
+                                       structure_id
                                 ))
 
         self.conn.commit()
@@ -357,7 +353,7 @@ class ResultsDb:
 
         # for correlated querying if substructure combos table based on results
         self.cursor.execute("""CREATE INDEX substructure_combos_results_reference 
-                               ON substructure_combos(ms_id_num, fragment_id, structure_smiles)""")
+                               ON substructure_combos(ms_id_num, fragment_id, structure_id)""")
 
         self.cursor.execute("""CREATE INDEX substructure_combos_ms_id_num 
                                ON substructure_combos(ms_id_num)""")
@@ -366,7 +362,7 @@ class ResultsDb:
                                ON results(ms_id_num)""")
 
         self.cursor.execute("""CREATE INDEX results_ms_id_num_structure_smiles
-                               ON results(ms_id_num, structure_smiles)""")
+                               ON results(ms_id_num, structure_id)""")
 
     def calculate_scores(self, ms_id_num):
         """
@@ -382,11 +378,11 @@ class ResultsDb:
         """
 
         if not self.msn:
-            self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency)
-                                       SELECT ms_id_num, structure_smiles, COUNT(*)
+            self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_id, frequency)
+                                       SELECT ms_id_num, structure_id, COUNT(*)
                                            FROM results
                                            WHERE ms_id_num = {}
-                                           GROUP BY structure_smiles""".format(ms_id_num))
+                                           GROUP BY structure_id""".format(ms_id_num))
 
             return
 
@@ -395,7 +391,7 @@ class ResultsDb:
 
         # calculate the BDE score for each combination of substructures, args = bde, max_bde, even_score, valence, ppm_error
         self.cursor.execute("""UPDATE substructure_combos
-                                   SET substructure_combo_score = CALC_SUBSTRUCTURE_COMBO_SCORE(bde, {}, even, valence, ppm_error)
+                                   SET substructure_combo_score = CALC_SUBSTRUCTURE_COMBO_SCORE(bde, {}, even, valence)
                                    WHERE ms_id_num = {}
                             """.format(max_bde, ms_id_num))
 
@@ -403,28 +399,27 @@ class ResultsDb:
         # updates results by aggregating the scores (selects the max score for the peak/candidate structure)
         # then correlating the result of this query with the results table
         # also gets the number of different combinations for the result which can be used for scoring
-        self.cursor.execute("""WITH substructure_combo_aggregated AS (SELECT max_substructure_combo_score, combo_count FROM (                                   
-                                    SELECT MAX(substructure_combo_score) AS max_substructure_combo_score, COUNT(*) AS combo_count
+        self.cursor.execute("""WITH substructure_combo_scores AS (                                   
+                                    SELECT MAX(substructure_combo_score) AS max_substructure_combo_score
                                         FROM substructure_combos
                                         WHERE ms_id_num = {} 
-                                        GROUP BY fragment_id, structure_smiles
+                                        GROUP BY fragment_id, structure_id
                                     )
-                                    WHERE fragment_id = results.fragment_id 
-                                        AND structure_smiles = results.structure_smiles
-                                )
                                 
                                UPDATE results
-                                  SET result_score = CALC_RESULT_SCORE((SELECT max_substructure_combo_score FROM substructure_combo_aggregated), 
-                                                                       (SELECT combo_count FROM substructure_combo_aggregated))
+                                  SET result_score = (SELECT max_substructure_combo_score 
+                                                          FROM substructure_combo_scores
+                                                          WHERE fragment_id = results.fragment_id 
+                                                              AND structure_id = results.structure_id)
                                   WHERE ms_id_num = {}
                             """.format(ms_id_num, ms_id_num))
 
         # aggregate results scores across the spectrum for each unique structure candidate
-        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_smiles, frequency, frequency_score)
-                                   SELECT ms_id_num, structure_smiles, COUNT(*), SUM(result_score) / {}
+        self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_id, frequency, frequency_score)
+                                   SELECT ms_id_num, structure_id, COUNT(*), SUM(result_score) / {}
                                        FROM results
                                        WHERE ms_id_num = {}
-                                       GROUP BY structure_smiles""".format(num_fragments, ms_id_num))
+                                       GROUP BY structure_id""".format(num_fragments, ms_id_num))
 
         self.conn.commit()
 
@@ -457,7 +452,9 @@ class ResultsDb:
         else:
             msn_str = ""
 
-        self.cursor.execute("""SELECT structure_smiles{} FROM structures 
+        self.cursor.execute("""SELECT smiles{} FROM structures 
+                                   LEFT JOIN structure_smiles 
+                                       ON structures.structure_id = structure_smiles.structure_id
                                    WHERE ms_id_num = {}
                             """.format(msn_str, ms_id_num))
 
@@ -475,7 +472,7 @@ class ResultsDb:
             results_writer = csv.writer(results_file, delimiter=",")
             ms_writer = csv.writer(ms_file, delimiter=",")
 
-            results_writer.writerow(["ms_id", "exact_mass", "C", "H", "N", "O", "P", "S", "ppm", "ha_min", "ha_max",
+            results_writer.writerow(["ms_id_num", "ms_id", "exact_mass", "C", "H", "N", "O", "P", "S", "ppm", "ha_min", "ha_max",
                                      "max_atoms_available", "max_degree", "max_n_substructures",
                                      "hydrogenation_allowance", "isomeric_smiles"])
 
@@ -484,7 +481,7 @@ class ResultsDb:
             for query in self.cursor.fetchall():
                 results_writer.writerow(query)
 
-            ms_writer.writerow(["ms_id", "smiles", "frequency", "exact_mass", "C", "H", "N", "O", "P", "S"])
+            ms_writer.writerow(["ms_id", "smiles", "frequency", "structure_score"])
 
             self.cursor.execute("SELECT * FROM structures")
 
