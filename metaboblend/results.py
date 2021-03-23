@@ -31,9 +31,12 @@ class ResultsDb:
     :py:meth:`metaboblend.build_structures.annotate_msn`.
 
     :param path_results: Directory to which results will be written.
+
+    :param weights: Dictionary of weights that will be passed to :py:meth:`metaboblend.results.define_scoring_function`
+        in order to generate an SQL function for calculating scoring weights. If None, default weights will be used.
     """
 
-    def __init__(self, path_results, msn=True, retain_substructures=False):
+    def __init__(self, path_results, msn=True, retain_substructures=False, weights=None):
         """Constructor method."""
 
         self.path_results = path_results
@@ -41,6 +44,14 @@ class ResultsDb:
 
         self.retain_substructures = retain_substructures
         self.msn = msn
+
+        if weights is None:
+
+            self.weights = {"base_peak_weight": 0.3, "bde_weight": 0.4, "even_weight": 0.2, "valence_weight": 0.1}
+        else:
+            self.weights = weights
+
+        self.calc_substructure_combo_score = define_scoring_function(self.weights)
 
         self.conn = None
         self.cursor = None
@@ -54,37 +65,7 @@ class ResultsDb:
         self.conn = sqlite3.connect(self.path_results_db)
         self.cursor = self.conn.cursor()
 
-        def calc_substructure_combo_score(bde, max_bde, even_score, valence):
-            """
-            SQL function for the calculation of scores at the results table level.
-
-            Scores:
-            - base peak score
-            - bde_score: previously calculated BDE score
-            - even_score: logical, 0 if doesn't follow hydrogenation rules (MS-FINDER)
-            - valence: an integer with a value of greater than 0
-            - ppm_error: a real number (should be 0 to 5)
-
-            Each score should be normalised between 0 and 1
-            The sum of all weights should sum to 1
-            Therefore, the final returned score should be between 0 and 1
-
-            There are other scores that take place at results level (`calc_results_score`, below).
-            """
-
-            # MS-FINDER method of calculating bde scores
-            bde_score = sqrt(1 - (bde / max_bde))
-
-            # the base value of a peak match for the structure
-            base_peak_score = 1
-
-            # the valence of the fragment substructure
-            valence_score = sqrt(1 / valence)
-
-            # calculate the score at substructure combination level, weights should add up to 1 when summed with the scoring at results level
-            return 0.3 * base_peak_score + 0.4 * bde_score + 0.2 * even_score + 0.1 * valence_score
-
-        self.conn.create_function("CALC_SUBSTRUCTURE_COMBO_SCORE", 4, calc_substructure_combo_score)
+        self.conn.create_function("CALC_SUBSTRUCTURE_COMBO_SCORE", 4, self.calc_substructure_combo_score)
 
     def create_results_db(self):
         """ Generates a new results database. """
@@ -423,8 +404,14 @@ class ResultsDb:
 
         self.conn.commit()
 
-    def recalculate_scores(self):
+    def recalculate_scores(self, weights=None):
         """ Re-calculates scores for the results DB. """
+
+        if weights is not None:
+            self.close()
+            self.weights = weights
+            self.calc_substructure_combo_score = define_scoring_function(weights)
+            self.open()
 
         self.cursor.execute("DROP TABLE IF EXISTS structures")
         self.create_structures_table()
@@ -492,3 +479,43 @@ class ResultsDb:
         """ Close the connection to the SQLITE3 database. """
 
         self.conn.close()
+
+
+def define_scoring_function(weights):
+
+    base_peak_weight = weights["base_peak_weight"]
+    bde_weight = weights["bde_weight"]
+    even_weight = weights["even_weight"]
+    valence_weight = weights["valence_weight"]
+
+    def calc_substructure_combo_score(bde, max_bde, even_score, valence):
+        """
+        SQL function for the calculation of scores at the results table level.
+
+        Scores:
+        - base peak score
+        - bde_score: previously calculated BDE score
+        - even_score: logical, 0 if doesn't follow hydrogenation rules (MS-FINDER)
+        - valence: an integer with a value of greater than 0
+        - ppm_error: a real number (should be 0 to 5)
+
+        Each score should be normalised between 0 and 1
+        The sum of all weights should sum to 1
+        Therefore, the final returned score should be between 0 and 1
+
+        There are other scores that take place at results level (`calc_results_score`, below).
+        """
+
+        # MS-FINDER method of calculating bde scores
+        bde_score = sqrt(1 - (bde / max_bde))
+
+        # the base value of a peak match for the structure
+        base_peak_score = 1
+
+        # the valence of the fragment substructure
+        valence_score = sqrt(1 / valence)
+
+        # calculate the score at substructure combination level, weights should add up to 1 when summed with the scoring at results level
+        return base_peak_weight * base_peak_score + bde_weight * bde_score + even_weight * even_score + valence_weight * valence_score
+
+    return calc_substructure_combo_score
