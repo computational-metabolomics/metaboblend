@@ -70,7 +70,7 @@ class ResultsDb:
     def create_results_db(self):
         """ Generates a new results database. """
 
-        self.close()
+        self.conn.close()
 
         if os.path.exists(self.path_results_db):
             os.remove(self.path_results_db)
@@ -397,7 +397,7 @@ class ResultsDb:
 
         # aggregate results scores across the spectrum for each unique structure candidate
         self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_id, frequency, frequency_score)
-                                   SELECT ms_id_num, structure_id, COUNT(*), SUM(result_score) / {}
+                                   SELECT ms_id_num, structure_id, COUNT(*), (SUM(result_score) * 1.0) / {}
                                        FROM results
                                        WHERE ms_id_num = {}
                                        GROUP BY structure_id""".format(num_fragments, ms_id_num))
@@ -408,7 +408,7 @@ class ResultsDb:
         """ Re-calculates scores for the results DB. """
 
         if weights is not None:
-            self.close()
+            self.conn.close()
             self.weights = weights
             self.calc_substructure_combo_score = define_scoring_function(weights)
             self.open()
