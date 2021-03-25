@@ -381,7 +381,7 @@ class ResultsDb:
         # then correlating the result of this query with the results table
         # also gets the number of different combinations for the result which can be used for scoring
         self.cursor.execute("""WITH substructure_combo_scores AS (                                   
-                                    SELECT MAX(substructure_combo_score) AS max_substructure_combo_score
+                                    SELECT MAX(substructure_combo_score) AS max_substructure_combo_score, fragment_id, structure_id
                                         FROM substructure_combos
                                         WHERE ms_id_num = {} 
                                         GROUP BY fragment_id, structure_id
