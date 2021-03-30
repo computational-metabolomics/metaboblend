@@ -317,7 +317,6 @@ class ResultsDb:
                                 ))
 
         self.conn.commit()
-        self.create_indexes()
 
     def drop_indexes(self):
         """ Drop indexes to improve insert performance. """
@@ -357,6 +356,8 @@ class ResultsDb:
 
         :param ms_id_num: Unique identifier for the annotation of a single metabolite.
         """
+
+        self.create_indexes()
 
         if not self.msn:
             self.cursor.execute("""INSERT INTO structures (ms_id_num, structure_id, frequency)
