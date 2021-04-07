@@ -221,8 +221,9 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                  ha_min: Union[int, None] = None,
                  ha_max: Union[int, None] = None,
                  max_atoms_available: int = 2,
-                 max_degree: int = 6,
+                 max_degree: int = 4,
                  max_n_substructures: int = 3,
+                 max_bde: Union[float, None] = 2000,
                  path_connectivity_db: Union[str, bytes, os.PathLike, None] = None,
                  ncpus: Union[int, None] = None,
                  minimum_frequency: Union[int, None] = None,
@@ -358,7 +359,8 @@ def annotate_msn(msn_data: Union[str, os.PathLike, Dict[str, Dict[str, Union[int
                 table_name=table_name,
                 ncpus=ncpus,
                 isomeric_smiles=isomeric_smiles,
-                tolerance=abs_error_precursor
+                tolerance=abs_error_precursor,
+                max_bde=max_bde
             )
 
             results_db.add_results(i, smi_dict, fragment_mass, j)
@@ -384,6 +386,7 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
                         max_degree: int = 6,
                         max_atoms_available: int = 2,
                         max_n_substructures: int = 3,
+                        max_bde: Union[float, None] = None,
                         ncpus: Union[int, None] = None,
                         path_connectivity_db: Union[str, bytes, os.PathLike, None] = None,
                         minimum_frequency: Union[int, None] = None,
@@ -505,7 +508,8 @@ def generate_structures(ms_data: Union[str, os.PathLike, Dict[str, Dict[str, Uni
             ncpus=ncpus,
             isomeric_smiles=isomeric_smiles,
             db=db,
-            tolerance=0.0001
+            tolerance=0.0001,
+            max_bde=max_bde
         )
 
         results_db.add_results(i, smi_dict, ms["prescribed_mass"])
@@ -639,7 +643,7 @@ def get_possible_fragment_ions(neutral_fragment_mass, db, hydrogenation_allowanc
 
 
 def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm, ncpus, table_name, isomeric_smiles,
-          tolerance):
+          tolerance, max_bde):
     """
     Core function for generating molecules of a given mass using substructures and connectivity graphs. Can optionally
     take a "prescribed" fragment mass to further filter results; this can be used to incorporate MSn data. Final
@@ -698,7 +702,7 @@ def build(db, mf, exact_mass, max_n_substructures, prescribed_substructures, ppm
         smi_dicts = pool.map(
             partial(substructure_combination_build, configs_iso=configs_iso,
                     prescribed_method=prescribed_substructures is not None, isomeric_smiles=isomeric_smiles,
-                    bond_enthalpies=get_bond_enthalpies()),
+                    bond_enthalpies=get_bond_enthalpies(), max_bde=max_bde),
             substructure_subsets
         )
 
@@ -1080,7 +1084,7 @@ def get_bond_enthalpies():
 
 
 def substructure_combination_build(substructure_subset, configs_iso, prescribed_method, isomeric_smiles,
-                                   bond_enthalpies):
+                                   bond_enthalpies, max_bde):
     """
     Final stage for building molecules; takes a combination of substructures (substructure_combination) and builds them
     according to graphs in the substructure database. May be run in parallel.
@@ -1165,6 +1169,9 @@ def substructure_combination_build(substructure_subset, configs_iso, prescribed_
 
             if mol_e is None or total_bde is None:
                 continue
+            elif max_bde is not None:
+                if total_bde > max_bde:
+                    continue
 
             atoms_to_remove.sort(reverse=True)
             [mol_e.RemoveAtom(a) for a in atoms_to_remove]  # clean up dummy atoms

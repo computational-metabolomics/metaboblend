@@ -69,7 +69,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3, db=db, ppm=None, ncpus=None,
                     table_name=None, isomeric_smiles=True, prescribed_substructures=None,
-                    tolerance=None
+                    tolerance=None, max_bde=None
                 )
 
                 self.assertEqual(len(built_smis), std_lens[i])
@@ -83,7 +83,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3, tolerance=0.0001,
                     prescribed_substructures=get_possible_fragment_ions(fragments[i], db, 2, 5, 0.0001), ppm=15,
-                    ncpus=None, isomeric_smiles=True, db=db, table_name=None
+                    ncpus=None, isomeric_smiles=True, db=db, table_name=None, max_bde=None
                 )
 
                 if i == 2:
@@ -108,7 +108,7 @@ class BuildStructuresTestCase(unittest.TestCase):
             substructure_subset = db.select_substructures(ec_product, None)
 
             smis = substructure_combination_build(substructure_subset, configs_iso, prescribed_method=False,
-                                                  isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies())
+                                                  isomeric_smiles=True, bond_enthalpies=get_bond_enthalpies(), max_bde=None)
 
             self.assertEqual(len(smis.keys()), lens[i])
 
@@ -175,7 +175,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
                     max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
-                    db=db, tolerance=0.0001, prescribed_substructures=None
+                    db=db, tolerance=0.0001, prescribed_substructures=None, max_bde=None
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -203,7 +203,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"], max_n_substructures=3, ppm=0,
                     ncpus=None, table_name=None, isomeric_smiles=True, db=db, tolerance=0.0001,
-                    prescribed_substructures=prescribed_substructures
+                    prescribed_substructures=prescribed_substructures, max_bde=None
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smis))
@@ -231,7 +231,7 @@ class BuildStructuresTestCase(unittest.TestCase):
                         record_dict["O"], record_dict["P"], record_dict["S"]],
                     exact_mass=record_dict["exact_mass"],
                     max_n_substructures=3, ppm=None, ncpus=None, table_name=None, isomeric_smiles=True,
-                    prescribed_substructures=None, db=db, tolerance=0.0001
+                    prescribed_substructures=None, db=db, tolerance=0.0001, max_bde=None
                 )
 
                 self.assertEqual(set(build_smis.keys()), set(returned_smi_list[i][record_dict["HMDB_ID"]]))
