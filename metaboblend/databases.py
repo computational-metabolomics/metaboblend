@@ -1229,6 +1229,9 @@ def insert_substructure(lib, cursor, record_dict, substructures_only, max_atoms_
     if lib is None:
         return
 
+    if lib["valence"] == 0:
+        return
+
     if max_atoms_available is not None:
         if lib["atoms_available"] > max_atoms_available:
             return
