@@ -15,7 +15,7 @@ sys.path.append(os.path.join("..", "..", "..", "metaboblend", "metaboblend"))
 from build_structures import annotate_msn
 
 
-def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2, test_type="ind_exp", ncpus=None):
+def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2, test_type="ind_exp", ncpus=None, connectivity_path=None):
     """
     Wrapper for running tests for the MS2 structure generation & ranking method.
 
@@ -43,12 +43,12 @@ def run_test(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available=2,
     """
 
     if test_type == "ind_exp":
-        C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus=ncpus)
+        C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus=ncpus, connectivity_path=connectivity_path)
     else:
         raise NotImplementedError
 
 
-def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus):
+def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus, connectivity_path):
     """Run a test on MS2 data. See run_test."""
 
     for category in ms_data.keys():
@@ -74,6 +74,7 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus):
             path_out=os.path.join(out_dir, category),
             msn_data=annot_msn_data,
             path_substructure_db=db_path,
+            path_connectivity_db=connectivity_path,
             ha_min=None,
             ha_max=None,
             max_degree=max_valence,
@@ -87,4 +88,4 @@ def C(out_dir, ms_data, max_valence, ppm, db_path, max_atoms_available, ncpus):
         ))
         pr.disable()
         pr.print_stats(sort='cumtime')
-        pr.dump_stats(os.path.join(out_dir, category, hmdb + "_stats.profile"))
+        pr.dump_stats(os.path.join(out_dir, category, "_stats.profile"))
