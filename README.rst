@@ -1,6 +1,9 @@
 MetaboBlend
 ===========
-|Version| |Py versions| |Git| |Bioconda| |Build Status| |License| |RTD doc| |codecov| |binder|
+..
+    |Version| |Py versions| |Bioconda|  |RTD doc| |License|  |binder|
+
+|Git| |Build Status| |codecov|
 
 Python package for *de novo* structural elucidation of small molecules in mass spectrometry-based Metabolomics
 
