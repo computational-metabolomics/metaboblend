@@ -8,8 +8,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.7, 3.8]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        python-version: [ 3.7, 3.8 ]
 
     env:
       OS: ${{ matrix.os }}
@@ -26,6 +26,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yml
           channels: anaconda, conda-forge
+
+      - name: Build MetaboBlend
+        shell: bash -l {0}
+        run: |
+          python setup.py install
+          metaboblend --help
 
       - name: Test with pytest-cov
         shell: bash -l {0}

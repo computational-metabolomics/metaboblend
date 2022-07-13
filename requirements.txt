@@ -1,6 +1,0 @@
-numpy
-networkx
-biopython
-matplotlib
-# nauty
-# rdkit
