@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2017-2019 Ralf Weber.
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
@@ -21,7 +21,6 @@
 
 
 import setuptools
-import sys
 import metaboblend
 
 
@@ -40,7 +39,7 @@ def main():
         keywords=['Metabolomics', 'Lipidomics', 'Mass spectrometry', 'Metabolite Identification'],
         packages=setuptools.find_packages(),
         test_suite='tests.suite',
-        python_requires='>=3.7',
+        python_requires='>=3.6',
         install_requires=open('requirements.txt').read().splitlines(),
         include_package_data=True,
         classifiers=[
