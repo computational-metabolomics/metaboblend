@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2019-2020 Ralf Weber
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
