@@ -78,6 +78,7 @@ class DatabasesTestCase(unittest.TestCase):
                 self.assertEqual(record_out, parsed_records[hmdb + ".xml"])
 
     def test_filter_records(self):
+
         with open(self.to_test_data("parsed_records.dictionary"), "rb") as p:
             parsed_records = pickle.load(p)
 
