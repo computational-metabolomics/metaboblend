@@ -119,17 +119,9 @@ class ConnectivityTestCase(unittest.TestCase):
 
     def test_create_connectivity_database(self):
 
-        pkg_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
         if sys.platform == "linux" or sys.platform == "linux2":
 
-            self.path_ri = os.path.join(pkg_path, "tools", "RI_unix", "RI3.6-release", "ri36")
-
-            create_connectivity_database(self.to_test_results("connectivity.sqlite"),
-                                         3,  # sizes
-                                         [1, 2],  # boxes
-                                         self.path_ri
-                                         )
+            create_connectivity_database(self.to_test_results("connectivity.sqlite"), 3, [1, 2])
 
             ref_db = sqlite3.connect(self.to_test_data("connectivity.sqlite"))
             ref_db_cursor = ref_db.cursor()
