@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2017-2019 Ralf Weber.
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
@@ -21,7 +21,6 @@
 
 
 import setuptools
-import sys
 import metaboblend
 
 
@@ -30,10 +29,10 @@ def main():
     setuptools.setup(
         name="metaboblend",
         version=metaboblend.__version__,
-        description="",
+        description="Python package for de novo structural elucidation of small molecules in mass spectrometry-based Metabolomics",
         long_description=open('README.rst').read(),
-        author="Ralf Weber",
-        author_email="r.j.weber@bham.ac.uk",
+        author="Ralf Weber, Jack Gisby",
+        author_email="r.j.weber@bham.ac.uk, jackgisby@gmail.com",
         url="https://github.com/computational-metabolomics/metaboblend",
         license="GPLv3",
         platforms=['Windows, UNIX'],
@@ -41,7 +40,6 @@ def main():
         packages=setuptools.find_packages(),
         test_suite='tests.suite',
         python_requires='>=3.7',
-        install_requires=open('requirements.txt').read().splitlines(),
         include_package_data=True,
         classifiers=[
           "Programming Language :: Python :: 3",

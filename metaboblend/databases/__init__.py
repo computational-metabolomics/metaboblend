@@ -18,8 +18,3 @@
 # You should have received a copy of the GNU General Public License
 # along with MetaboBlend.  If not, see <https://www.gnu.org/licenses/>.
 #
-
-__authors__ = ['Ralf Weber (r.j.weber@bham.ac.uk)', 'Jack Gisby (jackgisby@gmail.com)']
-__credits__ = ['Ralf Weber (r.j.weber@bham.ac.uk)', 'Jack Gisby (jackgisby@gmail.com)']
-__version__ = '0.1.0'
-__license__ = 'GPLv3'

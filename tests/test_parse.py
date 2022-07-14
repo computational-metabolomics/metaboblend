@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2019-2020 Ralf Weber
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
@@ -25,6 +25,7 @@ import copy
 import shutil
 import tempfile
 import unittest
+
 from metaboblend.parse import *
 
 
@@ -62,7 +63,7 @@ class ParseTestCase(unittest.TestCase):
                 self.assertNotEqual(ms, None)
 
         self.assertEqual(ms, {"ms_id": "AU101101", "mf": self.mf, "precursor_mz": self.precursor_mz,
-                              "fragment_mzs": self.fragment_mzs, "precursor_type": "[M+H]+",
+                              "fragment_mzs": self.fragment_mzs, "precursor_type": "[M+H]+", 'ion_mode': '+',
                               "exact_mass": self.exact_mass, "neutral_fragment_masses": self.neutral_fragment_masses})
 
         self.assertEqual(list(parse_msp(self.to_test_data("massbank_msp.txt")))[0], None)
@@ -98,6 +99,7 @@ class ParseTestCase(unittest.TestCase):
 
         parsed_neutral_fragment_masses_ms_dict = list(parse_ms_data({"AU101101": copy.deepcopy(neutral_fragment_masses_ms_dict)}))[0]
         neutral_fragment_masses_ms_dict["exact_mass"] = self.exact_mass
+        neutral_fragment_masses_ms_dict['ion_mode'] = "+"
         self.assertEqual(parsed_neutral_fragment_masses_ms_dict, neutral_fragment_masses_ms_dict)
 
         uncalculated_ms_dict = {"ms_id": "AU101101", "mf": self.mf, "precursor_mz": self.precursor_mz,
@@ -105,6 +107,7 @@ class ParseTestCase(unittest.TestCase):
         parsed_uncalculated_ms_dict = list(parse_ms_data({"AU101101": copy.deepcopy(uncalculated_ms_dict)}))[0]
         uncalculated_ms_dict["exact_mass"] = self.exact_mass
         uncalculated_ms_dict["neutral_fragment_masses"] = self.neutral_fragment_masses
+        uncalculated_ms_dict['ion_mode'] = "+"
         self.assertEqual(parsed_uncalculated_ms_dict, uncalculated_ms_dict)
 
         # test with msn=False
@@ -112,6 +115,7 @@ class ParseTestCase(unittest.TestCase):
                                     "prescribed_mass": "m", "precursor_type": "[M+H]+"}
         parsed_generate_structures_dict = list(parse_ms_data({"AU101101": copy.deepcopy(generate_structures_dict)}, False))[0]
         generate_structures_dict["exact_mass"] = self.exact_mass
+        generate_structures_dict['ion_mode'] = "+"
         self.assertEqual(parsed_generate_structures_dict, generate_structures_dict)
 
         # test with exact mass provided
@@ -153,7 +157,7 @@ class ParseTestCase(unittest.TestCase):
 
         formatted_msp_dict = {'ms_id': 'AU101101', 'mf': self.mf, 'precursor_mz': self.precursor_mz,
                                 'fragment_mzs': self.fragment_mzs, 'precursor_type': '[M+H]+',
-                                'exact_mass': self.exact_mass,
+                                'exact_mass': self.exact_mass, 'ion_mode': '+',
                                 'neutral_fragment_masses': self.neutral_fragment_masses}
 
         self.assertEqual(reformat_msp_input(unformatted_msp_dict), formatted_msp_dict)

@@ -70,6 +70,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+notebooks/notebook_data
+notebooks/notebook_data/*
 
 # pyenv
 .python-version
@@ -105,4 +107,4 @@ ENV/
 # ignore test files
 */libgcc_s_dw2-1.dll
 */libstdc++-6.dll
-tests/test*
+tests/tmp*

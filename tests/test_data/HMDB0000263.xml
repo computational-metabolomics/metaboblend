@@ -1,0 +1,1354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hmdb xmlns="http://www.hmdb.ca"> 
+<metabolite>
+  <version>4.0</version>
+  <creation_date>2005-11-16 15:48:42 UTC</creation_date>
+  <update_date>2020-09-15 17:09:00 UTC</update_date>
+  <accession>HMDB0000263</accession>
+  <status>quantified</status>
+  <secondary_accessions>
+    <accession>HMDB00263</accession>
+  </secondary_accessions>
+  <name>Phosphoenolpyruvic acid</name>
+  <description>Phosphoenolpyruvate (PEP) is an important chemical compound in biochemistry. It has a high energy phosphate bond, and is involved in glycolysis and gluconeogenesis. In glycolysis, PEP is formed by the action of the enzyme enolase on 2-phosphoglycerate. Metabolism of PEP to pyruvate by pyruvate kinase (PK) generates 1 molecule of adenosine triphosphate (ATP) via substrate-level phosphorylation. ATP is one of the major currencies of chemical energy within cells. In gluconeogenesis, PEP is formed from the decarboxylation of oxaloacetate and hydrolysis of 1 guanosine triphosphate molecule. This reaction is catalyzed by the enzyme phosphoenolpyruvate carboxykinase (PEPCK). This reaction is a rate-limiting step in gluconeogenesis. (wikipedia).</description>
+  <synonyms>
+    <synonym>2-(Phosphonooxy)-2-propenoic acid</synonym>
+    <synonym>2-PHOSPHOENOLPYRUVIC ACID</synonym>
+    <synonym>PEP</synonym>
+    <synonym>PHOSPHOENOLPYRUVATE</synonym>
+    <synonym>2-(Phosphonooxy)-2-propenoate</synonym>
+    <synonym>2-PHOSPHOENOLPYRUVate</synonym>
+    <synonym>2-Hydroxy-acrylic acid dihydrogen phosphate</synonym>
+    <synonym>2-Phosphonooxyprop-2-enoate</synonym>
+    <synonym>2-Phosphonooxyprop-2-enoic acid</synonym>
+    <synonym>p-enol-Pyruvate</synonym>
+    <synonym>PEP (phosphate)</synonym>
+    <synonym>Phosphoenolpyruvic acid</synonym>
+  </synonyms>
+  <chemical_formula>C3H5O6P</chemical_formula>
+  <average_molecular_weight>168.042</average_molecular_weight>
+  <monisotopic_molecular_weight>167.982374404</monisotopic_molecular_weight>
+  <iupac_name>2-(phosphonooxy)prop-2-enoic acid</iupac_name>
+  <traditional_iupac>phosphoenolpyruvic acid</traditional_iupac>
+  <cas_registry_number>138-08-9</cas_registry_number>
+  <smiles>OC(=O)C(=C)OP(O)(O)=O</smiles>
+  <inchi>InChI=1S/C3H5O6P/c1-2(3(4)5)9-10(6,7)8/h1H2,(H,4,5)(H2,6,7,8)</inchi>
+  <inchikey>DTBNBXWJWCWCIK-UHFFFAOYSA-N</inchikey>
+  <taxonomy>
+    <description> belongs to the class of organic compounds known as phosphate esters. These are organic compounds containing phosphoric acid ester functional group, with the general structure R1P(=O)(R2)OR3. R1,R2 = O,N,  or halogen atom; R3 = organyl group.</description>
+    <direct_parent>Phosphate esters</direct_parent>
+    <kingdom>Organic compounds</kingdom>
+    <super_class>Organic acids and derivatives</super_class>
+    <class>Organic phosphoric acids and derivatives</class>
+    <sub_class>Phosphate esters</sub_class>
+    <molecular_framework>Aliphatic acyclic compounds</molecular_framework>
+    <alternative_parents>
+      <alternative_parent>Carbonyl compounds</alternative_parent>
+      <alternative_parent>Carboxylic acids</alternative_parent>
+      <alternative_parent>Hydrocarbon derivatives</alternative_parent>
+      <alternative_parent>Monocarboxylic acids and derivatives</alternative_parent>
+      <alternative_parent>Organic oxides</alternative_parent>
+    </alternative_parents>
+    <substituents>
+      <substituent>Aliphatic acyclic compound</substituent>
+      <substituent>Carbonyl group</substituent>
+      <substituent>Carboxylic acid</substituent>
+      <substituent>Carboxylic acid derivative</substituent>
+      <substituent>Hydrocarbon derivative</substituent>
+      <substituent>Monocarboxylic acid or derivatives</substituent>
+      <substituent>Organic oxide</substituent>
+      <substituent>Organic oxygen compound</substituent>
+      <substituent>Organooxygen compound</substituent>
+      <substituent>Phosphoric acid ester</substituent>
+    </substituents>
+    <external_descriptors>
+      <external_descriptor>carboxyalkyl phosphate</external_descriptor>
+      <external_descriptor>monocarboxylic acid</external_descriptor>
+    </external_descriptors>
+  </taxonomy>
+  <ontology>
+    <root>
+      <term>Disposition</term>
+      <definition>A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Route of exposure</term>
+          <definition>A mean by which a chemical agent comes in contact with an organism, either under intended or unintended circumstances.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Enteral</term>
+              <definition>Chemical exposure via the alimentary canal (mouth to anus).</definition>
+              <parent_id>7743</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Ingestion</term>
+                  <definition>Chemical exposure facilitated by entry through the mouth.</definition>
+                  <parent_id>7744</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Digestion</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Source</term>
+          <definition>Natural or synthetic origin of a chemical.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Endogenous</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Food</term>
+              <definition/>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>child</type>
+              <synonyms>
+              </synonyms>
+            </descendant>
+            <descendant>
+              <term>Biological</term>
+              <definition>A living organism (species or a higher taxonomy rank), in which a chemical can be found.</definition>
+              <parent_id>7735</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Animal</term>
+                  <definition>A living organism belonging to the kingdom animalia. it feeds on organic matter, typically having specialized sense organs and nervous system and able to respond rapidly to stimuli.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Fauna</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Plant</term>
+                  <definition>A living organism belonging to the kingdom plantea. typically, it grows in a permanent site, absorbs water and inorganic substances through its roots, and synthesizes nutrients in its leaves by photosynthesis using the green pigment chlorophyll. examples incude trees, shrubs, herbs, grasses, ferns, and mosses.</definition>
+                  <parent_id>7736</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                    <synonym>Flora</synonym>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Poaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Gramineae</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Fabaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Papilionoideae</synonym>
+                        <synonym>Legume</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Glycine max</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Soy</synonym>
+                        <synonym>Soya</synonym>
+                        <synonym>Soybean</synonym>
+                        <synonym>Soya bean</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Cucurbitaceae</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Cucurbits</synonym>
+                        <synonym>Gourds</synonym>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Theobroma cacao</term>
+                      <definition/>
+                      <parent_id>7738</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+        <descendant>
+          <term>Biological location</term>
+          <definition>The physiological origin within an organism, including anatomical compnents, biofluids and excreta.</definition>
+          <parent_id>7724</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Tissue and substructures</term>
+              <definition>An anatomical organizational level including multiple cells yet not comprising a complete organ .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Placenta</term>
+                  <definition>An organ present in some vertebrates during embryonic gestation that surrounds the fetus and provides it with nutrients and oxygen, facilitates gas and waste exchange between the fetus and mother, and provides parasitic cloaking from the mother's immune system by excretion of neurokinin b. (nci).</definition>
+                  <parent_id>7729</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Organ and components</term>
+              <definition>An anatomical organizational level including multiple tissues or substructures, which enables a common biological function.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Prostate</term>
+                  <definition>The male reproductive accessory gland that produces prostatic fluid and is located adjacent to or around the urethra distal to the urinary bladder in mammals. (nci).</definition>
+                  <parent_id>7727</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Prostate gland</synonym>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Biofluid and excreta</term>
+              <definition>A liquid, semi-solid or solid material originating in the body.</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Saliva</term>
+                  <definition>The watery fluid in the mouth made by the salivary glands. saliva moistens food to help digestion and it helps protect the mouth against infections. (nci).</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Blood</term>
+                  <definition>A liquid tissue with the primary function of transporting oxygen and carbon dioxide (nci). it supplies the tissues with nutrients, removes waste products, and contains various components of the immune system defending the body against infection.</definition>
+                  <parent_id>7731</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+            <descendant>
+              <term>Subcellular</term>
+              <definition>An anatomical organizational level including a component within a biological cell .</definition>
+              <parent_id>7725</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Cytoplasm</term>
+                  <definition>The portion of the cell contained within the plasma membrane but excluding the nucleus.</definition>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                    <synonym>Cytoplasma</synonym>
+                  </synonyms>
+                </descendant>
+                <descendant>
+                  <term>Mitochondria</term>
+                  <definition/>
+                  <parent_id>7730</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Process</term>
+      <definition>Biological or chemical events, or a series thereof, leading to a known function or end-product.</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Naturally occurring process</term>
+          <definition>Naturally-occurring molecular events or a series thereof, leading to a known function or end-product.</definition>
+          <parent_id>7659</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Biological process</term>
+              <definition>Biological or chemical events or a series thereof, leading to a known function or end-product within an organism.</definition>
+              <parent_id>7660</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Biochemical pathway</term>
+                  <definition>A linked series of chemical reactions that occur in a defined order within or between organism cells, and lead to a known function or end product.</definition>
+                  <parent_id>7661</parent_id>
+                  <level>4</level>
+                  <type>parent</type>
+                  <synonyms>
+                  </synonyms>
+                  <descendants>
+                    <descendant>
+                      <term>Amino Sugar Metabolism</term>
+                      <definition> glycosaminoglycans (gags) or mucopolysaccharides are long unbranched polysaccharides consisting of a repeating disaccharide unit. members of the glycosaminoglycan family vary in the type of hexosamine, hexose or hexuronic acid unit they contain (e.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>gluconeogenesis</term>
+                      <definition> in animals, gluconeogenesis takes place mainly in the liver and, to a lesser extent, in the cortex of kidneys. this process occurs during periods of fasting, starvation, or intense exercise.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Glycogenosis, Type IB</term>
+                      <definition> the accumulation of glycogen in certain organs and tissues, especially the liver, kidneys, and small intestines, impairs their ability to function normally. people with gsdi may experience delayed puberty.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Glycogenosis, Type IC</term>
+                      <definition> the accumulation of glycogen in certain organs and tissues, especially the liver, kidneys, and small intestines, impairs their ability to function normally. people with gsdi may experience delayed puberty.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>glycolysis</term>
+                      <definition> the free energy released in this process is used to form the high energy compounds, atp (adenosine triphosphate) and nadh (reduced nicotinamide adenine dinucleotide). glycolysis is a sequence of ten reactions involving ten intermediate compounds.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Pyruvate Metabolism</term>
+                      <definition> it is the end product of glycolysis and the starting point for gluconeogenesis, and can be generated by transamination of alanine. it can be converted by the pyruvate dehydrogenase complex to acetyl coa which can enter the tca cycle or serve as the starting point for the synthesis of long chain fatty acids, steroids, and ketone bodies.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Triosephosphate isomerase</term>
+                      <definition> it is the most severe glycolytic enzyme defect associated with progressive neurologic dysfunction.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                      </synonyms>
+                    </descendant>
+                    <descendant>
+                      <term>Warburg effect</term>
+                      <definition> as the krebs cycle is an aerobic process, in normal cells lactate production is reserved for anaerobic conditions. however, cancer cells preferentially utilize glucose for lactate production via this “aerobic glycolysis”, even when oxygen is plentiful.</definition>
+                      <parent_id>7662</parent_id>
+                      <level>5</level>
+                      <type>child</type>
+                      <synonyms>
+                        <synonym>Aerobic glycolysis</synonym>
+                      </synonyms>
+                    </descendant>
+                  </descendants>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+    <root>
+      <term>Role</term>
+      <definition>The purpose or function assumed by a chemical, either naturally or as intended by humans .</definition>
+      <parent_id/>
+      <level>1</level>
+      <type>parent</type>
+      <descendants>
+        <descendant>
+          <term>Industrial application</term>
+          <definition>The assumed function of a chemical utilized by human.</definition>
+          <parent_id>7671</parent_id>
+          <level>2</level>
+          <type>parent</type>
+          <synonyms>
+          </synonyms>
+          <descendants>
+            <descendant>
+              <term>Pharmaceutical industry</term>
+              <definition>A pharmacologic activity for which a chemical substance is utilized owing to its biological role.</definition>
+              <parent_id>7678</parent_id>
+              <level>3</level>
+              <type>parent</type>
+              <synonyms>
+              </synonyms>
+              <descendants>
+                <descendant>
+                  <term>Pharmaceutical</term>
+                  <definition/>
+                  <parent_id>7679</parent_id>
+                  <level>4</level>
+                  <type>child</type>
+                  <synonyms>
+                  </synonyms>
+                </descendant>
+              </descendants>
+            </descendant>
+          </descendants>
+        </descendant>
+      </descendants>
+    </root>
+  </ontology>
+  <state>Solid</state>
+  <experimental_properties>
+  </experimental_properties>
+  <predicted_properties>
+    <property>
+      <kind>logp</kind>
+      <value>-1.22</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logs</kind>
+      <value>-1.10</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>solubility</kind>
+      <value>13.2 g/L</value>
+      <source>ALOGPS</source>
+    </property>
+    <property>
+      <kind>logp</kind>
+      <value>-0.64</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>pka_strongest_acidic</kind>
+      <value>0.76</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>iupac</kind>
+      <value>2-(phosphonooxy)prop-2-enoic acid</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>average_mass</kind>
+      <value>168.042</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mono_mass</kind>
+      <value>167.982374404</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>smiles</kind>
+      <value>OC(=O)C(=C)OP(O)(O)=O</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formula</kind>
+      <value>C3H5O6P</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchi</kind>
+      <value>InChI=1S/C3H5O6P/c1-2(3(4)5)9-10(6,7)8/h1H2,(H,4,5)(H2,6,7,8)</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>inchikey</kind>
+      <value>DTBNBXWJWCWCIK-UHFFFAOYSA-N</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polar_surface_area</kind>
+      <value>104.06</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>refractivity</kind>
+      <value>30.13</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>polarizability</kind>
+      <value>11.57</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rotatable_bond_count</kind>
+      <value>3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>acceptor_count</kind>
+      <value>5</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>donor_count</kind>
+      <value>3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>physiological_charge</kind>
+      <value>-3</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>formal_charge</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>number_of_rings</kind>
+      <value>0</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>bioavailability</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>rule_of_five</kind>
+      <value>Yes</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>ghose_filter</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>veber_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+    <property>
+      <kind>mddr_like_rule</kind>
+      <value>No</value>
+      <source>ChemAxon</source>
+    </property>
+  </predicted_properties>
+  <spectra>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>505</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>2960</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>30667</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::CMs</type>
+      <spectrum_id>37391</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>1298</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>4820</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrOneD</type>
+      <spectrum_id>4821</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrTwoD</type>
+      <spectrum_id>1010</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::NmrTwoD</type>
+      <spectrum_id>1246</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>457</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>458</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>459</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3822</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3823</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3824</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3825</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3826</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3827</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3828</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3829</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3830</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3831</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3832</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3833</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3834</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3835</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3836</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3837</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3838</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3839</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3840</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3841</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3842</spectrum_id>
+    </spectrum>
+    <spectrum>
+      <type>Specdb::MsMs</type>
+      <spectrum_id>3843</spectrum_id>
+    </spectrum>
+  </spectra>
+  <biological_properties>
+    <cellular_locations>
+      <cellular>Cytoplasm</cellular>
+      <cellular>Mitochondria</cellular>
+    </cellular_locations>
+    <biospecimen_locations>
+      <biospecimen>Blood</biospecimen>
+      <biospecimen>Cellular Cytoplasm</biospecimen>
+      <biospecimen>Saliva</biospecimen>
+    </biospecimen_locations>
+    <tissue_locations>
+      <tissue>Placenta</tissue>
+      <tissue>Prostate</tissue>
+    </tissue_locations>
+    <pathways>
+      <pathway>
+        <name>Amino Sugar Metabolism</name>
+        <smpdb_id>SMP00045</smpdb_id>
+        <kegg_map_id>map00520</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Fanconi-bickel syndrome</name>
+        <smpdb_id>SMP00572</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Fructose-1,6-diphosphatase deficiency</name>
+        <smpdb_id>SMP00562</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>G(M2)-Gangliosidosis: Variant B, Tay-sachs disease</name>
+        <smpdb_id>SMP00534</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Gluconeogenesis</name>
+        <smpdb_id>SMP00128</smpdb_id>
+        <kegg_map_id>map00010</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Glycogen Storage Disease Type 1A (GSD1A) or Von Gierke Disease</name>
+        <smpdb_id>SMP00374</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Glycogenosis, Type IA. Von gierke disease</name>
+        <smpdb_id>SMP00581</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Glycogenosis, Type IB</name>
+        <smpdb_id>SMP00573</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Glycogenosis, Type IC</name>
+        <smpdb_id>SMP00574</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Glycogenosis, Type VII. Tarui disease</name>
+        <smpdb_id>SMP00531</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Glycolysis</name>
+        <smpdb_id>SMP00040</smpdb_id>
+        <kegg_map_id>map00010</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Leigh Syndrome</name>
+        <smpdb_id>SMP00196</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Phosphoenolpyruvate carboxykinase deficiency 1 (PEPCK1)</name>
+        <smpdb_id>SMP00560</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Primary hyperoxaluria II, PH2</name>
+        <smpdb_id>SMP00558</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pyruvate Decarboxylase E1 Component Deficiency (PDHE1 Deficiency)</name>
+        <smpdb_id>SMP00334</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pyruvate Dehydrogenase Complex Deficiency</name>
+        <smpdb_id>SMP00212</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pyruvate kinase deficiency</name>
+        <smpdb_id>SMP00559</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Pyruvate Metabolism</name>
+        <smpdb_id>SMP00060</smpdb_id>
+        <kegg_map_id>map00620</kegg_map_id>
+      </pathway>
+      <pathway>
+        <name>Salla Disease/Infantile Sialic Acid Storage Disease</name>
+        <smpdb_id>SMP00240</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Sialuria or French Type Sialuria</name>
+        <smpdb_id>SMP00216</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Tay-Sachs Disease</name>
+        <smpdb_id>SMP00390</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Triosephosphate isomerase</name>
+        <smpdb_id>SMP00563</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+      <pathway>
+        <name>Warburg Effect</name>
+        <smpdb_id>SMP00654</smpdb_id>
+        <kegg_map_id/>
+      </pathway>
+    </pathways>
+  </biological_properties>
+  <normal_concentrations>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>7.6 +/- 2.9</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Newborn (0-30 days old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, pp. 165-177. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp., Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Blood</biospecimen>
+      <concentration_value>17.4 +/- 3.8</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Geigy Scientific Tables, 8th Rev edition, pp. 165-177. Edited by C. Lentner, West Cadwell, N.J.: Medical education Div., Ciba-Geigy Corp., Basel, Switzerland c1981-1992.</reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Cellular Cytoplasm</biospecimen>
+      <concentration_value>17.0 (15.0-19.0)</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Both</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Nakayama Y, Kinoshita A, Tomita M: Dynamic simulation of red blood cell metabolism and its application to the analysis of a pathological condition. Theor Biol Med Model. 2005 May 9;2:18.</reference_text>
+          <pubmed_id>15882454</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>2.07 +/- 1.22</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Female</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>0.219 +/- 0.312</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Male</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Saliva samples were collected at 16:00 (n=27)</comment>
+      <references>
+        <reference>
+          <reference_text>Sugimoto et al. (2013) Physiological and environmental parameters associated with mass spectrometry-based salivary metabolomic profiles. </reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>0.312 +/- 0.332</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Afternoon (n = 18). Saliva samples were collected by the absorbent method using salivettes.</comment>
+      <references>
+        <reference>
+          <reference_text>Sugimoto et al. (2013) Physiological and environmental parameters associated with mass spectrometry-based salivary metabolomic profiles. </reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>0.419 +/- 0.270</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Not Specified</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Morning (n = 86). Saliva samples were collected by the absorbent method using salivettes.</comment>
+      <references>
+        <reference>
+          <reference_text>Sugimoto et al. (2013) Physiological and environmental parameters associated with mass spectrometry-based salivary metabolomic profiles. </reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>0.463 +/- 0.275</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <subject_age>Adult (&gt;18 years old)</subject_age>
+      <subject_sex>Female</subject_sex>
+      <subject_condition>Normal</subject_condition>
+      <comment>Saliva samples were collected at 16:00 (n=24)</comment>
+      <references>
+        <reference>
+          <reference_text>Sugimoto et al. (2013) Physiological and environmental parameters associated with mass spectrometry-based salivary metabolomic profiles. </reference_text>
+          <pubmed_id/>
+        </reference>
+      </references>
+    </concentration>
+  </normal_concentrations>
+  <abnormal_concentrations>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>1.94 +/- 1.62</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Male</patient_sex>
+      <patient_information>Alzheimer's disease</patient_information>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>2.45 +/- 3.70</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Male</patient_sex>
+      <patient_information>Frontotemporal lobe dementia</patient_information>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+    <concentration>
+      <biospecimen>Saliva</biospecimen>
+      <concentration_value>2.36 +/- 3.13</concentration_value>
+      <concentration_units>uM</concentration_units>
+      <patient_age>Adult (&gt;18 years old)</patient_age>
+      <patient_sex>Both</patient_sex>
+      <patient_information>Lewy body disease</patient_information>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </concentration>
+  </abnormal_concentrations>
+  <diseases>
+    <disease>
+      <name>Alzheimer's disease</name>
+      <omim_id>104300</omim_id>
+      <references>
+        <reference>
+          <reference_text>Fonteh AN, Harrington RJ, Tsai A, Liao P, Harrington MG: Free amino acid and dipeptide changes in the body fluids from Alzheimer's disease subjects. Amino Acids. 2007 Feb;32(2):213-24. Epub 2006 Oct 10.</reference_text>
+          <pubmed_id>17031479</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Selley ML, Close DR, Stern SE: The effect of increased concentrations of homocysteine on the concentration of (E)-4-hydroxy-2-nonenal in the plasma and cerebrospinal fluid of patients with Alzheimer's disease. Neurobiol Aging. 2002 May-Jun;23(3):383-8.</reference_text>
+          <pubmed_id>11959400</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Shetty HU, Holloway HW, Schapiro MB: Cerebrospinal fluid and plasma distribution of myo-inositol and other polyols in Alzheimer disease. Clin Chem. 1996 Feb;42(2):298-302.</reference_text>
+          <pubmed_id>8595727</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Jia JP, Jia JM, Zhou WD, Xu M, Chu CB, Yan X, Sun YX: Differential acetylcholine and choline concentrations in the cerebrospinal fluid of patients with Alzheimer's disease and vascular dementia. Chin Med J (Engl). 2004 Aug;117(8):1161-4.</reference_text>
+          <pubmed_id>15361288</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Redjems-Bennani N, Jeandel C, Lefebvre E, Blain H, Vidailhet M, Gueant JL: Abnormal substrate levels that depend upon mitochondrial function in cerebrospinal fluid from Alzheimer patients. Gerontology. 1998;44(5):300-4.</reference_text>
+          <pubmed_id>9693263</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Walter A, Korth U, Hilgert M, Hartmann J, Weichel O, Hilgert M, Fassbender K, Schmitt A, Klein J: Glycerophosphocholine is elevated in cerebrospinal fluid of Alzheimer patients. Neurobiol Aging. 2004 Nov-Dec;25(10):1299-303.</reference_text>
+          <pubmed_id>15465626</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Leoni V, Masterman T, Mousavi FS, Wretlind B, Wahlund LO, Diczfalusy U, Hillert J, Bjorkhem I: Diagnostic use of cerebral and extracerebral oxysterols. Clin Chem Lab Med. 2004 Feb;42(2):186-91.</reference_text>
+          <pubmed_id>15061359</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Raskind MA, Peskind ER, Holmes C, Goldstein DS: Patterns of cerebrospinal fluid catechols support increased central noradrenergic responsiveness in aging and Alzheimer's disease. Biol Psychiatry. 1999 Sep 15;46(6):756-65.</reference_text>
+          <pubmed_id>10494443</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Lovell MA, Markesbery WR: Ratio of 8-hydroxyguanine in intact DNA to free 8-hydroxyguanine is increased in Alzheimer disease ventricular cerebrospinal fluid. Arch Neurol. 2001 Mar;58(3):392-6.</reference_text>
+          <pubmed_id>11255442</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bar KJ, Franke S, Wenda B, Muller S, Kientsch-Engel R, Stein G, Sauer H: Pentosidine and N(epsilon)-(carboxymethyl)-lysine in Alzheimer's disease and vascular dementia. Neurobiol Aging. 2003 Mar-Apr;24(2):333-8.</reference_text>
+          <pubmed_id>12498967</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Serot JM, Barbe F, Arning E, Bottiglieri T, Franck P, Montagne P, Nicolas JP: Homocysteine and methylmalonic acid concentrations in cerebrospinal fluid: relation with age and Alzheimer's disease. J Neurol Neurosurg Psychiatry. 2005 Nov;76(11):1585-7.</reference_text>
+          <pubmed_id>16227558</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Molina JA, Jimenez-Jimenez FJ, Aguilar MV, Meseguer I, Mateos-Vega CJ, Gonzalez-Munoz MJ, de Bustos F, Porta J, Orti-Pareja M, Zurdo M, Barrios E, Martinez-Para MC: Cerebrospinal fluid levels of transition metals in patients with Alzheimer's disease. J Neural Transm (Vienna). 1998;105(4-5):479-88.</reference_text>
+          <pubmed_id>9720975</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Molina JA, Jimenez-Jimenez FJ, Hernanz A, Fernandez-Vivancos E, Medina S, de Bustos F, Gomez-Escalonilla C, Sayed Y: Cerebrospinal fluid levels of thiamine in patients with Alzheimer's disease. J Neural Transm (Vienna). 2002 Jul;109(7-8):1035-44.</reference_text>
+          <pubmed_id>12111441</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Bocca B, Forte G, Petrucci F, Pino A, Marchione F, Bomboi G, Senofonte O, Giubilei F, Alimonti A: Monitoring of chemical elements and oxidative damage in patients affected by Alzheimer's disease. Ann Ist Super Sanita. 2005;41(2):197-203.</reference_text>
+          <pubmed_id>16244393</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Kristensen MO, Gulmann NC, Christensen JE, Ostergaard K, Rasmussen K: Serum cobalamin and methylmalonic acid in Alzheimer dementia. Acta Neurol Scand. 1993 Jun;87(6):475-81.</reference_text>
+          <pubmed_id>8356878</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Abe T, Tohgi H, Isobe C, Murata T, Sato C: Remarkable increase in the concentration of 8-hydroxyguanosine in cerebrospinal fluid from patients with Alzheimer's disease. J Neurosci Res. 2002 Nov 1;70(3):447-50.</reference_text>
+          <pubmed_id>12391605</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Reichman ME, Judd JT, Longcope C, Schatzkin A, Clevidence BA, Nair PP, Campbell WS, Taylor PR: Effects of alcohol consumption on plasma and urinary hormone concentrations in premenopausal women. J Natl Cancer Inst. 1993 May 5;85(9):722-7.</reference_text>
+          <pubmed_id>8478958</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Hozumi I, Hasegawa T, Honda A, Ozawa K, Hayashi Y, Hashimoto K, Yamada M, Koumura A, Sakurai T, Kimura A, Tanaka Y, Satoh M, Inuzuka T: Patterns of levels of biological metals in CSF differ among neurodegenerative diseases. J Neurol Sci. 2011 Apr 15;303(1-2):95-9. doi: 10.1016/j.jns.2011.01.003. Epub 2011 Feb 2.</reference_text>
+          <pubmed_id>21292280</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Motawaj M, Peoc'h K, Callebert J, Arrang JM: CSF levels of the histamine metabolite tele-methylhistamine are only slightly decreased in Alzheimer's disease. J Alzheimers Dis. 2010;22(3):861-71. doi: 10.3233/JAD-2010-100381.</reference_text>
+          <pubmed_id>20858978</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Smach MA, Jacob N, Golmard JL, Charfeddine B, Lammouchi T, Ben Othman L, Dridi H, Bennamou S, Limem K: Folate and homocysteine in the cerebrospinal fluid of patients with Alzheimer's disease or dementia: a case control study. Eur Neurol. 2011;65(5):270-8. doi: 10.1159/000326301. Epub 2011 Apr 8.</reference_text>
+          <pubmed_id>21474939</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Linnebank M, Popp J, Smulders Y, Smith D, Semmler A, Farkas M, Kulic L, Cvetanovska G, Blom H, Stoffel-Wagner B, Kolsch H, Weller M, Jessen F: S-adenosylmethionine is decreased in the cerebrospinal fluid of patients with Alzheimer's disease. Neurodegener Dis. 2010;7(6):373-8. doi: 10.1159/000309657. Epub 2010 Jun 3.</reference_text>
+          <pubmed_id>20523031</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Rosler N, Wichart I, Jellinger KA: Clinical significance of neurobiochemical profiles in the lumbar cerebrospinal fluid of Alzheimer's disease patients. J Neural Transm (Vienna). 2001;108(2):231-46.</reference_text>
+          <pubmed_id>11314776</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Sunderland T, Berrettini WH, Molchan SE, Lawlor BA, Martinez RA, Vitiello B, Tariot PN, Cohen RM: Reduced cerebrospinal fluid dynorphin A1-8 in Alzheimer's disease. Biol Psychiatry. 1991 Jul 1;30(1):81-7.</reference_text>
+          <pubmed_id>1716470</pubmed_id>
+        </reference>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Frontotemporal dementia</name>
+      <omim_id>600274</omim_id>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+    <disease>
+      <name>Lewy body disease</name>
+      <omim_id></omim_id>
+      <references>
+        <reference>
+          <reference_text>Tsuruoka M, Hara J, Hirayama A, Sugimoto M, Soga T, Shankle WR, Tomita M: Capillary electrophoresis-mass spectrometry-based metabolome analysis of serum and saliva from neurodegenerative dementia patients. Electrophoresis. 2013 Oct;34(19):2865-72. doi: 10.1002/elps.201300019. Epub 2013  Sep 6.</reference_text>
+          <pubmed_id>23857558</pubmed_id>
+        </reference>
+      </references>
+    </disease>
+  </diseases>
+  <kegg_id>C00074</kegg_id>
+  <drugbank_id>DB01819</drugbank_id>
+  <foodb_id>FDB031112</foodb_id>
+  <chemspider_id>980</chemspider_id>
+  <pdb_id/>
+  <chebi_id>44897</chebi_id>
+  <pubchem_compound_id>1005</pubchem_compound_id>
+  <biocyc_id>PHOSPHO-ENOL-PYRUVATE</biocyc_id>
+  <knapsack_id>C00000798</knapsack_id>
+  <wikipedia_id>Phosphoenolpyruvic_acid</wikipedia_id>
+  <phenol_explorer_compound_id/>
+  <bigg_id/>
+  <metlin_id/>
+  <vmh_id>PEP</vmh_id>
+  <fbonto_id/>
+  <synthesis_reference>Simon, Ethan S.; Grabowski, Sven; Whitesides, George M.  Preparation of phosphoenolpyruvate from D-(-)-3-phosphoglyceric acid for use in regeneration of ATP.    Journal of the American Chemical Society  (1989),  111(24),  8920-1.</synthesis_reference>
+  <general_references>
+    <reference>
+      <reference_text>Krogh P: Role of ochratoxin in disease causation. Food Chem Toxicol. 1992 Mar;30(3):213-24.</reference_text>
+      <pubmed_id>1618445</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Germaine GR, Tellefson LM: Promotion of Streptococcus mutans glucose transport by human whole saliva and parotid fluid. Infect Immun. 1985 Apr;48(1):7-13.</reference_text>
+      <pubmed_id>3980096</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Schatzberger P: Maternity services. BMJ. 1992 May 23;304(6838):1382-3.</reference_text>
+      <pubmed_id>1611358</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Orye E, Verhaaren H, Samuel K, van Mele B: A 46,XX,10Q+ chromosome constitution in a girl. Partial long arm duplication or insertional translocation? Humangenetik. 1975 May 26;28(1):1-8.</reference_text>
+      <pubmed_id>1150258</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Landau BR, Chandramouli V, Schumann WC, Ekberg K, Kumaran K, Kalhan SC, Wahren J: Estimates of Krebs cycle activity and contributions of gluconeogenesis to hepatic glucose production in fasting healthy subjects and IDDM patients. Diabetologia. 1995 Jul;38(7):831-8.</reference_text>
+      <pubmed_id>7556986</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Shirokane Y, Nakajima M, Mizusawa K: A new enzymatic assay of urinary guanidinoacetic acid. Clin Chim Acta. 1991 Oct 31;202(3):227-36.</reference_text>
+      <pubmed_id>1667626</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Tannen RL: Ammonia metabolism. Am J Physiol. 1978 Oct;235(4):F265-77.</reference_text>
+      <pubmed_id>29492</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Atkin BM, Buist NR, Utter MF, Leiter AB, Banker BQ: Pyruvate carboxylase deficiency and lactic acidosis in a retarded child without Leigh's disease. Pediatr Res. 1979 Feb;13(2):109-16.</reference_text>
+      <pubmed_id>219411</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Bojarska-Dahlig H, Gloabski T, Dzioegielewska I: [Salts of cyclic erythromycin A carbonate with cinnamic acid derivatives]. Acta Pol Pharm. 1975;32(3):311-7.</reference_text>
+      <pubmed_id>1155186</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Matsumoto T, van der Auwera P, Watanabe Y, Tanaka M, Ogata N, Naito S, Kumazawa J: Neutrophil function in hyperosmotic NaCl is preserved by phosphoenol pyruvate. Urol Res. 1991;19(4):223-7.</reference_text>
+      <pubmed_id>1656579</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Nakayama Y, Kinoshita A, Tomita M: Dynamic simulation of red blood cell metabolism and its application to the analysis of a pathological condition. Theor Biol Med Model. 2005 May 9;2:18.</reference_text>
+      <pubmed_id>15882454</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Cahill GF Jr, Aoki TT: Renal gluconeogenesis and amino-acid metabolism in man. Med Clin North Am. 1975 May;59(3):751-61.</reference_text>
+      <pubmed_id>1092934</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Beyer C: Creatine measurement in serum and urine with an automated enzymatic method. Clin Chem. 1993 Aug;39(8):1613-9.</reference_text>
+      <pubmed_id>8353946</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Momeni N, Yoshimoto T, Ryberg B, Sandberg-Wollheim M, Grubb A: Factors influencing analysis of prolyl endopeptidase in human blood and cerebrospinal fluid: increase in assay sensitivity. Scand J Clin Lab Invest. 2003;63(6):387-95.</reference_text>
+      <pubmed_id>14594319</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Sreekumar A, Poisson LM, Rajendiran TM, Khan AP, Cao Q, Yu J, Laxman B, Mehra R, Lonigro RJ, Li Y, Nyati MK, Ahsan A, Kalyana-Sundaram S, Han B, Cao X, Byun J, Omenn GS, Ghosh D, Pennathur S, Alexander DC, Berger A, Shuster JR, Wei JT, Varambally S, Beecher C, Chinnaiyan AM: Metabolomic profiles delineate potential role for sarcosine in prostate cancer progression. Nature. 2009 Feb 12;457(7231):910-4. doi: 10.1038/nature07762.</reference_text>
+      <pubmed_id>19212411</pubmed_id>
+    </reference>
+    <reference>
+      <reference_text>Elshenawy S, Pinney SE, Stuart T, Doulias PT, Zura G, Parry S, Elovitz MA, Bennett MJ, Bansal A, Strauss JF 3rd, Ischiropoulos H, Simmons RA: The Metabolomic Signature of the Placenta in Spontaneous Preterm Birth. Int J Mol Sci. 2020 Feb 4;21(3). pii: ijms21031043. doi: 10.3390/ijms21031043.</reference_text>
+      <pubmed_id>32033212</pubmed_id>
+    </reference>
+  </general_references>
+  <protein_associations>
+    <protein>
+      <protein_accession>HMDBP00333</protein_accession>
+      <name>Sialic acid synthase</name>
+      <uniprot_id>Q9NR45</uniprot_id>
+      <gene_name>NANS</gene_name>
+      <protein_type>Enzyme</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00734</protein_accession>
+      <name>6-phosphofructokinase type C</name>
+      <uniprot_id>Q01813</uniprot_id>
+      <gene_name>PFKP</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00758</protein_accession>
+      <name>6-phosphofructokinase, liver type</name>
+      <uniprot_id>P17858</uniprot_id>
+      <gene_name>PFKL</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00762</protein_accession>
+      <name>6-phosphofructokinase, muscle type</name>
+      <uniprot_id>P08237</uniprot_id>
+      <gene_name>PFKM</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00763</protein_accession>
+      <name>Pyruvate kinase isozymes M1/M2</name>
+      <uniprot_id>P14618</uniprot_id>
+      <gene_name>PKM</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00765</protein_accession>
+      <name>Pyruvate kinase isozymes R/L</name>
+      <uniprot_id>P30613</uniprot_id>
+      <gene_name>PKLR</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00890</protein_accession>
+      <name>Phosphoenolpyruvate carboxykinase [GTP], mitochondrial</name>
+      <uniprot_id>Q16822</uniprot_id>
+      <gene_name>PCK2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP00892</protein_accession>
+      <name>Phosphoenolpyruvate carboxykinase, cytosolic [GTP]</name>
+      <uniprot_id>P35558</uniprot_id>
+      <gene_name>PCK1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01085</protein_accession>
+      <name>Beta-enolase</name>
+      <uniprot_id>P13929</uniprot_id>
+      <gene_name>ENO3</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01086</protein_accession>
+      <name>Gamma-enolase</name>
+      <uniprot_id>P09104</uniprot_id>
+      <gene_name>ENO2</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP01087</protein_accession>
+      <name>Alpha-enolase</name>
+      <uniprot_id>P06733</uniprot_id>
+      <gene_name>ENO1</gene_name>
+      <protein_type>Unknown</protein_type>
+    </protein>
+    <protein>
+      <protein_accession>HMDBP05558</protein_accession>
+      <name>Solute carrier organic anion transporter family member 2A1</name>
+      <uniprot_id>Q92959</uniprot_id>
+      <gene_name>SLCO2A1</gene_name>
+      <protein_type>Transporter</protein_type>
+    </protein>
+  </protein_associations>
+</metabolite>
+</hmdb>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2019-2020 Ralf Weber
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
@@ -20,9 +20,10 @@
 #
 
 import numpy
+from math import sqrt
 
 
-def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=[]):
+def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=None):
     """
     Recursive solution for backtracking through the dynamic programming boolean matrix. All possible subsets are found
 
@@ -41,6 +42,9 @@ def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=[]):
 
     :return: Generates of lists containing the masses of valid subsets.
     """
+
+    if path is None:
+        path = []
 
     # base case - the path has generated a correct solution
     if mass == 0:
@@ -103,3 +107,29 @@ def subset_sum(mass_list, mass, max_subset_length=3):
 
     # backtrack through the matrix recursively to obtain all solutions
     return find_path(mass_list, sum_matrix, n, mass, max_subset_length)
+
+
+def cosine_spectrum_similarity(real_mzs, candidate_mzs):
+    """
+    Database fragmentation scoring based on the cosine similarity method. Adapted for the lack of intensities
+    available for the candidate compound.
+
+    :param real_mzs: The mz values for the original MSn spectrum.
+
+    :param candidate_mzs: The theoretical mz values for a candidate compound. Should have the same order as `real_mzs`
+        and should have a value of `0` when there is no match for the candidate for a peak in the original spectrum.
+
+    :return: Similarity metric for the two spectra.
+    """
+
+    # get weighted peaks
+    real_weighted = [(mz ** 2) for mz in real_mzs]
+    candidate_weighted = [(mz ** 2) for mz in candidate_mzs]
+
+    def dot(E, D):
+        return sum(e * d for e, d in zip(E, D))
+
+    def cosine_similarity(E, D):
+        return dot(E, D) / (sqrt(dot(E, E)) * sqrt(dot(D, D)))
+
+    return cosine_similarity(real_weighted, candidate_weighted)
