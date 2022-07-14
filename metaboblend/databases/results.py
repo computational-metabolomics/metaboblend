@@ -32,6 +32,11 @@ class ResultsDb:
 
     :param path_results: Directory to which results will be written.
 
+    :param msn: If True, creates a table, "spectra", which holds the MSn spectra.
+
+    :param retain_substructures: If True, keeps the substructure table permenantly. Else, the table will be dropped
+        after calculations are performed.
+
     :param weights: Dictionary of weights that will be passed to :py:meth:`metaboblend.results.define_scoring_function`
         in order to generate an SQL function for calculating scoring weights. If None, default weights will be used.
     """

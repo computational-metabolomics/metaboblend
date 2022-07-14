@@ -19,9 +19,150 @@
 # along with MetaboBlend.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+import os
+import io
+import pickle
+import sqlite3
+import tempfile
 import itertools
+import subprocess
 import pylab as plt
 import networkx as nx
+from typing import Union
+
+
+def create_connectivity_database(
+        path_connectivity_db: Union[str, bytes, os.PathLike],
+        max_n_substructures: int = 3,
+        max_atoms_available: int = 2,
+        path_ri: Union[str, bytes, os.PathLike, None] = None
+) -> None:
+    """
+    Generates a connectivity database containing sets of possible combinations of substructures; these combinations are
+    represented by graphs whose vertices correspond to substructures and edges to bonds. We use geng, part of the nauty
+    package, along with RI3.6 to ensure that the generated graphs are non-isomorphic - i.e. we only generate each
+    combination of substructures once. These graphs are pickled in order to be stored in the final column of the
+    SQLite 3 connectivity database.
+
+    :param path_connectivity_db: The path at which to generate the SQLite 3 database.
+
+    :param max_n_substructures: The maximal number of substructures (vertices). At least two substructures must be
+        available for bonding for a graph to be created.
+
+    :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
+        building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
+        chemical bonds (e.g. single or double bonds).
+
+    :param path_ri: The path of RI, a required tool for verifying subgraph isomorphism.
+    """
+
+    conn = sqlite3.connect(path_connectivity_db)
+    cursor = conn.cursor()
+
+    cursor.execute("""DROP TABLE IF EXISTS subgraphs""")
+    cursor.execute("""CREATE TABLE subgraphs (
+                          id_pkl INTEGER,
+                          n_graphs INTEGER,
+                          graph6 TEXT,
+                          k INTEGER,
+                          k_partite TEXT,
+                          k_valences TEXT,
+                          nodes_valences TEXT,
+                          n_nodes INTEGER,
+                          n_edges INTEGER,
+                          root BLOB,
+                          PRIMARY KEY (graph6, k_partite, nodes_valences)
+                   );""")
+    conn.commit()
+
+    id_pkl = 0
+
+    for g, p in calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):
+
+        # get complete set of non-isomorphic graphs, using geng, from a distinct multipartite graph as input
+        proc = subprocess.Popen(["geng", str(len(g.nodes)), "-d1", "-D2", "-q"], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)  # max valence for single atom of 2
+        geng_out, err = proc.communicate()
+
+        proc.stdout.close()
+        proc.stderr.close()
+
+        # pipe geng output to RI to generate mappings (complete set of non-isomorphic configurations)
+        for i, line_geng in enumerate(geng_out.split()):
+
+            s_g = nx.read_graph6(io.BytesIO(line_geng))
+
+            k_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
+            k_gfu.write(graph_to_ri(g, "k_graph"))
+            k_gfu.seek(0)
+
+            s_gfu = tempfile.NamedTemporaryFile(mode="w", delete=False)
+            s_gfu.write(graph_to_ri(s_g, "subgraph"))
+            s_gfu.seek(0)
+
+            proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)  # TODO: add ri as dependency
+            ri_out, err = proc.communicate()
+
+            k_gfu.close()
+            s_gfu.close()
+
+            mappings = []
+            subgraphs = {}
+
+            for line in ri_out.decode("utf-8").splitlines():
+                if line[0] == "{":
+                    mappings.append(eval(line))
+
+            if len(mappings) > 0:
+                gi = graph_info(p, s_g, mappings, )  # convert mappings to valence/connectivity specifications
+
+                for vn in gi:
+                    if vn not in subgraphs:
+                        subgraphs[vn] = gi[vn]
+
+                    else:
+                        for es in gi[vn]:
+                            if es not in subgraphs[vn]:
+                                subgraphs[vn].append(es)
+
+            if len(subgraphs) > 0:
+                for vn in subgraphs:  # for each valence configuration
+                    subgraphs[vn] = sort_subgraphs(subgraphs[vn])  # sort to remove duplicate configurations
+                    root = {}  # graph to be pickled
+
+                    for fr in subgraphs[vn]:
+                        parent = root
+                        for e in fr:
+                            parent = parent.setdefault(e, {})
+
+                    vt = tuple([sum(v) for v in eval(vn)])
+
+                    id_pkl += 1
+                    cursor.execute("""INSERT INTO subgraphs (
+                                          id_pkl, 
+                                          n_graphs, 
+                                          graph6,
+                                          k,
+                                          k_partite,
+                                          k_valences,
+                                          nodes_valences,
+                                          n_nodes, n_edges,
+                                          root)
+                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
+                        id_pkl,
+                        len(subgraphs[vn]),
+                        line_geng,
+                        len(p),
+                        str(p),
+                        str(vt),
+                        str(vn),
+                        s_g.number_of_nodes(),
+                        s_g.number_of_edges(),
+                        pickle.dumps(root)))
+
+            conn.commit()
+    conn.close()
 
 
 def calculate_complete_multipartite_graphs(max_atoms_available, max_n_substructures):

@@ -179,7 +179,7 @@ def parse_msp(msp_path):
 
                         re_query = re.search(meta_re, line, re.IGNORECASE)
 
-                        if re_query:  # TODO: walrus
+                        if re_query:
                             entry_dict[meta_type] = re_query.group(1).strip()
 
                 if re.match("^Num Peaks(.*)$", line, re.IGNORECASE) or re.match("^PEAK:(.*)", line, re.IGNORECASE):
