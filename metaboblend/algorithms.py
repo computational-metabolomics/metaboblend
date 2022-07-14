@@ -23,7 +23,7 @@ import numpy
 from math import sqrt
 
 
-def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=[]):
+def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=None):
     """
     Recursive solution for backtracking through the dynamic programming boolean matrix. All possible subsets are found
 
@@ -42,6 +42,9 @@ def find_path(mass_list, sum_matrix, n, mass, max_subset_length, path=[]):
 
     :return: Generates of lists containing the masses of valid subsets.
     """
+
+    if path is None:
+        path = []
 
     # base case - the path has generated a correct solution
     if mass == 0:
