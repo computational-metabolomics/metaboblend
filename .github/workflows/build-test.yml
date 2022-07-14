@@ -27,17 +27,17 @@ jobs:
           environment-file: environment.yml
           channels: anaconda, conda-forge
 
-      - name: Build MetaboBlend
-        shell: bash -l {0}
-        run: |
-          python setup.py install
-          metaboblend --help
-
       - name: Install RI
         if: matrix.os == "ubuntu-latest"
         shell: bash -l {0}
         run: |
           conda install -c conda-forge ri
+
+      - name: Build MetaboBlend
+        shell: bash -l {0}
+        run: |
+          python setup.py install
+          metaboblend --help
 
       - name: Test with pytest-cov
         shell: bash -l {0}

@@ -34,8 +34,7 @@ from typing import Union
 def create_connectivity_database(
         path_connectivity_db: Union[str, bytes, os.PathLike],
         max_n_substructures: int = 3,
-        max_atoms_available: int = 2,
-        path_ri: Union[str, bytes, os.PathLike, None] = None
+        max_atoms_available: int = 2
 ) -> None:
     """
     Generates a connectivity database containing sets of possible combinations of substructures; these combinations are
@@ -52,8 +51,6 @@ def create_connectivity_database(
     :param max_atoms_available: The maximum number of  atoms available of each substructure to be considered for
         building molecules. `atoms_available` refers to the number of atoms on a substructure involved in forming
         chemical bonds (e.g. single or double bonds).
-
-    :param path_ri: The path of RI, a required tool for verifying subgraph isomorphism.
     """
 
     conn = sqlite3.connect(path_connectivity_db)
@@ -100,8 +97,9 @@ def create_connectivity_database(
             s_gfu.write(graph_to_ri(s_g, "subgraph"))
             s_gfu.seek(0)
 
-            proc = subprocess.Popen([path_ri, "mono", "geu", k_gfu.name, s_gfu.name], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)  # TODO: add ri as dependency
+            proc = subprocess.Popen(["ri36", "mono", "geu", k_gfu.name, s_gfu.name],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             ri_out, err = proc.communicate()
 
             k_gfu.close()
