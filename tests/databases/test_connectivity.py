@@ -135,6 +135,15 @@ class ConnectivityTestCase(unittest.TestCase):
             for row in test_db_cursor.fetchall():
                 test_rows[row[0]] = row
 
+            # compare to ref database
+            for row in ref_db_cursor.fetchall():
+
+                # check generated graphs are the same
+                self.assertEqual(pickle.loads(test_rows[row[0]][9]), pickle.loads(row[9]))
+
+                # check specifications are the same
+                self.assertEqual(test_rows[row[0]][0:9], row[0:9])
+
             ref_db.close()
             test_db.close()
 
