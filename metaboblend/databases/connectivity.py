@@ -110,7 +110,8 @@ def create_connectivity_database(
 
             for line in ri_out.decode("utf-8").splitlines():
                 if line[0] == "{":
-                    mappings.append(eval(line))
+                    modified_line = line.replace(",", ":").replace("(", "").replace(")", ", ").replace(", }", "}")
+                    mappings.append(eval(modified_line))
 
             if len(mappings) > 0:
                 gi = graph_info(p, s_g, mappings, )  # convert mappings to valence/connectivity specifications
