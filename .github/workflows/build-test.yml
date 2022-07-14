@@ -28,7 +28,7 @@ jobs:
           channels: anaconda, conda-forge
 
       - name: Install RI
-        if: matrix.os == "ubuntu-latest"
+        if: runner.os == 'Linux'
         shell: bash -l {0}
         run: |
           conda install -c conda-forge ri
