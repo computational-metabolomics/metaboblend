@@ -619,7 +619,7 @@ def create_substructure_database(hmdb_paths: Union[str, bytes, os.PathLike],
     Creates a substructure database by fragmenting one or more input molecules. Combinations of
     substructures in this database are used to build new molecules. Fragmentation is carried out by selecting
     connected sets bonds in the supplied compound(s). Creates the database before calling
-    'metaboverse.databases.update_substructure_database' to add substructures for each input molecule. Generates
+    'metaboblend.databases.update_substructure_database' to add substructures for each input molecule. Generates
     indexes on the substructure table.
 
     :param hmdb_paths: The paths of the HMDB XML records detailing molecules to be fragmented.

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../../metaboblend'))
 # -- Project information -----------------------------------------------------
 
 project = 'MetaboBlend'
-copyright = '2020, Ralf Weber'
+copyright = '2020, Jack Gisby, Ralf Weber'
 author = 'Jack Gisby, Ralf Weber'
 
 # -- General configuration ---------------------------------------------------
