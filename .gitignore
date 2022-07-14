@@ -108,3 +108,4 @@ ENV/
 */libgcc_s_dw2-1.dll
 */libstdc++-6.dll
 tests/tmp*
+tests/**/tmp*

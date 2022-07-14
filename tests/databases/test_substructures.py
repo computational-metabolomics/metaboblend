@@ -549,6 +549,7 @@ class SubstructureDbTestCase(unittest.TestCase):
                             self.to_test_data("connectivity.sqlite"))
 
         k_configs = db.k_configs()
+
         self.assertEqual(len(k_configs), 67)
         self.assertEqual(k_configs['((1,), (1,))'], [((0, 1),)])
         self.assertEqual(k_configs['((2, 2), (2, 2), (2, 2))'],

@@ -118,7 +118,7 @@ class BuildTestCase(unittest.TestCase):
             self.assertEqual(len(smis.keys()), lens[i])
 
             if i == 0:
-                self.assertEqual(list(smis.keys()), ['NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)ccc1O', 'NCCc1cc(O)cc(O)c1'])
+                self.assertEqual(list(smis.keys()), ['NCCc1cc(O)ccc1O', 'NCCc1ccc(O)c(O)c1', 'NCCc1cc(O)cc(O)c1'])
 
         db.close()
 
