@@ -47,6 +47,8 @@ class ResultsDbTestCase(unittest.TestCase):
         shutil.copytree(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "test_data"),
                         cls.to_test_results("test_data"))
 
+        cls.maxDiff = None
+
     def test_results_db(self):  # TODO: directly test each unit of ResultsDb
 
         fragments = [56.05, 60.0211, 68.0262, 56.0262]

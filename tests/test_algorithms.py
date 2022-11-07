@@ -45,6 +45,8 @@ class AlgorithmsTestCase(unittest.TestCase):
         shutil.copytree(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_data"),
                         cls.to_test_results("test_data"))
 
+        cls.maxDiff = None
+
     def test_subset_sum(self):  # also tests find_path
 
         self.assertEqual([s_sum for s_sum in subset_sum([1, 2, 3, 4], 5)], [[2, 3], [1, 4]])

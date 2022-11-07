@@ -58,6 +58,8 @@ class ConnectivityTestCase(unittest.TestCase):
             cls.p_list.append(p)
             cls.final_graph = G
 
+        cls.maxDiff = None
+
     def test_calculate_complete_multipartite_graphs(self):
 
         self.assertEqual(self.p_list, [(1, 1), (1, 2), (2, 2), (1, 1, 1), (1, 1, 2), (1, 2, 2), (2, 2, 2)])

@@ -54,6 +54,8 @@ class ParseTestCase(unittest.TestCase):
         cls.precursor_mz = 251.0597
         cls.fragment_mzs = [156.0106, 174.0199, 176.012, 251.0596, 252.0616, 253.0565]
 
+        cls.maxDiff = None
+
     def test_parse_msp(self):
         for i, ms in enumerate(parse_msp(self.to_test_data("mona_msp.msp"))):
 

@@ -46,6 +46,8 @@ class AnnotateTestCase(unittest.TestCase):
         shutil.copytree(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "test_data"),
                         cls.to_test_results("test_data"))
 
+        cls.maxDiff = None
+
     def test_generate_structures(self):  # tests vs build
 
         db = SubstructureDb(self.to_test_data("substructures.sqlite"), self.to_test_data("connectivity.sqlite"))
