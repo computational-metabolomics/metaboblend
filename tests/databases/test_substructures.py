@@ -89,7 +89,11 @@ class DatabasesTestCase(unittest.TestCase):
         record_gen = filter_records(parsed_records.values(), isomeric_smiles=True)
         test_filtered_records = {}
         for record in record_gen:
-            del record["mol"]
+
+            # don't check smiles
+            for field in ["mol", "smiles_rdkit", "smiles_rdkit_kek"]:
+                del record[field]
+
             test_filtered_records[record["HMDB_ID"]] = record
 
         self.assertEqual(test_filtered_records, filtered_records)
