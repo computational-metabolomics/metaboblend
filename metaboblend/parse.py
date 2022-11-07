@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2019-2020 Ralf Weber
+# Copyright © 2019-2020 Jack Gisby, Ralf Weber
 #
 # This file is part of MetaboBlend.
 #
@@ -70,13 +70,15 @@ def parse_ms_data(ms_data, msn=True):
         yield from parse_msp(ms_data)
 
 
-def precursor_ion_to_neutral_mass(mass, precursor_type):
+def precursor_ion_to_neutral_mass(mass, precursor_type, get_mode=False):
     """
     Convert precursor ion to predicted neutral mass for substructure searching.
 
     :param mass: Charged mass to be neutralised.
 
     :param precursor_type: Type of precursor ion.
+
+    :param get_mode: If True, also return the ion mode (positive or negative).
 
     :return: Neutral mass.
     """
@@ -91,7 +93,13 @@ def precursor_ion_to_neutral_mass(mass, precursor_type):
                       "[M+K-2H]-": 36.948605,
                       "[M+Hac-H]-": 59.013853}
 
-    return mass - precursor_dict[precursor_type]
+    precursor_mode = {"[M+H]+":  "+", "[M+Na]+": "+", "[M+K]+": "+",
+                      "[M-H]-": "-", "[M+Cl]-": "-", "[M+Na-2H]-": "-", "[M+K-2H]-": "-", "[M+Hac-H]-": "-"}
+
+    if get_mode:
+        return mass - precursor_dict[precursor_type], precursor_mode[precursor_type]
+    else:
+        return mass - precursor_dict[precursor_type]
 
 
 def precursor_ions_to_neutral_masses(ms_dict, which="both"):
@@ -108,8 +116,9 @@ def precursor_ions_to_neutral_masses(ms_dict, which="both"):
     """
 
     if which == "precursor" or which == "both":
-        ms_dict["exact_mass"] = precursor_ion_to_neutral_mass(ms_dict["precursor_mz"],
-                                                              ms_dict["precursor_type"])
+        ms_dict["exact_mass"], ms_dict["ion_mode"] = precursor_ion_to_neutral_mass(ms_dict["precursor_mz"],
+                                                                                   ms_dict["precursor_type"],
+                                                                                   get_mode=True)
 
     if which == "fragments" or which == "both":
 
@@ -170,7 +179,7 @@ def parse_msp(msp_path):
 
                         re_query = re.search(meta_re, line, re.IGNORECASE)
 
-                        if re_query:  # TODO: walrus
+                        if re_query:
                             entry_dict[meta_type] = re_query.group(1).strip()
 
                 if re.match("^Num Peaks(.*)$", line, re.IGNORECASE) or re.match("^PEAK:(.*)", line, re.IGNORECASE):

@@ -1,2 +1,2 @@
 [run]
-omit = tests/*,setup.py,metaboblend/__main__.py
+omit = tests/*,setup.py,metaboblend/__main__.py,notebooks/

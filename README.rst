@@ -1,6 +1,9 @@
 MetaboBlend
 ===========
-|Version| |Py versions| |Git| |Bioconda| |Build Status| |License| |RTD doc| |codecov| |binder|
+..
+    |Version| |Py versions| |Bioconda|  |RTD doc| |License|  |binder|
+
+|Git| |Build Status| |codecov|
 
 Python package for *de novo* structural elucidation of small molecules in mass spectrometry-based Metabolomics
 
@@ -32,12 +35,11 @@ will help you to make the PR if you are new to `git`.
 Developers & Contributors
 -------------------------
  - Ralf J. M. Weber (r.j.weber@bham.ac.uk) - `University of Birmingham (UK) <https://www.birmingham.ac.uk/staff/profiles/biosciences/weber-ralf.aspx>`_
- - Jack Gisby (jackgisby@gmail.com) - `University of Birmingham (UK) <http://www.birmingham.ac.uk/index.aspx>`_
-
+ - Jack Gisby (jackgisby@gmail.com) - `University of Birmingham (UK) <http://www.birmingham.ac.uk/index.aspx>`_, `Imperial College London (UK) <https://www.imperial.ac.uk/>`_
 
 Licenses
 --------
-MetaboBlend is licensed under the GNU General Public License v3.0 (see `LICENSE file <https://github.com/computational-metabolomics/metaboblend/blob/master/LICENSE>`_ for licensing information). Copyright © 2019 - 2020 Ralf Weber
+MetaboBlend is licensed under the GNU General Public License v3.0 (see `LICENSE file <https://github.com/computational-metabolomics/metaboblend/blob/master/LICENSE>`_ for licensing information). Copyright © 2019 - 2020 Jack Gisby, Ralf Weber
 
 
 .. |Build Status| image:: https://github.com/computational-metabolomics/metaboblend/workflows/metaboblend/badge.svg
